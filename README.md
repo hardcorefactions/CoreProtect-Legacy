@@ -10,6 +10,11 @@ Requires network access on the first run (Spigot and EngineHub repositories).
 Any JDK from 8 up works; the build pins `--release 8` so the output runs on a
 Java 8 server regardless of the JDK used to compile it.
 
+CI builds on every push and pull request via `.github/workflows/build.yml`, and
+attaches the jar to the workflow run as an artifact named `CoreProtect-Legacy`
+(Actions → the run → Artifacts). It can also be triggered by hand from the
+Actions tab.
+
 ## Dependencies
 
 All dependencies are `compileOnly` — the server provides them at runtime.
