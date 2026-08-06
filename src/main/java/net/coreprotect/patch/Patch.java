@@ -17,6 +17,7 @@ import net.coreprotect.Functions;
 import net.coreprotect.consumer.Consumer;
 import net.coreprotect.database.Database;
 import net.coreprotect.model.Config;
+import net.coreprotect.model.Language;
 
 public class Patch extends CoreProtect {
    private static boolean patching = false;
@@ -128,7 +129,7 @@ public class Patch extends CoreProtect {
 
    public static void processConsumer() {
       try {
-         Functions.messageOwner("Processing new data. Please wait...");
+         Functions.messageOwner(Language.get("processing-new-data-please-wait"));
          Consumer.is_paused = false;
          Thread.sleep(1000L);
 
@@ -167,9 +168,9 @@ public class Patch extends CoreProtect {
                boolean success = false;
 
                try {
-                  Functions.messageOwner("-----");
-                  Functions.messageOwner("Performing v" + patchData + " upgrade. Please wait...");
-                  Functions.messageOwner("-----");
+                  Functions.messageOwner(Language.get("notice"));
+                  Functions.messageOwner(Language.get("performing-v-upgrade-please-wait", patchData));
+                  Functions.messageOwner(Language.get("notice"));
                   if (continuePatch()) {
                      Class<?> patchClass = Class.forName("net.coreprotect.patch.script.__" + patchData.replaceAll("\\.", "_"));
                      Method patchMethod = patchClass.getDeclaredMethod("patch", Statement.class);
@@ -231,13 +232,13 @@ public class Patch extends CoreProtect {
                      Config.converter_running = false;
                      if (finished == 1) {
                         Patch.processConsumer();
-                        Functions.messageOwner("-----");
-                        Functions.messageOwner("Successfully upgraded to v" + CoreProtect.getInstance().getDescription().getVersion() + ".");
-                        Functions.messageOwner("-----");
+                        Functions.messageOwner(Language.get("notice"));
+                        Functions.messageOwner(Language.get("successfully-upgraded-to-v", CoreProtect.getInstance().getDescription().getVersion()));
+                        Functions.messageOwner(Language.get("notice"));
                      } else if (finished == 0) {
                         Consumer.is_paused = false;
                      } else if (finished == -1) {
-                        Functions.messageOwner("Upgrade interrupted. Will try again on restart.");
+                        Functions.messageOwner(Language.get("upgrade-interrupted-will-try-again-on"));
                      }
                   } catch (Exception e) {
                      e.printStackTrace();

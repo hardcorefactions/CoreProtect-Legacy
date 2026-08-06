@@ -6,6 +6,7 @@ import java.util.List;
 import net.coreprotect.Functions;
 import net.coreprotect.model.BlockInfo;
 import net.coreprotect.model.Config;
+import net.coreprotect.model.Language;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.BlockCommandSender;
@@ -600,8 +601,8 @@ public class CommandHandler implements CommandExecutor {
                         } else {
                            EntityType i_entity = Functions.getEntityType(i);
                            if (i_entity == null) {
-                              player.sendMessage("§3CoreProtect §f- Sorry, \"" + i + "\" is an invalid block name.");
-                              player.sendMessage("§3CoreProtect §f- Please view \"/co help blocks\".");
+                              player.sendMessage(Language.get("sorry-is-an-invalid-block-name", i));
+                              player.sendMessage(Language.get("please-view-co-help-blocks"));
                               return null;
                            }
 
@@ -623,8 +624,8 @@ public class CommandHandler implements CommandExecutor {
                            } else {
                               EntityType i3_entity = Functions.getEntityType(i3);
                               if (i3_entity == null) {
-                                 player.sendMessage("§3CoreProtect §f- Sorry, \"" + i3 + "\" is an invalid block name.");
-                                 player.sendMessage("§3CoreProtect §f- Please view \"/co help blocks\".");
+                                 player.sendMessage(Language.get("sorry-is-an-invalid-block-name", i3));
+                                 player.sendMessage(Language.get("please-view-co-help-blocks"));
                                  return null;
                               }
 
@@ -1065,7 +1066,7 @@ public class CommandHandler implements CommandExecutor {
                      } else if (corecommand.equals("reload")) {
                         ReloadCommand.runCommand(user, permission, args);
                      } else {
-                        user.sendMessage("§3CoreProtect §f- Command \"§3/co " + corecommand + "§f\" not found.");
+                        user.sendMessage(Language.get("command-co-not-found", corecommand));
                      }
                   } else {
                      LookupCommand.runCommand(user, permission, args);
@@ -1077,7 +1078,7 @@ public class CommandHandler implements CommandExecutor {
                RollbackRestoreCommand.runCommand(user, permission, args, 0);
             }
          } else {
-            user.sendMessage("§3CoreProtect §f- Please use \"§3/co <parameters>§f\".");
+            user.sendMessage(Language.get("please-use-co-parameters"));
          }
 
          return true;

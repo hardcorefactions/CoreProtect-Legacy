@@ -7,6 +7,7 @@ import net.coreprotect.consumer.Queue;
 import net.coreprotect.database.Database;
 import net.coreprotect.database.Lookup;
 import net.coreprotect.model.Config;
+import net.coreprotect.model.Language;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -44,7 +45,7 @@ public class HangingListener extends Queue implements Listener {
                   statement.close();
                   connection.close();
                } else {
-                  player.sendMessage("§3CoreProtect §f- Database busy. Please try again later.");
+                  player.sendMessage(Language.get("database-busy-please-try-again-later"));
                }
             } catch (Exception e) {
                e.printStackTrace();

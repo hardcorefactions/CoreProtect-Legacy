@@ -2,6 +2,7 @@ package net.coreprotect.command;
 
 import java.util.List;
 import net.coreprotect.model.Config;
+import net.coreprotect.model.Language;
 import org.bukkit.command.CommandSender;
 
 public class UndoCommand {
@@ -35,7 +36,7 @@ public class UndoCommand {
                RollbackRestoreCommand.runCommand(user, permission, args, time);
             }
          } else {
-            user.sendMessage("§3CoreProtect §f- No previous rollback/restore found.");
+            user.sendMessage(Language.get("no-previous-rollback-restore-found"));
          }
       } catch (Exception e) {
          e.printStackTrace();

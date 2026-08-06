@@ -12,6 +12,7 @@ import net.coreprotect.Functions;
 import net.coreprotect.consumer.Consumer;
 import net.coreprotect.database.Database;
 import net.coreprotect.model.Config;
+import net.coreprotect.model.Language;
 import net.coreprotect.patch.Patch;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -21,19 +22,19 @@ public class PurgeCommand extends Consumer {
       int resultc = args.length;
       final int seconds = CommandHandler.parseTime(args);
       if (Config.converter_running) {
-         player.sendMessage("§3CoreProtect §f- Upgrade in progress. Please try again later.");
+         player.sendMessage(Language.get("upgrade-in-progress-please-try-again"));
       } else if (Config.purge_running) {
-         player.sendMessage("§3CoreProtect §f- Purge in progress. Please try again later.");
+         player.sendMessage(Language.get("purge-in-progress-please-try-again"));
       } else if (!permission) {
-         player.sendMessage("§3CoreProtect §f- You do not have permission to do that.");
+         player.sendMessage(Language.get("you-do-not-have-permission-to"));
       } else if (resultc <= 1) {
-         player.sendMessage("§3CoreProtect §f- Please use \"/co purge t:<time>\".");
+         player.sendMessage(Language.get("please-use-co-purge-t-time"));
       } else if (seconds <= 0) {
-         player.sendMessage("§3CoreProtect §f- Please use \"/co purge t:<time>\".");
+         player.sendMessage(Language.get("please-use-co-purge-t-time"));
       } else if (player instanceof Player && seconds < 2592000) {
-         player.sendMessage("§3CoreProtect §f- You can only purge data older than 30 days.");
+         player.sendMessage(Language.get("you-can-only-purge-data-older"));
       } else if (seconds < 86400) {
-         player.sendMessage("§3CoreProtect §f- You can only purge data older than 24 hours.");
+         player.sendMessage(Language.get("you-can-only-purge-data-older-2"));
       } else {
          boolean optimizeCheckValue = false;
 
@@ -64,12 +65,12 @@ public class PurgeCommand extends Consumer {
                   }
 
                   if (connection == null) {
-                     Functions.messageOwnerAndUser(player, "Database busy. Please try again later.");
+                     Functions.messageOwnerAndUser(player, Language.get("database-busy-please-try-again-later-2"));
                      return;
                   }
 
-                  Functions.messageOwnerAndUser(player, "Data purge started. This may take some time.");
-                  Functions.messageOwnerAndUser(player, "Do not restart your server until completed.");
+                  Functions.messageOwnerAndUser(player, Language.get("data-purge-started-this-may-take"));
+                  Functions.messageOwnerAndUser(player, Language.get("do-not-restart-your-server-until"));
                   Config.purge_running = true;
 
                   while(!PurgeCommand.pause_success) {
@@ -92,7 +93,7 @@ public class PurgeCommand extends Consumer {
                   Integer[] last_version = Patch.getLastVersion(connection);
                   boolean newVersion = Functions.newVersion(last_version, Functions.getPluginVersion());
                   if (newVersion) {
-                     Functions.messageOwnerAndUser(player, "Purge failed. Please try again later.");
+                     Functions.messageOwnerAndUser(player, Language.get("purge-failed-please-try-again-later"));
                      Consumer.is_paused = false;
                      Config.purge_running = false;
                      return;
@@ -117,7 +118,7 @@ public class PurgeCommand extends Consumer {
 
                   for(String table : Config.databaseTables) {
                      String tableName = table.replaceAll("_", " ");
-                     Functions.messageOwnerAndUser(player, "Processing " + tableName + " data...");
+                     Functions.messageOwnerAndUser(player, Language.get("processing-data", tableName));
                      if ((Integer)Config.config.get("use-mysql") == 0) {
                         String columns = "";
                         ResultSet rs = connection.createStatement().executeQuery("SELECT * FROM " + purge_prefix + table);
@@ -152,8 +153,8 @@ public class PurgeCommand extends Consumer {
                         }
 
                         if (error) {
-                           Functions.messageOwnerAndUser(player, "Unable to process " + tableName + " data!");
-                           Functions.messageOwnerAndUser(player, "Attempting to repair. This may take some time...");
+                           Functions.messageOwnerAndUser(player, Language.get("unable-to-process-data", tableName));
+                           Functions.messageOwnerAndUser(player, Language.get("attempting-to-repair-this-may-take"));
 
                            try {
                               query = "DELETE FROM " + purge_prefix + table;
@@ -248,7 +249,7 @@ public class PurgeCommand extends Consumer {
                   }
 
                   if ((Integer)Config.config.get("use-mysql") == 1 && optimizeCheck) {
-                     Functions.messageOwnerAndUser(player, "Optimizing database. Please wait...");
+                     Functions.messageOwnerAndUser(player, Language.get("optimizing-database-please-wait"));
 
                      for(String table : Config.databaseTables) {
                         query = "OPTIMIZE LOCAL TABLE " + Config.prefix + table + "";
@@ -265,7 +266,7 @@ public class PurgeCommand extends Consumer {
                      }
 
                      Config.loadDatabase();
-                     Functions.messageOwnerAndUser(player, "§cPurge failed. Database may be corrupt.");
+                     Functions.messageOwnerAndUser(player, Language.get("purge-failed-database-may-be-corrupt"));
                      Consumer.is_paused = false;
                      Config.purge_running = false;
                      return;
@@ -274,14 +275,14 @@ public class PurgeCommand extends Consumer {
                   if ((Integer)Config.config.get("use-mysql") == 0) {
                      (new File(Config.sqlite)).delete();
                      (new File(Config.sqlite + ".tmp")).renameTo(new File(Config.sqlite));
-                     Functions.messageOwnerAndUser(player, "Indexing database. Please wait...");
+                     Functions.messageOwnerAndUser(player, Language.get("indexing-database-please-wait"));
                   }
 
                   Config.loadDatabase();
-                  Functions.messageOwnerAndUser(player, "Data purge successful.");
+                  Functions.messageOwnerAndUser(player, Language.get("data-purge-successful"));
                   Functions.messageOwnerAndUser(player, NumberFormat.getInstance().format(removed) + " row(s) of data deleted.");
                } catch (Exception e) {
-                  Functions.messageOwnerAndUser(player, "Purge failed. Please try again later.");
+                  Functions.messageOwnerAndUser(player, Language.get("purge-failed-please-try-again-later"));
                   e.printStackTrace();
                }
 

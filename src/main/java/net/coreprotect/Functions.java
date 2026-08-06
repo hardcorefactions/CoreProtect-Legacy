@@ -20,6 +20,7 @@ import net.coreprotect.consumer.Queue;
 import net.coreprotect.database.Database;
 import net.coreprotect.model.BlockInfo;
 import net.coreprotect.model.Config;
+import net.coreprotect.model.Language;
 import net.coreprotect.worldedit.CoreProtectEditSessionEvent;
 import org.bukkit.Art;
 import org.bukkit.DyeColor;
@@ -1007,7 +1008,7 @@ public class Functions extends Queue {
 
          for(Player player : CoreProtect.getInstance().getServer().getOnlinePlayers()) {
             if (player.isOp()) {
-               player.sendMessage("§3CoreProtect §f- " + string);
+               player.sendMessage(Language.get("message", string));
             }
          }
       }
@@ -1019,12 +1020,12 @@ public class Functions extends Queue {
 
       for(Player player : CoreProtect.getInstance().getServer().getOnlinePlayers()) {
          if (player.isOp() && !player.getName().equals(user.getName())) {
-            player.sendMessage("§3CoreProtect §f- " + string);
+            player.sendMessage(Language.get("message", string));
          }
       }
 
       if (user instanceof Player && ((Player)user).isOnline()) {
-         user.sendMessage("§3CoreProtect §f- " + string);
+         user.sendMessage(Language.get("message", string));
       }
 
    }

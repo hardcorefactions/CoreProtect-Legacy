@@ -168,7 +168,7 @@ public class Config extends Queue {
          if (children != null) {
             for(String element : children) {
                String filename = element;
-               if (!element.startsWith(".") && element.endsWith(".yml")) {
+               if (!element.startsWith(".") && element.endsWith(".yml") && !element.equalsIgnoreCase("language.yml")) {
                   try {
                      String key = filename.replaceAll(".yml", "-");
                      if (key.equals("config-")) {

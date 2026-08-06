@@ -9,6 +9,7 @@ import net.coreprotect.Functions;
 import net.coreprotect.database.Database;
 import net.coreprotect.database.Lookup;
 import net.coreprotect.model.Config;
+import net.coreprotect.model.Language;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -53,29 +54,29 @@ public class RollbackRestoreCommand {
          if (count) {
             LookupCommand.runCommand(player, permission, args);
          } else if (Config.converter_running) {
-            player.sendMessage("§3CoreProtect §f- Upgrade in progress. Please try again later.");
+            player.sendMessage(Language.get("upgrade-in-progress-please-try-again"));
          } else if (Config.purge_running) {
-            player.sendMessage("§3CoreProtect §f- Purge in progress. Please try again later.");
+            player.sendMessage(Language.get("purge-in-progress-please-try-again"));
          } else if (arg_wid0 == -1) {
             String world_name = CommandHandler.parseWorldName(args);
-            player.sendMessage("§3CoreProtect §f- World \"" + world_name + "\" not found.");
+            player.sendMessage(Language.get("world-not-found", world_name));
          } else if (preview0 > 0 && !(player instanceof Player)) {
-            player.sendMessage("§3CoreProtect §f- You can only preview0 rollbacks in-game.");
+            player.sendMessage(Language.get("you-can-only-preview0-rollbacks-in"));
          } else if (arg_action.contains(-1)) {
-            player.sendMessage("§3CoreProtect §f- That is not a valid action.");
+            player.sendMessage(Language.get("that-is-not-a-valid-action"));
          } else if (worldedit && arg_radius == null) {
-            player.sendMessage("§3CoreProtect §f- WorldEdit selection not found.");
+            player.sendMessage(Language.get("worldedit-selection-not-found"));
          } else if (arg_radius != null && arg_radius[0] == -1) {
-            player.sendMessage("§3CoreProtect §f- Please enter a valid radius.");
+            player.sendMessage(Language.get("please-enter-a-valid-radius"));
          } else if (Config.active_rollbacks.get(player.getName()) != null) {
-            player.sendMessage("§3CoreProtect §f- A rollback/restore is already in progress.");
+            player.sendMessage(Language.get("a-rollback-restore-is-already-in"));
          } else {
             if (preview0 > 1 && force_seconds <= 0) {
                preview0 = 1;
             }
 
             if (!permission) {
-               player.sendMessage("§3CoreProtect §f- You do not have permission to do that.");
+               player.sendMessage(Language.get("you-do-not-have-permission-to"));
             } else {
                int a = 0;
                if (corecommand.equals("restore") || corecommand.equals("rs") || corecommand.equals("re")) {
@@ -99,9 +100,9 @@ public class RollbackRestoreCommand {
 
                if (arg_users.size() == 0 && arg_wid0 > 0) {
                   if (a == 0) {
-                     player.sendMessage("§3CoreProtect §f- You did not specify a rollback user.");
+                     player.sendMessage(Language.get("you-did-not-specify-a-rollback"));
                   } else {
-                     player.sendMessage("§3CoreProtect §f- You did not specify a restore user.");
+                     player.sendMessage(Language.get("you-did-not-specify-a-restore"));
                   }
 
                   return;
@@ -112,8 +113,8 @@ public class RollbackRestoreCommand {
                   if (arg_radius != null) {
                      int radius_value = arg_radius[0];
                      if (radius_value > max_radius && max_radius > 0) {
-                        player.sendMessage("§3CoreProtect §f- The maximum " + corecommand.toLowerCase() + " radius is " + max_radius + ".");
-                        player.sendMessage("§3CoreProtect §f- Use \"r:#global\" to do a global " + corecommand.toLowerCase() + ".");
+                        player.sendMessage(Language.get("the-maximum-radius-is", corecommand.toLowerCase(), max_radius));
+                        player.sendMessage(Language.get("use-r-global-to-do-a", corecommand.toLowerCase()));
                         return;
                      }
                   }
@@ -121,19 +122,19 @@ public class RollbackRestoreCommand {
                   if (arg_action.size() > 0) {
                      if (arg_action.contains(4)) {
                         if (arg_users.contains("#global") || arg_users.size() == 0) {
-                           player.sendMessage("§3CoreProtect §f- To use that action, please specify a user.");
+                           player.sendMessage(Language.get("to-use-that-action-please-specify"));
                            return;
                         }
 
                         if (preview0 > 0) {
-                           player.sendMessage("§3CoreProtect §f- You can't preview0 container transactions.");
+                           player.sendMessage(Language.get("you-can-t-preview0-container-transactions"));
                            return;
                         }
                      } else if (!arg_action.contains(0) && !arg_action.contains(1) && !arg_action.contains(3)) {
                         if (a == 0) {
-                           player.sendMessage("§3CoreProtect §f- That action can't be used with a rollback.");
+                           player.sendMessage(Language.get("that-action-can-t-be-used"));
                         } else {
-                           player.sendMessage("§3CoreProtect §f- That action can't be used with a restore.");
+                           player.sendMessage(Language.get("that-action-can-t-be-used-2"));
                         }
 
                         return;
@@ -173,12 +174,12 @@ public class RollbackRestoreCommand {
                      }
 
                      if (!valid) {
-                        player.sendMessage("§3CoreProtect §f- Please inspect a valid container first.");
+                        player.sendMessage(Language.get("please-inspect-a-valid-container-first"));
                         return;
                      }
 
                      if (preview0 > 0) {
-                        player.sendMessage("§3CoreProtect §f- You can't preview0 container transactions.");
+                        player.sendMessage(Language.get("you-can-t-preview0-container-transactions"));
                         return;
                      }
 
@@ -267,7 +268,7 @@ public class RollbackRestoreCommand {
                                     }
 
                                     if (!exists) {
-                                       player.sendMessage("§3CoreProtect §f- User \"" + baduser + "\" not found.");
+                                       player.sendMessage(Language.get("user-not-found", baduser));
                                     } else {
                                        boolean restrict_world = false;
                                        if (radius != null) {
@@ -303,13 +304,13 @@ public class RollbackRestoreCommand {
                                        }
 
                                        if (preview == 2) {
-                                          player.sendMessage("§3CoreProtect §f- Cancelling preview...");
+                                          player.sendMessage(Language.get("cancelling-preview"));
                                        } else if (preview == 1) {
-                                          player.sendMessage("§3CoreProtect §f- Preview started on \"" + users + "\".");
+                                          player.sendMessage(Language.get("preview-started-on", users));
                                        } else if (action == 0) {
-                                          player.sendMessage("§3CoreProtect §f- Rollback started on \"" + users + "\".");
+                                          player.sendMessage(Language.get("rollback-started-on", users));
                                        } else {
-                                          player.sendMessage("§3CoreProtect §f- Restore started on \"" + users + "\".");
+                                          player.sendMessage(Language.get("restore-started-on", users));
                                        }
 
                                        if (arg_action.contains(5)) {
@@ -328,7 +329,7 @@ public class RollbackRestoreCommand {
                                     statement.close();
                                     connection.close();
                                  } else {
-                                    player.sendMessage("§3CoreProtect §f- Database busy. Please try again later.");
+                                    player.sendMessage(Language.get("database-busy-please-try-again-later"));
                                  }
                               } catch (Exception e) {
                                  e.printStackTrace();
@@ -348,14 +349,14 @@ public class RollbackRestoreCommand {
                         e.printStackTrace();
                      }
                   } else if (a == 0) {
-                     player.sendMessage("§3CoreProtect §f- Please specify the amount of time to rollback.");
+                     player.sendMessage(Language.get("please-specify-the-amount-of-time-2"));
                   } else {
-                     player.sendMessage("§3CoreProtect §f- Please specify the amount of time to restore.");
+                     player.sendMessage(Language.get("please-specify-the-amount-of-time-3"));
                   }
                } else if (a == 0) {
-                  player.sendMessage("§3CoreProtect §f- You did not specify a rollback radius.");
+                  player.sendMessage(Language.get("you-did-not-specify-a-rollback-2"));
                } else {
-                  player.sendMessage("§3CoreProtect §f- You did not specify a restore radius.");
+                  player.sendMessage(Language.get("you-did-not-specify-a-restore-2"));
                }
             }
 

@@ -22,6 +22,7 @@ import net.coreprotect.consumer.Consumer;
 import net.coreprotect.consumer.Queue;
 import net.coreprotect.model.BlockInfo;
 import net.coreprotect.model.Config;
+import net.coreprotect.model.Language;
 import org.bukkit.Chunk;
 import org.bukkit.Color;
 import org.bukkit.DyeColor;
@@ -129,7 +130,7 @@ public class Lookup extends Queue {
          String a2;
          String rbd;
          String dname;
-         for(rs = statement.executeQuery(query); rs.next(); result = result + "§7" + timeago + "/h ago §f- §3" + rbd + "" + result_user + " §f" + rbd + "" + a2 + " §3" + rbd + "" + dname + "§f.\n") {
+         for(rs = statement.executeQuery(query); rs.next(); result = result + Language.get("lookup-row", timeago, rbd, result_user, a2, dname)) {
             int result_userid = rs.getInt("user");
             int result_action = rs.getInt("action");
             int result_type = rs.getInt("type");
@@ -146,7 +147,7 @@ public class Lookup extends Queue {
             time_since /= (double)60.0F;
             timeago = (new DecimalFormat("0.00")).format(time_since);
             if (!found) {
-               result = "§f----- §3CoreProtect §f----- §7(x" + x + "/y" + y + "/z" + z + ")\n";
+               result = Language.get("lookup-header", x, y, z);
             }
 
             found = true;
@@ -161,7 +162,7 @@ public class Lookup extends Queue {
 
             rbd = "";
             if (result_rolled_back == 1) {
-               rbd = "§m";
+               rbd = Language.get("rolled-back-marker");
             }
 
             dname = "";
@@ -185,17 +186,17 @@ public class Lookup extends Queue {
          rs.close();
          if (found) {
             if (count > limit) {
-               String n = "§f-----\n";
-               n = n + "§fPage " + page + "/" + total_pages + ". View older data by typing \"§3/co l <page>§f\".\n";
+               String n = Language.get("lookup-divider");
+               n = n + Language.get("lookup-page-footer", page, total_pages);
                result = result + n;
             }
          } else if (!found) {
             if (row_max > count && count > 0) {
-               result = "§3CoreProtect §f- §fNo block data found for that page.";
+               result = Language.get("no-block-data-for-page");
             } else {
-               result = "§3CoreProtect §f- §fNo block data found for this location.";
+               result = Language.get("no-block-data-for-location");
                if (!blockName.equals("air") && !blockName.equals("cave_air")) {
-                  result = "§3CoreProtect §f- §fNo block data found at §o" + block.getType().name().toLowerCase() + ".\n";
+                  result = Language.get("no-block-data-at", block.getType().name().toLowerCase());
                }
             }
          }
@@ -301,7 +302,7 @@ public class Lookup extends Queue {
          String a2;
          String rbd;
          String dname;
-         for(rs = statement.executeQuery(query); rs.next(); result = result + "§7" + timeago + "/h ago §f- §3" + rbd + "" + result_user + " §f" + rbd + "" + a2 + " x" + result_amount + " §3" + rbd + "" + dname + "§f.\n") {
+         for(rs = statement.executeQuery(query); rs.next(); result = result + Language.get("lookup-row-container", timeago, rbd, result_user, a2, result_amount, dname)) {
             int result_userid = rs.getInt("user");
             int result_action = rs.getInt("action");
             int result_type = rs.getInt("type");
@@ -319,7 +320,7 @@ public class Lookup extends Queue {
             time_since /= (double)60.0F;
             timeago = (new DecimalFormat("0.00")).format(time_since);
             if (!found) {
-               result = "§f----- §3Container Transactions §f----- §7(x" + x + "/y" + y + "/z" + z + ")\n";
+               result = Language.get("lookup-header-container", x, y, z);
             }
 
             found = true;
@@ -330,7 +331,7 @@ public class Lookup extends Queue {
 
             rbd = "";
             if (result_rolled_back == 1) {
-               rbd = "§m";
+               rbd = Language.get("rolled-back-marker");
             }
 
             dname = Functions.getTypeName(result_type).toLowerCase();
@@ -348,15 +349,15 @@ public class Lookup extends Queue {
          rs.close();
          if (found) {
             if (count > limit) {
-               String n = "§f-----\n";
-               n = n + "§fPage " + page + "/" + total_pages + ". View older data by typing \"§3/co l <page>§f\".\n";
+               String n = Language.get("lookup-divider");
+               n = n + Language.get("lookup-page-footer", page, total_pages);
                result = result + n;
             }
          } else if (!found) {
             if (row_max > count && count > 0) {
-               result = "§3CoreProtect §f- §fNo container transactions found for that page.";
+               result = Language.get("no-container-data-for-page");
             } else {
-               result = "§3CoreProtect §f- §fNo container transactions at this location.";
+               result = Language.get("no-container-data-for-location");
             }
          }
 
@@ -440,7 +441,7 @@ public class Lookup extends Queue {
    public static void finishRollbackRestore(CommandSender user, Location location, List<String> check_users, List<Object> restrict_list, List<Object> exclude_list, List<String> exclude_user_list, List<Integer> action_list, String time_string, int file, int seconds, int item_count, int block_count, int entity_count, int rollback_type, Integer[] radius, boolean verbose, boolean restrict_world, int preview) {
       try {
          if (preview == 2) {
-            user.sendMessage("§3CoreProtect §f- Preview cancelled.");
+            user.sendMessage(Language.get("preview-cancelled"));
             return;
          }
 
@@ -460,49 +461,49 @@ public class Lookup extends Queue {
          }
 
          if (preview > 0) {
-            user.sendMessage("§3CoreProtect §f- Preview completed for \"" + users + "\".");
+            user.sendMessage(Language.get("preview-completed-for", users));
          } else if (rollback_type == 1) {
-            user.sendMessage("§3CoreProtect §f- Restore completed for \"" + users + "\".");
+            user.sendMessage(Language.get("restore-completed-for", users));
          } else if (rollback_type == 0) {
-            user.sendMessage("§3CoreProtect §f- Rollback completed for \"" + users + "\".");
+            user.sendMessage(Language.get("rollback-completed-for", users));
          }
 
          if (preview == 1) {
-            user.sendMessage("§3CoreProtect §f- Time:" + time_string + ".");
+            user.sendMessage(Language.get("time", time_string));
          } else if (rollback_type == 1) {
-            user.sendMessage("§3CoreProtect §f- Restored" + time_string + ".");
+            user.sendMessage(Language.get("restored", time_string));
          } else if (rollback_type == 0) {
-            user.sendMessage("§3CoreProtect §f- Rolled back" + time_string + ".");
+            user.sendMessage(Language.get("rolled-back", time_string));
          }
 
          if (radius != null) {
             int worldedit = radius[7];
             if (worldedit == 0) {
                int rad = radius[0];
-               user.sendMessage("§3CoreProtect §f- Radius: " + rad + " block(s).");
+               user.sendMessage(Language.get("radius-block-s", rad));
             } else {
-               user.sendMessage("§3CoreProtect §f- Radius: #worldedit.");
+               user.sendMessage(Language.get("radius-worldedit"));
             }
          }
 
          if (restrict_world && radius == null && location != null) {
-            user.sendMessage("§3CoreProtect §f- Limited to world: \"" + location.getWorld().getName() + "\".");
+            user.sendMessage(Language.get("limited-to-world", location.getWorld().getName()));
          }
 
          if (action_list.contains(4)) {
             if (action_list.contains(0)) {
-               user.sendMessage("§3CoreProtect §f- Limited to action: \"-container\".");
+               user.sendMessage(Language.get("limited-to-action-container"));
             } else if (action_list.contains(1)) {
-               user.sendMessage("§3CoreProtect §f- Limited to action: \"+container\".");
+               user.sendMessage(Language.get("limited-to-action-container-2"));
             }
          } else if (action_list.contains(0) && action_list.contains(1)) {
-            user.sendMessage("§3CoreProtect §f- Limited to action: \"block-change\".");
+            user.sendMessage(Language.get("limited-to-action-block-change"));
          } else if (action_list.contains(0)) {
-            user.sendMessage("§3CoreProtect §f- Limited to action: \"block-break\".");
+            user.sendMessage(Language.get("limited-to-action-block-break"));
          } else if (action_list.contains(1)) {
-            user.sendMessage("§3CoreProtect §f- Limited to action: \"block-place\".");
+            user.sendMessage(Language.get("limited-to-action-block-place"));
          } else if (action_list.contains(3)) {
-            user.sendMessage("§3CoreProtect §f- Limited to action: \"entity-kill\".");
+            user.sendMessage(Language.get("limited-to-action-entity-kill"));
          }
 
          if (restrict_list.size() > 0) {
@@ -526,7 +527,7 @@ public class Lookup extends Queue {
                ++rc;
             }
 
-            user.sendMessage("§3CoreProtect §f- Limited to block type(s): " + r + ".");
+            user.sendMessage(Language.get("limited-to-block-type-s", r));
          }
 
          if (exclude_list.size() > 0) {
@@ -550,7 +551,7 @@ public class Lookup extends Queue {
                ++ec;
             }
 
-            user.sendMessage("§3CoreProtect §f- Excluded block type(s): " + e + ".");
+            user.sendMessage(Language.get("excluded-block-type-s", e));
          }
 
          if (exclude_user_list.size() > 0) {
@@ -567,40 +568,40 @@ public class Lookup extends Queue {
                ++ec;
             }
 
-            user.sendMessage("§3CoreProtect §f- Excluded user(s): " + e + ".");
+            user.sendMessage(Language.get("excluded-user-s", e));
          }
 
          if (action_list.contains(5)) {
-            user.sendMessage("§3CoreProtect §f- Approx. " + block_count + " item(s) changed.");
+            user.sendMessage(Language.get("approx-item-s-changed", block_count));
          } else if (preview == 0) {
             if (item_count > 0) {
-               user.sendMessage("§3CoreProtect §f- Approx. " + item_count + " item(s) changed.");
+               user.sendMessage(Language.get("approx-item-s-changed", item_count));
             }
 
             if (entity_count > 0) {
                if (entity_count == 1) {
-                  user.sendMessage("§3CoreProtect §f- Approx. " + entity_count + " entity changed.");
+                  user.sendMessage(Language.get("approx-entity-changed", entity_count));
                } else {
-                  user.sendMessage("§3CoreProtect §f- Approx. " + entity_count + " entities changed.");
+                  user.sendMessage(Language.get("approx-entities-changed", entity_count));
                }
             }
 
-            user.sendMessage("§3CoreProtect §f- Approx. " + block_count + " block(s) changed.");
+            user.sendMessage(Language.get("approx-block-s-changed", block_count));
          } else if (preview > 0) {
-            user.sendMessage("§3CoreProtect §f- Approx. " + block_count + " block(s) to change.");
+            user.sendMessage(Language.get("approx-block-s-to-change", block_count));
          }
 
          if (verbose && preview == 0 && file > -1) {
-            user.sendMessage("§3CoreProtect §f- Modified " + file + " chunk(s).");
+            user.sendMessage(Language.get("modified-chunk-s", file));
          }
 
          if (preview == 0) {
-            user.sendMessage("§3CoreProtect §f- Time taken: " + seconds + " second(s).");
+            user.sendMessage(Language.get("time-taken-second-s", seconds));
          }
 
          user.sendMessage("-----");
          if (preview > 0) {
-            user.sendMessage("§3CoreProtect §f- Please select: \"/co apply\" or \"/co cancel\".");
+            user.sendMessage(Language.get("please-select-co-apply-or-co"));
          }
       } catch (Exception e) {
          e.printStackTrace();
@@ -645,7 +646,7 @@ public class Lookup extends Queue {
          String a2;
          String rbd;
          String dname;
-         for(rs = statement.executeQuery(query); rs.next(); result = result + "§7" + timeago + "/h ago §f- §3" + rbd + "" + result_user + " §f" + rbd + "" + a2 + " §3" + rbd + "" + dname + "§f.\n") {
+         for(rs = statement.executeQuery(query); rs.next(); result = result + Language.get("lookup-row", timeago, rbd, result_user, a2, dname)) {
             int result_userid = rs.getInt("user");
             int result_action = rs.getInt("action");
             int result_type = rs.getInt("type");
@@ -662,7 +663,7 @@ public class Lookup extends Queue {
             time_since /= (double)60.0F;
             timeago = (new DecimalFormat("0.00")).format(time_since);
             if (!found) {
-               result = "§f----- §3Player Interactions §f----- §7(x" + x + "/y" + y + "/z" + z + ")\n";
+               result = Language.get("lookup-header-interaction", x, y, z);
             }
 
             found = true;
@@ -675,7 +676,7 @@ public class Lookup extends Queue {
 
             rbd = "";
             if (result_rolled_back == 1) {
-               rbd = "§m";
+               rbd = Language.get("rolled-back-marker");
             }
 
             dname = Functions.getTypeName(result_type).toLowerCase();
@@ -693,15 +694,15 @@ public class Lookup extends Queue {
          rs.close();
          if (found) {
             if (count > limit) {
-               String n = "§f-----\n";
-               n = n + "§fPage " + page + "/" + total_pages + ". View older data by typing \"§3/co l <page>§f\".\n";
+               String n = Language.get("lookup-divider");
+               n = n + Language.get("lookup-page-footer", page, total_pages);
                result = result + n;
             }
          } else if (!found) {
             if (row_max > count && count > 0) {
-               result = "§3CoreProtect §f- §fNo player interactions found for that page.";
+               result = Language.get("no-interaction-data-for-page");
             } else {
-               result = "§3CoreProtect §f- §fNo player interactions found for this location.";
+               result = Language.get("no-interaction-data-for-location");
             }
          }
 
@@ -1096,7 +1097,7 @@ public class Lookup extends Queue {
             if (user != null) {
                user_string = user.getName();
                if (verbose && preview == 0) {
-                  user.sendMessage("§3CoreProtect §f- Found " + chunk_list.size() + " chunk(s) to modify.");
+                  user.sendMessage(Language.get("found-chunk-s-to-modify", chunk_list.size()));
                }
             }
 
@@ -1642,9 +1643,9 @@ public class Lookup extends Queue {
 
                                     location.setY((double)check_y);
                                     player.teleport(location);
-                                    player.sendMessage("§3CoreProtect §f- Teleported you to safety.");
+                                    player.sendMessage(Language.get("teleported-you-to-safety"));
                                     if (place_safe) {
-                                       player.sendMessage("§3CoreProtect §f- Placed a dirt block under you.");
+                                       player.sendMessage(Language.get("placed-a-dirt-block-under-you"));
                                     }
                                  }
                               }
@@ -1701,7 +1702,7 @@ public class Lookup extends Queue {
                entity_count = rollback_hash_data[2];
                Config.rollback_hash.put(final_user_string, new int[]{item_count, block_count, entity_count, 0});
                if (verbose && user != null && preview == 0) {
-                  user.sendMessage("§3CoreProtect §f- Modified " + file + "/" + chunk_list.size() + " chunk(s).");
+                  user.sendMessage(Language.get("modified-chunk-s-2", file, chunk_list.size()));
                }
             }
 

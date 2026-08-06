@@ -14,6 +14,7 @@ import net.coreprotect.database.Database;
 import net.coreprotect.database.Lookup;
 import net.coreprotect.model.BlockInfo;
 import net.coreprotect.model.Config;
+import net.coreprotect.model.Language;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -159,12 +160,12 @@ public class PlayerListener extends Queue implements Listener {
                   public void run() {
                      try {
                         if (Config.converter_running) {
-                           player.sendMessage("§3CoreProtect §f- Upgrade in progress. Please try again later.");
+                           player.sendMessage(Language.get("upgrade-in-progress-please-try-again"));
                            return;
                         }
 
                         if (Config.purge_running) {
-                           player.sendMessage("§3CoreProtect §f- Purge in progress. Please try again later.");
+                           player.sendMessage(Language.get("purge-in-progress-please-try-again"));
                            return;
                         }
 
@@ -184,7 +185,7 @@ public class PlayerListener extends Queue implements Listener {
                            statement.close();
                            connection.close();
                         } else {
-                           player.sendMessage("§3CoreProtect §f- Database busy. Please try again later.");
+                           player.sendMessage(Language.get("database-busy-please-try-again-later"));
                         }
                      } catch (Exception e) {
                         e.printStackTrace();
@@ -332,12 +333,12 @@ public class PlayerListener extends Queue implements Listener {
                public void run() {
                   try {
                      if (Config.converter_running) {
-                        player.sendMessage("§3CoreProtect §f- Upgrade in progress. Please try again later.");
+                        player.sendMessage(Language.get("upgrade-in-progress-please-try-again"));
                         return;
                      }
 
                      if (Config.purge_running) {
-                        player.sendMessage("§3CoreProtect §f- Purge in progress. Please try again later.");
+                        player.sendMessage(Language.get("purge-in-progress-please-try-again"));
                         return;
                      }
 
@@ -356,7 +357,7 @@ public class PlayerListener extends Queue implements Listener {
                         statement.close();
                         connection.close();
                      } else {
-                        player.sendMessage("§3CoreProtect §f- Database busy. Please try again later.");
+                        player.sendMessage(Language.get("database-busy-please-try-again-later"));
                      }
                   } catch (Exception e) {
                      e.printStackTrace();
@@ -382,12 +383,12 @@ public class PlayerListener extends Queue implements Listener {
                      public void run() {
                         try {
                            if (Config.converter_running) {
-                              player.sendMessage("§3CoreProtect §f- Upgrade in progress. Please try again later.");
+                              player.sendMessage(Language.get("upgrade-in-progress-please-try-again"));
                               return;
                            }
 
                            if (Config.purge_running) {
-                              player.sendMessage("§3CoreProtect §f- Purge in progress. Please try again later.");
+                              player.sendMessage(Language.get("purge-in-progress-please-try-again"));
                               return;
                            }
 
@@ -422,7 +423,7 @@ public class PlayerListener extends Queue implements Listener {
                               statement.close();
                               connection.close();
                            } else {
-                              player.sendMessage("§3CoreProtect §f- Database busy. Please try again later.");
+                              player.sendMessage(Language.get("database-busy-please-try-again-later"));
                            }
                         } catch (Exception e) {
                            e.printStackTrace();
@@ -451,12 +452,12 @@ public class PlayerListener extends Queue implements Listener {
                      public void run() {
                         try {
                            if (Config.converter_running) {
-                              player.sendMessage("§3CoreProtect §f- Upgrade in progress. Please try again later.");
+                              player.sendMessage(Language.get("upgrade-in-progress-please-try-again"));
                               return;
                            }
 
                            if (Config.purge_running) {
-                              player.sendMessage("§3CoreProtect §f- Purge in progress. Please try again later.");
+                              player.sendMessage(Language.get("purge-in-progress-please-try-again"));
                               return;
                            }
 
@@ -475,7 +476,7 @@ public class PlayerListener extends Queue implements Listener {
                               statement.close();
                               connection.close();
                            } else {
-                              player.sendMessage("§3CoreProtect §f- Database busy. Please try again later.");
+                              player.sendMessage(Language.get("database-busy-please-try-again-later"));
                            }
                         } catch (Exception e) {
                            e.printStackTrace();
@@ -515,12 +516,12 @@ public class PlayerListener extends Queue implements Listener {
                      public void run() {
                         try {
                            if (Config.converter_running) {
-                              player.sendMessage("§3CoreProtect §f- Upgrade in progress. Please try again later.");
+                              player.sendMessage(Language.get("upgrade-in-progress-please-try-again"));
                               return;
                            }
 
                            if (Config.purge_running) {
-                              player.sendMessage("§3CoreProtect §f- Purge in progress. Please try again later.");
+                              player.sendMessage(Language.get("purge-in-progress-please-try-again"));
                               return;
                            }
 
@@ -550,7 +551,7 @@ public class PlayerListener extends Queue implements Listener {
                               statement.close();
                               connection.close();
                            } else {
-                              player.sendMessage("§3CoreProtect §f- Database busy. Please try again later.");
+                              player.sendMessage(Language.get("database-busy-please-try-again-later"));
                            }
                         } catch (Exception e) {
                            e.printStackTrace();

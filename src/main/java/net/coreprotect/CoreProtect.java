@@ -11,6 +11,7 @@ import net.coreprotect.listener.HangingListener;
 import net.coreprotect.listener.PlayerListener;
 import net.coreprotect.listener.WorldListener;
 import net.coreprotect.model.Config;
+import net.coreprotect.model.Language;
 import net.coreprotect.thread.CacheCleanUp;
 import net.coreprotect.thread.CheckUpdate;
 import org.bukkit.plugin.PluginDescriptionFile;
@@ -54,6 +55,7 @@ public class CoreProtect extends JavaPlugin {
 
    public void onEnable() {
       instance = this;
+      Language.load();
       PluginDescriptionFile pluginDescription = this.getDescription();
       boolean start = performVersionChecks();
       if (start) {
@@ -125,9 +127,9 @@ public class CoreProtect extends JavaPlugin {
             int time = (int)(System.currentTimeMillis() / 1000L);
             if (time > time_start && !message_shown) {
                if (Config.converter_running) {
-                  Functions.messageOwner("Finishing up data conversion. Please wait...");
+                  Functions.messageOwner(Language.get("finishing-up-data-conversion-please-wait"));
                } else {
-                  Functions.messageOwner("Finishing up data logging. Please wait...");
+                  Functions.messageOwner(Language.get("finishing-up-data-logging-please-wait"));
                }
 
                message_shown = true;

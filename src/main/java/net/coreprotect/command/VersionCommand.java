@@ -2,6 +2,7 @@ package net.coreprotect.command;
 
 import net.coreprotect.CoreProtect;
 import net.coreprotect.model.Config;
+import net.coreprotect.model.Language;
 import net.coreprotect.thread.CheckUpdate;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.PluginDescriptionFile;
@@ -17,15 +18,15 @@ public class VersionCommand {
          }
       }
 
-      player.sendMessage("§f----- §3CoreProtect §f-----");
-      player.sendMessage("§3Version: §fCoreProtect v" + pdfFile.getVersion() + "." + versionCheck);
+      player.sendMessage(Language.get("coreprotect"));
+      player.sendMessage(Language.get("version-coreprotect-v", pdfFile.getVersion(), versionCheck));
       if ((Integer)Config.config.get("use-mysql") == 1) {
-         player.sendMessage("§3Storage: §fUsing MySQL.");
+         player.sendMessage(Language.get("storage-using-mysql"));
       } else {
-         player.sendMessage("§3Storage: §fUsing SQLite.");
+         player.sendMessage(Language.get("storage-using-sqlite"));
       }
 
-      player.sendMessage("§3Download: §fhttp://coreprotect.net/download/");
-      player.sendMessage("§3Sponsor: §fhttp://hosthorde.com");
+      player.sendMessage(Language.get("download-http-coreprotect-net-download"));
+      player.sendMessage(Language.get("sponsor-http-hosthorde-com"));
    }
 }

@@ -1,6 +1,7 @@
 package net.coreprotect.command;
 
 import net.coreprotect.model.Config;
+import net.coreprotect.model.Language;
 import org.bukkit.command.CommandSender;
 
 public class InspectCommand {
@@ -22,19 +23,19 @@ public class InspectCommand {
 
          if (!(Boolean)Config.inspecting.get(player.getName())) {
             if (command == 0) {
-               player.sendMessage("§3CoreProtect §f- Inspector already disabled.");
+               player.sendMessage(Language.get("inspector-already-disabled"));
             } else {
-               player.sendMessage("§3CoreProtect §f- Inspector now enabled.");
+               player.sendMessage(Language.get("inspector-now-enabled"));
                Config.inspecting.put(player.getName(), true);
             }
          } else if (command == 1) {
-            player.sendMessage("§3CoreProtect §f- Inspector already enabled.");
+            player.sendMessage(Language.get("inspector-already-enabled"));
          } else {
-            player.sendMessage("§3CoreProtect §f- Inspector now disabled.");
+            player.sendMessage(Language.get("inspector-now-disabled"));
             Config.inspecting.put(player.getName(), false);
          }
       } else {
-         player.sendMessage("§3CoreProtect §f- You do not have permission to do that.");
+         player.sendMessage(Language.get("you-do-not-have-permission-to"));
       }
 
    }

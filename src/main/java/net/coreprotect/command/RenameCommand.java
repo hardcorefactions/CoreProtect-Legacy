@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import net.coreprotect.database.Database;
 import net.coreprotect.model.Config;
+import net.coreprotect.model.Language;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -13,24 +14,24 @@ public class RenameCommand extends Config {
    protected static void runCommand(final CommandSender player, boolean permission, String[] args) {
       int resultc = args.length;
       if (Config.converter_running) {
-         player.sendMessage("§3CoreProtect §f- Upgrade in progress. Please try again later.");
+         player.sendMessage(Language.get("upgrade-in-progress-please-try-again"));
       } else if (Config.purge_running) {
-         player.sendMessage("§3CoreProtect §f- Purge in progress. Please try again later.");
+         player.sendMessage(Language.get("purge-in-progress-please-try-again"));
       } else {
          if (permission) {
             if (player instanceof Player) {
-               player.sendMessage("§3CoreProtect §f- This command must be used via the console.");
+               player.sendMessage(Language.get("this-command-must-be-used-via"));
                return;
             }
 
             if (resultc <= 2) {
-               player.sendMessage("§3CoreProtect §f- Please use \"/co rename <args>\".");
+               player.sendMessage(Language.get("please-use-co-rename-args"));
                return;
             }
 
             String rename_command = args[1].toLowerCase();
             if (!rename_command.equals("world")) {
-               player.sendMessage("§3CoreProtect §f- Please use \"/co rename <args>\".");
+               player.sendMessage(Language.get("please-use-co-rename-args"));
                return;
             }
 
@@ -43,7 +44,7 @@ public class RenameCommand extends Config {
                      try {
                         Connection connection = Database.getConnection(false);
                         if (connection == null) {
-                           player.sendMessage("§3CoreProtect §f- Database busy. Please try again later.");
+                           player.sendMessage(Language.get("database-busy-please-try-again-later"));
                            return;
                         }
 
@@ -57,7 +58,7 @@ public class RenameCommand extends Config {
 
                         rs.close();
                         if (wid == -1) {
-                           player.sendMessage("§3CoreProtect §f- World \"" + old_world + "\" not found.");
+                           player.sendMessage(Language.get("world-not-found", old_world));
                            connection.close();
                            return;
                         }
@@ -68,7 +69,7 @@ public class RenameCommand extends Config {
                         Statement statement = connection.createStatement();
                         statement.close();
                         connection.close();
-                        player.sendMessage("§3CoreProtect §f- World \"" + old_world + "\" renamed to \"" + new_world + "\".");
+                        player.sendMessage(Language.get("world-renamed-to", old_world, new_world));
                      } catch (Exception e) {
                         e.printStackTrace();
                      }
@@ -80,10 +81,10 @@ public class RenameCommand extends Config {
                Thread thread = new Thread(runnable);
                thread.start();
             } else {
-               player.sendMessage("§3CoreProtect §f- Please use \"/co rename world <old> <new>\".");
+               player.sendMessage(Language.get("please-use-co-rename-world-old"));
             }
          } else {
-            player.sendMessage("§3CoreProtect §f- You do not have permission to do that.");
+            player.sendMessage(Language.get("you-do-not-have-permission-to"));
          }
 
       }

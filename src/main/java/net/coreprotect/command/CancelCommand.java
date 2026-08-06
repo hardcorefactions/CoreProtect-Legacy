@@ -2,6 +2,7 @@ package net.coreprotect.command;
 
 import java.util.List;
 import net.coreprotect.model.Config;
+import net.coreprotect.model.Language;
 import org.bukkit.command.CommandSender;
 
 public class CancelCommand {
@@ -21,13 +22,13 @@ public class CancelCommand {
             }
 
             if (!valid) {
-               user.sendMessage("§3CoreProtect §f- No pending rollback/restore found.");
+               user.sendMessage(Language.get("no-pending-rollback-restore-found"));
             } else {
                Config.last_rollback.remove(user.getName());
                RollbackRestoreCommand.runCommand(user, permission, args, time);
             }
          } else {
-            user.sendMessage("§3CoreProtect §f- No pending rollback/restore found.");
+            user.sendMessage(Language.get("no-pending-rollback-restore-found"));
          }
       } catch (Exception e) {
          e.printStackTrace();

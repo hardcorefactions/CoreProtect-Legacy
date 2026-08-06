@@ -11,6 +11,7 @@ import net.coreprotect.Functions;
 import net.coreprotect.database.Database;
 import net.coreprotect.database.Lookup;
 import net.coreprotect.model.Config;
+import net.coreprotect.model.Language;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -53,7 +54,7 @@ public class LookupCommand {
 
          if (arg_wid0 == -1) {
             String world_name = CommandHandler.parseWorldName(args);
-            player.sendMessage("§3CoreProtect §f- World \"" + world_name + "\" not found.");
+            player.sendMessage(Language.get("world-not-found", world_name));
          } else {
             int type0 = 0;
             if (Config.lookup_type.get(player.getName()) != null) {
@@ -94,17 +95,17 @@ public class LookupCommand {
 
             if (permission || page_lookup && player.hasPermission("coreprotect.inspect")) {
                if (Config.converter_running) {
-                  player.sendMessage("§3CoreProtect §f- Upgrade in progress. Please try again later.");
+                  player.sendMessage(Language.get("upgrade-in-progress-please-try-again"));
                } else if (Config.purge_running) {
-                  player.sendMessage("§3CoreProtect §f- Purge in progress. Please try again later.");
+                  player.sendMessage(Language.get("purge-in-progress-please-try-again"));
                } else if (resultc < 2) {
-                  player.sendMessage("§3CoreProtect §f- Please use \"/co l <params>\".");
+                  player.sendMessage(Language.get("please-use-co-l-params"));
                } else if (arg_action0.contains(-1)) {
-                  player.sendMessage("§3CoreProtect §f- That is not a valid action.");
+                  player.sendMessage(Language.get("that-is-not-a-valid-action"));
                } else if (worldedit && arg_radius == null) {
-                  player.sendMessage("§3CoreProtect §f- WorldEdit selection not found.");
+                  player.sendMessage(Language.get("worldedit-selection-not-found"));
                } else if (arg_radius != null && arg_radius[0] == -1) {
-                  player.sendMessage("§3CoreProtect §f- Please enter a valid radius.");
+                  player.sendMessage(Language.get("please-enter-a-valid-radius"));
                } else {
                   boolean allPermission = false;
                   if (player.isOp()) {
@@ -113,59 +114,59 @@ public class LookupCommand {
 
                   if (!allPermission) {
                      if (!page_lookup && (arg_action0.size() == 0 || arg_action0.contains(0) || arg_action0.contains(1)) && !player.hasPermission("coreprotect.lookup.block")) {
-                        player.sendMessage("§3CoreProtect §f- You do not have permission to do that.");
+                        player.sendMessage(Language.get("you-do-not-have-permission-to"));
                         return;
                      }
 
                      if (arg_action0.contains(2) && !player.hasPermission("coreprotect.lookup.click")) {
-                        player.sendMessage("§3CoreProtect §f- You do not have permission to do that.");
+                        player.sendMessage(Language.get("you-do-not-have-permission-to"));
                         return;
                      }
 
                      if (arg_action0.contains(3) && !player.hasPermission("coreprotect.lookup.kill")) {
-                        player.sendMessage("§3CoreProtect §f- You do not have permission to do that.");
+                        player.sendMessage(Language.get("you-do-not-have-permission-to"));
                         return;
                      }
 
                      if (arg_action0.contains(4) && !player.hasPermission("coreprotect.lookup.container")) {
-                        player.sendMessage("§3CoreProtect §f- You do not have permission to do that.");
+                        player.sendMessage(Language.get("you-do-not-have-permission-to"));
                         return;
                      }
 
                      if (arg_action0.contains(6) && !player.hasPermission("coreprotect.lookup.chat")) {
-                        player.sendMessage("§3CoreProtect §f- You do not have permission to do that.");
+                        player.sendMessage(Language.get("you-do-not-have-permission-to"));
                         return;
                      }
 
                      if (arg_action0.contains(7) && !player.hasPermission("coreprotect.lookup.command")) {
-                        player.sendMessage("§3CoreProtect §f- You do not have permission to do that.");
+                        player.sendMessage(Language.get("you-do-not-have-permission-to"));
                         return;
                      }
 
                      if (arg_action0.contains(8) && !player.hasPermission("coreprotect.lookup.session")) {
-                        player.sendMessage("§3CoreProtect §f- You do not have permission to do that.");
+                        player.sendMessage(Language.get("you-do-not-have-permission-to"));
                         return;
                      }
 
                      if (arg_action0.contains(9) && !player.hasPermission("coreprotect.lookup.username")) {
-                        player.sendMessage("§3CoreProtect §f- You do not have permission to do that.");
+                        player.sendMessage(Language.get("you-do-not-have-permission-to"));
                         return;
                      }
                   }
 
                   if (arg_action0.contains(6) || arg_action0.contains(7) || arg_action0.contains(8) || arg_action0.contains(9)) {
                      if (!arg_action0.contains(8) && (arg_radius != null || arg_wid0 > 0 || worldedit)) {
-                        player.sendMessage("§3CoreProtect §f- \"r:\" can't be used with that action.");
+                        player.sendMessage(Language.get("r-can-t-be-used-with"));
                         return;
                      }
 
                      if (arg_blocks0.size() > 0) {
-                        player.sendMessage("§3CoreProtect §f- \"b:\" can't be used with that action.");
+                        player.sendMessage(Language.get("b-can-t-be-used-with"));
                         return;
                      }
 
                      if (arg_exclude0.size() > 0) {
-                        player.sendMessage("§3CoreProtect §f- \"e:\" can't be used with that action.");
+                        player.sendMessage(Language.get("e-can-t-be-used-with"));
                         return;
                      }
                   }
@@ -259,7 +260,7 @@ public class LookupCommand {
                                     statement.close();
                                     connection.close();
                                  } else {
-                                    player.sendMessage("§3CoreProtect §f- Database busy. Please try again later.");
+                                    player.sendMessage(Language.get("database-busy-please-try-again-later"));
                                  }
                               } catch (Exception e) {
                                  e.printStackTrace();
@@ -281,18 +282,18 @@ public class LookupCommand {
                                  if (b > 0) {
                                     String bname = Functions.block_name_lookup(b);
                                     if (bname.length() > 0) {
-                                       player.sendMessage("§3CoreProtect §f- The name of block ID #" + b + " is \"" + bname + "\".");
+                                       player.sendMessage(Language.get("the-name-of-block-id-is", b, bname));
                                     } else {
-                                       player.sendMessage("§3CoreProtect §f- No data found for block ID #" + b + ".");
+                                       player.sendMessage(Language.get("no-data-found-for-block-id", b));
                                     }
                                  } else {
-                                    player.sendMessage("§3CoreProtect §f- Please use \"/co lookup type <ID>\".");
+                                    player.sendMessage(Language.get("please-use-co-lookup-type-id"));
                                  }
                               } else {
-                                 player.sendMessage("§3CoreProtect §f- Please use \"/co lookup type <ID>\".");
+                                 player.sendMessage(Language.get("please-use-co-lookup-type-id"));
                               }
                            } else {
-                              player.sendMessage("§3CoreProtect §f- Please use \"/co l <params>\".");
+                              player.sendMessage(Language.get("please-use-co-l-params"));
                            }
                         } else {
                            boolean default_re = true;
@@ -341,8 +342,8 @@ public class LookupCommand {
                               if (arg_radius != null) {
                                  int radius_value = arg_radius[0];
                                  if (radius_value > max_radius && max_radius > 0) {
-                                    player.sendMessage("§3CoreProtect §f- The maximum lookup radius is " + max_radius + ".");
-                                    player.sendMessage("§3CoreProtect §f- Don't specify a radius to do a global lookup.");
+                                    player.sendMessage(Language.get("the-maximum-lookup-radius-is", max_radius));
+                                    player.sendMessage(Language.get("don-t-specify-a-radius-to"));
                                     return;
                                  }
                               }
@@ -401,13 +402,13 @@ public class LookupCommand {
                                  }
 
                                  if (rollbackusers.size() == 1 && rollbackusers.contains("#global") && arg_action0.contains(9)) {
-                                    player.sendMessage("§3CoreProtect §f- Please use \"/co l a:username u:<user>\".");
+                                    player.sendMessage(Language.get("please-use-co-l-a-username"));
                                     return;
                                  }
 
                                  if (rollbackusers.contains("#container")) {
                                     if (arg_action0.contains(6) || arg_action0.contains(7) || arg_action0.contains(8) || arg_action0.contains(9)) {
-                                       player.sendMessage("§3CoreProtect §f- \"#container\" is an invalid username.");
+                                       player.sendMessage(Language.get("container-is-an-invalid-username"));
                                        return;
                                     }
 
@@ -422,12 +423,12 @@ public class LookupCommand {
                                     }
 
                                     if (!valid) {
-                                       player.sendMessage("§3CoreProtect §f- Please inspect a valid container first.");
+                                       player.sendMessage(Language.get("please-inspect-a-valid-container-first"));
                                        return;
                                     }
 
                                     if (!player.hasPermission("coreprotect.lookup.container") && !allPermission) {
-                                       player.sendMessage("§3CoreProtect §f- You do not have permission to do that.");
+                                       player.sendMessage(Language.get("you-do-not-have-permission-to"));
                                        return;
                                     }
 
@@ -473,7 +474,7 @@ public class LookupCommand {
                               final Integer[] radius = arg_radius;
 
                               try {
-                                 player.sendMessage("§3CoreProtect §f- Lookup searching. Please wait...");
+                                 player.sendMessage(Language.get("lookup-searching-please-wait"));
 
                                  class BasicThread2 implements Runnable {
                                     public void run() {
@@ -530,7 +531,7 @@ public class LookupCommand {
                                              }
 
                                              if (!exists) {
-                                                player.sendMessage("§3CoreProtect §f- User \"" + baduser + "\" not found.");
+                                                player.sendMessage(Language.get("user-not-found", baduser));
                                              } else {
                                                 List<String> user_list = new ArrayList();
                                                 if (!arg_action.contains(9)) {
@@ -572,12 +573,12 @@ public class LookupCommand {
 
                                                 if (count) {
                                                    String row_format = NumberFormat.getInstance().format((long)rows);
-                                                   player.sendMessage("§3CoreProtect §f- " + row_format + " row(s) found.");
+                                                   player.sendMessage(Language.get("row-s-found", row_format));
                                                 } else if (page_start >= rows) {
                                                    if (rows > 0) {
-                                                      player.sendMessage("§3CoreProtect §f- No results found for that page.");
+                                                      player.sendMessage(Language.get("no-results-found-for-that-page"));
                                                    } else {
-                                                      player.sendMessage("§3CoreProtect §f- No results found.");
+                                                      player.sendMessage(Language.get("no-results-found"));
                                                    }
                                                 } else {
                                                    String arrows = "                      ";
@@ -596,7 +597,7 @@ public class LookupCommand {
 
                                                    arrows = "";
                                                    List<String[]> lookup_list = Lookup.performPartialLookup(statement, player, uuid_list, user_list, arg_blocks, arg_exclude, arg_exclude_users, arg_action, location, radius, stime, page_start, re, restrict_world, true);
-                                                   player.sendMessage("§f----- §3CoreProtect Lookup Results §f-----" + arrows);
+                                                   player.sendMessage(Language.get("coreprotect-lookup-results", arrows));
                                                    if (!arg_action.contains(6) && !arg_action.contains(7)) {
                                                       if (arg_action.contains(8)) {
                                                          for(String[] data : lookup_list) {
@@ -620,8 +621,8 @@ public class LookupCommand {
                                                             double time_length = (double)timeago.replaceAll("[^0-9]", "").length() * (double)1.5F;
                                                             int padding = (int)(time_length + (double)12.5F);
                                                             String left_padding = StringUtils.leftPad("", padding, ' ');
-                                                            player.sendMessage("§7" + timeago + "/h ago §f- §3" + dplayer + " §flogged §3" + action_string + "§f.");
-                                                            player.sendMessage("§f" + left_padding + "§7^ §o(x" + x + "/y" + y + "/z" + z + "/" + world + ")");
+                                                            player.sendMessage(Language.get("h-ago-logged", timeago, dplayer, action_string));
+                                                            player.sendMessage(Language.get("x-y-z", left_padding, x, y, z, world));
                                                          }
                                                       } else if (arg_action.contains(9)) {
                                                          for(String[] data : lookup_list) {
@@ -632,7 +633,7 @@ public class LookupCommand {
                                                             time_since /= (double)60.0F;
                                                             time_since /= (double)60.0F;
                                                             String timeago = (new DecimalFormat("0.00")).format(time_since);
-                                                            player.sendMessage("§7" + timeago + "/h ago §f- §3" + user + " §flogged in as §3" + username + "§f.");
+                                                            player.sendMessage(Language.get("h-ago-logged-in-as", timeago, user, username));
                                                          }
                                                       } else {
                                                          for(String[] data : lookup_list) {
@@ -640,7 +641,7 @@ public class LookupCommand {
                                                             int drb = Integer.parseInt(data[8]);
                                                             String rbd = "";
                                                             if (drb == 1) {
-                                                               rbd = "§m";
+                                                               rbd = Language.get("rolled-back-marker");
                                                             }
 
                                                             int amount = 0;
@@ -654,7 +655,7 @@ public class LookupCommand {
                                                             int daction = Integer.parseInt(data[7]);
                                                             int wid = Integer.parseInt(data[9]);
                                                             String a = "placed";
-                                                            String tag = "§f-";
+                                                            String tag = Language.get("lookup-entry-tag");
                                                             if (arg_action.contains(4) || arg_action.contains(5)) {
                                                                amount = Integer.parseInt(data[10]);
                                                                string_amount = "x" + amount + " ";
@@ -705,8 +706,8 @@ public class LookupCommand {
                                                                dname = block_name_split[1];
                                                             }
 
-                                                            player.sendMessage("§7" + timeago + "/h ago " + tag + " §3" + rbd + "" + dplayer + " §f" + rbd + "" + a + " " + string_amount + "§3" + rbd + "" + dname + "§f.");
-                                                            player.sendMessage("§f" + left_padding + "§7^ §o(x" + x + "/y" + y + "/z" + z + "/" + world + ")");
+                                                            player.sendMessage(Language.get("h-ago", timeago, tag, rbd, dplayer, rbd, a, string_amount, rbd, dname));
+                                                            player.sendMessage(Language.get("x-y-z", left_padding, x, y, z, world));
                                                          }
                                                       }
                                                    } else {
@@ -718,7 +719,7 @@ public class LookupCommand {
                                                          time_since /= (double)60.0F;
                                                          time_since /= (double)60.0F;
                                                          String timeago = (new DecimalFormat("0.00")).format(time_since);
-                                                         player.sendMessage("§7" + timeago + "/h ago §f- §3" + dplayer + ": §f" + message + "");
+                                                         player.sendMessage(Language.get("h-ago-2", timeago, dplayer, message));
                                                       }
                                                    }
 
@@ -728,7 +729,7 @@ public class LookupCommand {
                                                          player.sendMessage("-----");
                                                       }
 
-                                                      player.sendMessage("§fPage " + pa + "/" + total_pages + ". View older data by typing \"§3/co l <page>§f\".");
+                                                      player.sendMessage(Language.get("page-view-older-data-by-typing", pa, total_pages));
                                                    }
                                                 }
                                              }
@@ -736,7 +737,7 @@ public class LookupCommand {
                                              statement.close();
                                              connection.close();
                                           } else {
-                                             player.sendMessage("§3CoreProtect §f- Database busy. Please try again later.");
+                                             player.sendMessage(Language.get("database-busy-please-try-again-later"));
                                           }
                                        } catch (Exception e) {
                                           e.printStackTrace();
@@ -752,7 +753,7 @@ public class LookupCommand {
                                  e.printStackTrace();
                               }
                            } else {
-                              player.sendMessage("§3CoreProtect §f- Please use \"/co l <params>\".");
+                              player.sendMessage(Language.get("please-use-co-l-params"));
                            }
                         }
                      } else {
@@ -832,7 +833,7 @@ public class LookupCommand {
                                     statement.close();
                                     connection.close();
                                  } else {
-                                    player.sendMessage("§3CoreProtect §f- Database busy. Please try again later.");
+                                    player.sendMessage(Language.get("database-busy-please-try-again-later"));
                                  }
                               } catch (Exception e) {
                                  e.printStackTrace();
@@ -847,11 +848,11 @@ public class LookupCommand {
                      }
 
                   } else {
-                     player.sendMessage("§3CoreProtect §f- Please specify the amount of time to lookup.");
+                     player.sendMessage(Language.get("please-specify-the-amount-of-time"));
                   }
                }
             } else {
-               player.sendMessage("§3CoreProtect §f- You do not have permission to do that.");
+               player.sendMessage(Language.get("you-do-not-have-permission-to"));
             }
          }
       }
