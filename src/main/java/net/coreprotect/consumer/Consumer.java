@@ -10,11 +10,15 @@ import org.bukkit.block.BlockState;
 import org.bukkit.inventory.ItemStack;
 
 public class Consumer implements Runnable, Thread.UncaughtExceptionHandler {
-   public static boolean resetConnection = false;
-   public static int current_consumer = 0;
-   public static boolean is_paused = false;
-   private static boolean running = false;
-   protected static boolean pause_success = false;
+   // These flags are written by one thread and spun on by another (the consumer
+   // thread, the async rollback thread and the main thread all participate).
+   // Without volatile the spinning read may be hoisted out of the loop and never
+   // observe the write -- Thread.sleep() is not a synchronisation point.
+   public static volatile boolean resetConnection = false;
+   public static volatile int current_consumer = 0;
+   public static volatile boolean is_paused = false;
+   private static volatile boolean running = false;
+   protected static volatile boolean pause_success = false;
    static Map<Integer, ArrayList<Object[]>> consumer = Collections.synchronizedMap(new HashMap());
    static Map<Integer, Integer> consumer_id = Collections.synchronizedMap(new HashMap());
    static Map<Integer, Map<Integer, String[]>> consumer_users = Collections.synchronizedMap(new HashMap());

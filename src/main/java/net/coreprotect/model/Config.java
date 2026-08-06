@@ -33,9 +33,10 @@ public class Config extends Queue {
    public static String username = "root";
    public static String password = "";
    public static String prefix = "co_";
-   public static boolean server_running = false;
-   public static boolean converter_running = false;
-   public static boolean purge_running = false;
+   // Spun on across threads (see Consumer/Lookup); must be volatile.
+   public static volatile boolean server_running = false;
+   public static volatile boolean converter_running = false;
+   public static volatile boolean purge_running = false;
    public static int world_id = 0;
    public static int material_id = 0;
    public static int entity_id = 0;

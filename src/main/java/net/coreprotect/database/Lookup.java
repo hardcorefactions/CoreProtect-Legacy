@@ -1078,6 +1078,8 @@ public class Lookup extends Queue {
                Config.rollback_hash.put(final_user_string, new int[]{item_count, block_count, entity_count, 0});
                CoreProtect.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(CoreProtect.getInstance(), new Runnable() {
                   public void run() {
+                     long chunk_start_ns = System.nanoTime();
+
                      try {
                         boolean clearInventories = false;
                         if ((Integer)Config.config.get("rollback-items") == 1) {
@@ -1624,6 +1626,17 @@ public class Lookup extends Queue {
                         int block_count = rollback_hash_data[1];
                         int entity_count = rollback_hash_data[2];
                         Config.rollback_hash.put(final_user_string, new int[]{item_count, block_count, entity_count, 2});
+                     } finally {
+                        // This whole body runs on the main thread inside a single
+                        // tick, so anything past one tick (50ms) is stall the server
+                        // has to absorb. Report it, otherwise a watchdog kill leaves
+                        // nothing behind to say which chunk was responsible.
+                        long chunk_ms = (System.nanoTime() - chunk_start_ns) / 1000000L;
+                        if (chunk_ms >= 50L) {
+                           ArrayList<Object[]> d = (ArrayList)data_list.get(final_chunk_x + "." + final_chunk_z);
+                           ArrayList<Object[]> i = (ArrayList)item_data_list.get(final_chunk_x + "." + final_chunk_z);
+                           System.out.println("[CoreProtect] Slow rollback chunk " + final_chunk_x + "," + final_chunk_z + ": " + chunk_ms + "ms for " + (d == null ? 0 : d.size()) + " block row(s), " + (i == null ? 0 : i.size()) + " container row(s).");
+                        }
                      }
 
                   }

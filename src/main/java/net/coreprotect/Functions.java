@@ -1183,7 +1183,10 @@ public class Functions extends Queue {
 
    public static void setTypeAndData(Block block, Material type, byte data, boolean update) {
       block.setType(type, update);
-      block.setData(data);
+      // setData(byte) delegates to setData(data, true), which re-applied physics
+      // on every rolled-back block and defeated the `update` flag the rollback
+      // path passes as false. Both overloads exist as far back as 1.8.8.
+      block.setData(data, update);
    }
 
    public static void setTypeId1(Block block, int type) {
