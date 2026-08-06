@@ -53,6 +53,40 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 
 public class Lookup extends Queue {
+   // Both of these were allocated fresh inside the rollback row loop, on the main
+   // thread, once per row. They are constant; all of these Materials exist as far
+   // back as 1.8.8, so class init is safe on every supported server version.
+   private static final List<Material> UPDATE_STATE = Collections.unmodifiableList(Arrays.asList(Material.POWERED_RAIL, Material.DETECTOR_RAIL, Material.TORCH, Material.REDSTONE_WIRE, Material.BURNING_FURNACE, Material.LEVER, Material.REDSTONE_TORCH_OFF, Material.REDSTONE_TORCH_ON, Material.GLOWSTONE, Material.JACK_O_LANTERN, Material.DIODE_BLOCK_OFF, Material.DIODE_BLOCK_ON, Material.REDSTONE_LAMP_ON, Material.BEACON, Material.REDSTONE_COMPARATOR_OFF, Material.REDSTONE_COMPARATOR_ON, Material.DAYLIGHT_DETECTOR, Material.REDSTONE_BLOCK, Material.HOPPER, Material.ACTIVATOR_RAIL));
+   private static final List<Material> UNSAFE_BLOCKS = Collections.unmodifiableList(Arrays.asList(Material.LAVA, Material.FIRE));
+
+   /**
+    * Java deserialisation is pure computation with no Bukkit dependency, so it is
+    * done on the rollback thread rather than inside the main-thread chunk task.
+    *
+    * Returns null on a malformed blob. This is a deliberate behaviour change: the
+    * old inline deserialisation sat outside the per-row try/catch, so a single
+    * corrupt blob threw out to the chunk task's handler, flagged the chunk as
+    * failed and aborted the entire rollback. Now that row is simply treated as
+    * having no metadata and the rollback continues.
+    */
+   private static List<Object> deserializeMeta(byte[] meta) {
+      if (meta == null) {
+         return null;
+      }
+
+      try {
+         ObjectInputStream ins = new ObjectInputStream(new ByteArrayInputStream(meta));
+
+         try {
+            return (List)ins.readObject();
+         } finally {
+            ins.close();
+         }
+      } catch (Exception e) {
+         return null;
+      }
+   }
+
    public static String block_lookup(Statement statement, BlockState block, String user, int offset, int page, int limit) {
       String result = "";
 
@@ -1018,6 +1052,17 @@ public class Lookup extends Queue {
                      Database.loadUserName(statement.getConnection(), user_id);
                   }
 
+                  // Deserialise the block meta blob here, on the rollback thread,
+                  // instead of once per row inside the main-thread chunk task.
+                  // Index 11 is the meta blob for block rows only -- on container
+                  // rows it is the item amount, and their blob is index 12.
+                  // Nothing downstream reads index 11 as a byte[]: Process reads
+                  // only [0] and [9], and convertRawLookup stringifies Integer and
+                  // String and leaves anything else null, which a List still is.
+                  if (list_c == 0 && result[11] instanceof byte[]) {
+                     result[11] = deserializeMeta((byte[])result[11]);
+                  }
+
                   HashMap<String, ArrayList<Object[]>> modify_list = data_list;
                   if (list_c == 1) {
                      modify_list = item_data_list;
@@ -1079,6 +1124,15 @@ public class Lookup extends Queue {
                CoreProtect.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(CoreProtect.getInstance(), new Runnable() {
                   public void run() {
                      long chunk_start_ns = System.nanoTime();
+                     // Counters live for the whole chunk instead of being read back
+                     // out of a synchronizedMap and rewritten into a fresh int[] on
+                     // every single row. Nothing else mutates this entry while the
+                     // chunk task is running -- the rollback thread only touches it
+                     // between chunks, gated on the completion flag.
+                     int[] chunk_counts = (int[])Config.rollback_hash.get(final_user_string);
+                     int item_count = chunk_counts[0];
+                     int block_count = chunk_counts[1];
+                     int entity_count = chunk_counts[2];
 
                      try {
                         boolean clearInventories = false;
@@ -1092,10 +1146,6 @@ public class Lookup extends Queue {
 
                         for(Object[] row : data) {
                            int unixtimestamp = (int)(System.currentTimeMillis() / 1000L);
-                           int[] rollback_hash_data = (int[])Config.rollback_hash.get(final_user_string);
-                           int item_count = rollback_hash_data[0];
-                           int block_count = rollback_hash_data[1];
-                           int entity_count = rollback_hash_data[2];
                            int row_time = (Integer)row[1];
                            int row_userid = (Integer)row[2];
                            int row_x = (Integer)row[3];
@@ -1106,16 +1156,9 @@ public class Lookup extends Queue {
                            int row_action = (Integer)row[8];
                            int row_rolled_back = (Integer)row[9];
                            int row_wid = (Integer)row[10];
-                           byte[] row_meta = (byte[])row[11];
+                           // Already deserialised on the rollback thread.
+                           List<Object> meta = (List)row[11];
                            Material row_type = Functions.getType(row_type_raw);
-                           List<Object> meta = null;
-                           if (row_meta != null) {
-                              ByteArrayInputStream bais = new ByteArrayInputStream(row_meta);
-                              ObjectInputStream ins = new ObjectInputStream(bais);
-                              List<Object> list = (List)ins.readObject();
-                              meta = list;
-                           }
-
                            String row_user = (String)Config.player_id_cache_reversed.get(row_userid);
                            int old_type_raw = row_type_raw;
                            Material old_type_material = Functions.getType(row_type_raw);
@@ -1225,7 +1268,7 @@ public class Lookup extends Queue {
                                  }
                               }
                            } else {
-                              List<Material> update_state = Arrays.asList(Material.POWERED_RAIL, Material.DETECTOR_RAIL, Material.TORCH, Material.REDSTONE_WIRE, Material.BURNING_FURNACE, Material.LEVER, Material.REDSTONE_TORCH_OFF, Material.REDSTONE_TORCH_ON, Material.GLOWSTONE, Material.JACK_O_LANTERN, Material.DIODE_BLOCK_OFF, Material.DIODE_BLOCK_ON, Material.REDSTONE_LAMP_ON, Material.BEACON, Material.REDSTONE_COMPARATOR_OFF, Material.REDSTONE_COMPARATOR_ON, Material.DAYLIGHT_DETECTOR, Material.REDSTONE_BLOCK, Material.HOPPER, Material.ACTIVATOR_RAIL);
+                              List<Material> update_state = Lookup.UPDATE_STATE;
                               String world = Functions.getWorldName(row_wid);
                               if (world.length() == 0) {
                                  continue;
@@ -1477,8 +1520,6 @@ public class Lookup extends Queue {
                                  Config.lookup_cache.put("" + row_x + "." + row_y + "." + row_z + "." + row_wid + "", new Object[]{unixtimestamp, row_user, row_type});
                               }
                            }
-
-                           Config.rollback_hash.put(final_user_string, new int[]{item_count, block_count, entity_count, 0});
                         }
 
                         hanging_delay.clear();
@@ -1491,10 +1532,6 @@ public class Lookup extends Queue {
                         int last_wid = 0;
 
                         for(Object[] row : item_data) {
-                           int[] rollback_hash_data = (int[])Config.rollback_hash.get(final_user_string);
-                           int item_count = rollback_hash_data[0];
-                           int block_count = rollback_hash_data[1];
-                           int entity_count = rollback_hash_data[2];
                            int row_x = (Integer)row[3];
                            int row_y = (Integer)row[4];
                            int row_z = (Integer)row[5];
@@ -1553,21 +1590,15 @@ public class Lookup extends Queue {
 
                               container_init = true;
                            }
-
-                           Config.rollback_hash.put(final_user_string, new int[]{item_count, block_count, entity_count, 0});
                         }
 
-                        int[] rollback_hash_data = (int[])Config.rollback_hash.get(final_user_string);
-                        int item_count = rollback_hash_data[0];
-                        int block_count = rollback_hash_data[1];
-                        int entity_count = rollback_hash_data[2];
                         Config.rollback_hash.put(final_user_string, new int[]{item_count, block_count, entity_count, 1});
                         if (user instanceof Player && preview == 0) {
                            Player player = (Player)user;
                            Location location = player.getLocation();
                            Chunk chunk = location.getChunk();
                            if (chunk.getX() == final_chunk_x && chunk.getZ() == final_chunk_z) {
-                              List<Material> unsafe_blocks = Arrays.asList(Material.LAVA, Material.FIRE);
+                              List<Material> unsafe_blocks = Lookup.UNSAFE_BLOCKS;
                               int player_x = location.getBlockX();
                               int player_y = location.getBlockY();
                               int player_z = location.getBlockZ();
@@ -1621,10 +1652,6 @@ public class Lookup extends Queue {
                         }
                      } catch (Exception e) {
                         e.printStackTrace();
-                        int[] rollback_hash_data = (int[])Config.rollback_hash.get(final_user_string);
-                        int item_count = rollback_hash_data[0];
-                        int block_count = rollback_hash_data[1];
-                        int entity_count = rollback_hash_data[2];
                         Config.rollback_hash.put(final_user_string, new int[]{item_count, block_count, entity_count, 2});
                      } finally {
                         // This whole body runs on the main thread inside a single
