@@ -1,0 +1,80 @@
+plugins {
+    id 'java'
+}
+
+group = 'net.coreprotect'
+version = '2.15.2'
+description = 'Provides block protection for your server.'
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'spigotmc-repo'
+        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+    }
+    maven {
+        name = 'sonatype'
+        url = 'https://oss.sonatype.org/content/repositories/snapshots/'
+    }
+    maven {
+        name = 'enginehub-repo'
+        url = 'https://maven.enginehub.org/repo/'
+    }
+}
+
+dependencies {
+    // Bukkit/Spigot API. 1.12.2 is the last version with the legacy Material/data
+    // value API that this plugin is written against.
+    // Resolved without transitives: its bungeecord-chat dependency drags in a
+    // parent POM that is no longer published anywhere.
+    compileOnly('org.spigotmc:spigot-api:1.12.2-R0.1-SNAPSHOT') {
+        transitive = false
+    }
+
+    // Libraries Spigot ships in the server jar, declared explicitly since the
+    // spigot-api transitives are switched off above.
+    compileOnly 'com.google.code.gson:gson:2.8.0'
+    compileOnly 'com.googlecode.json-simple:json-simple:1.1.1'
+    compileOnly 'commons-lang:commons-lang:2.6'
+    compileOnly 'com.google.guava:guava:21.0'
+    compileOnly 'org.yaml:snakeyaml:1.18'
+
+    // WorldEdit 6.x -- the last line that exposes com.sk89q.worldedit.Vector and
+    // com.sk89q.worldedit.blocks.BaseBlock, which net.coreprotect.worldedit uses.
+    // worldedit-bukkit only carries the Bukkit glue (WorldEditPlugin, BukkitWorld);
+    // Vector/Actor/Extent & co. live in worldedit-core, whose last 6.x release is 6.1.
+    compileOnly('com.sk89q.worldedit:worldedit-bukkit:6.1.5') {
+        transitive = false
+    }
+    compileOnly('com.sk89q.worldedit:worldedit-core:6.1') {
+        transitive = false
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    // Spigot 1.12.2 targets Java 8; --release keeps us honest against its API.
+    options.release = 8
+    // The sources are decompiled output; silence the noise that comes with it.
+    options.compilerArgs += ['-Xlint:none', '-nowarn']
+}
+
+processResources {
+    def pluginVersion = project.version.toString()
+    inputs.property 'version', pluginVersion
+    filesMatching('plugin.yml') {
+        expand version: pluginVersion
+    }
+}
+
+jar {
+    archiveBaseName = 'CoreProtect-Legacy'
+    archiveVersion = project.version
+
+    manifest {
+        attributes(
+            'Manifest-Version': '1.0',
+            'Built-By': 'Intelli'
+        )
+    }
+}

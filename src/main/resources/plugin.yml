@@ -1,0 +1,91 @@
+name: CoreProtect
+main: net.coreprotect.CoreProtect
+version: ${version}
+website: http://coreprotect.net
+author: Intelli
+description: >
+             Provides block protection for your server.
+commands:
+  core:
+    description: Utilize the plugin
+    usage: |
+  coreprotect:
+    description: Utilize the plugin
+    usage: |
+  co:
+    description: Utilize the plugin
+    usage: |
+permissions:
+    coreprotect.*:
+        description: Gives access to all CoreProtect actions and commands
+        default: false
+        children:
+            coreprotect.rollback: true
+            coreprotect.restore: true
+            coreprotect.inspect: true
+            coreprotect.help: true
+            coreprotect.purge: true
+            coreprotect.lookup: true
+            coreprotect.lookup.chat: true
+            coreprotect.lookup.command: true
+            coreprotect.lookup.session: true
+            coreprotect.lookup.username: true
+            coreprotect.lookup.block: true
+            coreprotect.lookup.click: true
+            coreprotect.lookup.container: true
+            coreprotect.lookup.kill: true
+            coreprotect.reload: true
+    coreprotect.lookup:
+        description: Has permission to use the lookup command
+        default: false
+        children:
+            coreprotect.lookup.chat: true
+            coreprotect.lookup.command: true
+            coreprotect.lookup.session: true
+            coreprotect.lookup.username: true
+            coreprotect.lookup.block: true
+            coreprotect.lookup.click: true
+            coreprotect.lookup.container: true
+            coreprotect.lookup.kill: true
+    coreprotect.lookup.chat:
+        description: Has permission to lookup chat messages
+        default: false
+    coreprotect.lookup.command:
+        description: Has permission to lookup player commands
+        default: false
+    coreprotect.lookup.session:
+        description: Has permission to lookup player sessions
+        default: false
+    coreprotect.lookup.username:
+        description: Has permission to lookup player username changes
+        default: false
+    coreprotect.lookup.block:
+        description: Has permission to lookup block data
+        default: false
+    coreprotect.lookup.click:
+        description: Has permission to lookup player interactions
+        default: false
+    coreprotect.lookup.container:
+        description: Has permission to lookup container transactions
+        default: false
+    coreprotect.lookup.container:
+        description: Has permission to lookup entity kills
+        default: false
+    coreprotect.rollback:
+        description: Has permission to perform rollbacks
+        default: false
+    coreprotect.restore:
+        description: Has permission to perform restores
+        default: false
+    coreprotect.inspect:
+        description: Has permission to use the inspector
+        default: false
+    coreprotect.help:
+        description: Has permission to use the help command
+        default: false
+    coreprotect.purge:
+        description: Has permission to use the purge command
+        default: false
+    coreprotect.reload:
+        description: Has permission to use the reload command
+        default: false
