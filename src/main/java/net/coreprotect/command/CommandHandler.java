@@ -652,7 +652,7 @@ public class CommandHandler implements CommandExecutor {
       return restricted;
    }
 
-   protected static int parseTime(String[] args_input) {
+   public static int parseTime(String[] args_input) {
       String[] args = (String[])args_input.clone();
       int time = 0;
       int count = 0;

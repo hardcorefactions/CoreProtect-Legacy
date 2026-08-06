@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.coreprotect.CoreProtect;
 import net.coreprotect.Functions;
 import net.coreprotect.bukkit.BukkitAdapter;
+import net.coreprotect.command.CommandHandler;
 import net.coreprotect.consumer.Consumer;
 import net.coreprotect.consumer.Queue;
 import net.coreprotect.database.Database;
@@ -126,6 +127,8 @@ public class Config extends Queue {
          String api = "\n# If enabled, other plugins will be able to utilize the CoreProtect API.\napi-enabled: true\n";
          String defaultradius = "\n# If no radius is specified in a rollback or restore, this value will be\n# used as the radius. Set to \"0\" to disable automatically adding a radius.\ndefault-radius: 10\n";
          String maxradius = "\n# The maximum radius that can be used in a command. Set to \"0\" to disable.\n# To run a rollback or restore without a radius, you can use \"r:#global\".\nmax-radius: 100\n";
+         String purgemin = "\n# The minimum age of data that a player can purge with \"/co purge\".\n# Uses the same time format as commands, for example \"30d\", \"12h\" or \"4w\".\n# Set to \"0\" to allow purging data of any age.\npurge-minimum-time: 30d\n";
+         String purgeminconsole = "\n# As above, but for purges run from the console or a command block.\npurge-minimum-time-console: 24h\n";
          String rollbackitems = "\n# If enabled, items taken from containers (etc) will be included in rollbacks.\nrollback-items: true\n";
          String rollbackentities = "\n# If enabled, entities, such as killed animals, will be included in rollbacks.\nrollback-entities: true\n";
          String skipgenericdata = "\n# If enabled, generic data, like zombies burning in daylight, won't be logged.\nskip-generic-data: true\n";
@@ -269,6 +272,20 @@ public class Config extends Queue {
                                     }
 
                                     config.put("max-radius", Integer.parseInt(setting));
+                                 }
+
+                                 if (option.equals("purge-minimum-time") || option.equals("purge-minimum-time-console")) {
+                                    String setting = i2[1].trim().toLowerCase();
+                                    int parsed = CommandHandler.parseTime(new String[]{"", "t:" + setting.replaceAll("\\\\s+", "")});
+                                    if (parsed <= 0 && !setting.startsWith("0")) {
+                                       // A bare number carries no unit, so it would parse
+                                       // as 0 and silently remove the limit. Keep the
+                                       // default and say so rather than doing that.
+                                       parsed = option.equals("purge-minimum-time") ? 2592000 : 86400;
+                                       System.out.println("[CoreProtect] Invalid " + option + " value \"" + setting + "\"; using the default. Specify a unit, such as 30d, 12h or 4w.");
+                                    }
+
+                                    config.put(option, parsed);
                                  }
 
                                  if (option.equals("rollback-items")) {
@@ -584,6 +601,18 @@ public class Config extends Queue {
                            config.put("max-radius", 100);
                            configfile.seek(configfile.length());
                            configfile.write(maxradius.getBytes());
+                        }
+
+                        if (config.get("purge-minimum-time") == null) {
+                           config.put("purge-minimum-time", 2592000);
+                           configfile.seek(configfile.length());
+                           configfile.write(purgemin.getBytes());
+                        }
+
+                        if (config.get("purge-minimum-time-console") == null) {
+                           config.put("purge-minimum-time-console", 86400);
+                           configfile.seek(configfile.length());
+                           configfile.write(purgeminconsole.getBytes());
                         }
 
                         if (config.get("rollback-items") == null) {

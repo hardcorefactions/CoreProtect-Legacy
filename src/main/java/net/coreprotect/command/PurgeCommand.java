@@ -31,10 +31,10 @@ public class PurgeCommand extends Consumer {
          player.sendMessage(Language.get("please-use-co-purge-t-time"));
       } else if (seconds <= 0) {
          player.sendMessage(Language.get("please-use-co-purge-t-time"));
-      } else if (player instanceof Player && seconds < 2592000) {
-         player.sendMessage(Language.get("you-can-only-purge-data-older"));
-      } else if (seconds < 86400) {
-         player.sendMessage(Language.get("you-can-only-purge-data-older-2"));
+      } else if (player instanceof Player && seconds < (Integer)Config.config.get("purge-minimum-time")) {
+         player.sendMessage(Language.get("purge-minimum-age", Functions.formatDuration((Integer)Config.config.get("purge-minimum-time"))));
+      } else if (seconds < (Integer)Config.config.get("purge-minimum-time-console")) {
+         player.sendMessage(Language.get("purge-minimum-age-console", Functions.formatDuration((Integer)Config.config.get("purge-minimum-time-console"))));
       } else {
          boolean optimizeCheckValue = false;
 

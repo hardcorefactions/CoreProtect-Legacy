@@ -994,6 +994,25 @@ public class Functions extends Queue {
       return id;
    }
 
+   /**
+    * Largest whole unit that divides the value, matching the "day(s)" wording
+    * the plugin already uses elsewhere. Used for the purge minimum-age refusal
+    * so the message always states the configured limit.
+    */
+   public static String formatDuration(int seconds) {
+      if (seconds >= 604800 && seconds % 604800 == 0) {
+         return seconds / 604800 + " week(s)";
+      } else if (seconds >= 86400 && seconds % 86400 == 0) {
+         return seconds / 86400 + " day(s)";
+      } else if (seconds >= 3600 && seconds % 3600 == 0) {
+         return seconds / 3600 + " hour(s)";
+      } else if (seconds >= 60 && seconds % 60 == 0) {
+         return seconds / 60 + " minute(s)";
+      } else {
+         return seconds + " second(s)";
+      }
+   }
+
    public static void messageOwner(String string) {
       if (string.startsWith("-")) {
          CoreProtect.getInstance().getServer().getConsoleSender().sendMessage(string);
