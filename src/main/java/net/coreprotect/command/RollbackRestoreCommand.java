@@ -21,8 +21,34 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
 public class RollbackRestoreCommand {
-   protected static void runCommand(final CommandSender player, boolean permission, final String[] args, int force_seconds) {
-      Location lo0 = CommandHandler.parseLocation(player, args);
+   /**
+    * The location a stored rollback actually ran against, or null if the entry
+    * predates it being recorded.
+    */
+   protected static Location storedLocation(List<Object[]> list) {
+      if (list.size() > 2) {
+         Object[] entry = list.get(2);
+         if (entry != null && entry.length > 0 && entry[0] instanceof Location) {
+            return (Location)entry[0];
+         }
+      }
+
+      return null;
+   }
+
+   protected static void runCommand(CommandSender player, boolean permission, String[] args, int force_seconds) {
+      runCommand(player, permission, args, force_seconds, (Location)null);
+   }
+
+   /**
+    * forced_location replays a previous command against the position it was
+    * originally run from. /co undo, /co apply and /co cancel all re-run stored
+    * args, and parseLocation resolves those against the sender's *current*
+    * position -- so walking away between the rollback and the undo used to move
+    * the radius with the player.
+    */
+   protected static void runCommand(final CommandSender player, boolean permission, final String[] args, int force_seconds, Location forced_location) {
+      Location lo0 = forced_location != null ? forced_location.clone() : CommandHandler.parseLocation(player, args);
       final List<String> arg_uuids = new ArrayList<>();
       List<String> arg_users = CommandHandler.parseUsers(args);
       Integer[] arg_radius = CommandHandler.parseRadius(args, player, lo0);
@@ -308,11 +334,21 @@ public class RollbackRestoreCommand {
                                        if (arg_action.contains(5)) {
                                           Lookup.performContainerRollbackRestore(statement, player, arg_uuids, rollbackusers2, ts, arg_blocks, arg_exclude, arg_exclude_users, arg_action, location, radius, stime, restrict_world, false, verbose, final_action);
                                        } else {
-                                          Lookup.performRollbackRestore(statement, player, arg_uuids, rollbackusers2, ts, arg_blocks, arg_exclude, arg_exclude_users, arg_action, location, radius, stime, restrict_world, false, verbose, final_action, preview);
-                                          if (preview < 2) {
+                                          List<String[]> result = Lookup.performRollbackRestore(statement, player, arg_uuids, rollbackusers2, ts, arg_blocks, arg_exclude, arg_exclude_users, arg_action, location, radius, stime, restrict_world, false, verbose, final_action, preview);
+                                          if (result == null) {
+                                             // The return value used to be discarded, so a
+                                             // rollback that failed before it touched a
+                                             // single block still printed "completed".
+                                             player.sendMessage(Language.get("database-query-failed"));
+                                          } else if (preview < 2) {
                                              List<Object[]> list = new ArrayList<>();
                                              list.add(new Object[]{stime});
                                              list.add(args);
+                                             // The location the command actually ran against.
+                                             // /co undo replays these args, and parseLocation
+                                             // would otherwise re-resolve them against wherever
+                                             // the player happens to be standing by then.
+                                             list.add(new Object[]{location});
                                              Config.last_rollback.put(player.getName(), list);
                                           }
                                        }

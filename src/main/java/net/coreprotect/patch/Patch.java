@@ -132,7 +132,10 @@ public class Patch extends CoreProtect {
          Consumer.is_paused = false;
          Thread.sleep(1000L);
 
-         while(Consumer.is_paused) {
+         // Wait for the backlog built up during the upgrade to reach the
+         // database before announcing it finished. This watched is_paused, which
+         // Process no longer raises; Consumer.flushing is the flush signal.
+         while(Consumer.flushing) {
             Thread.sleep(500L);
          }
       } catch (Exception e) {

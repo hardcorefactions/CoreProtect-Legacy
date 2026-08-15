@@ -18,7 +18,6 @@ import java.util.TreeMap;
 import net.coreprotect.CoreProtect;
 import net.coreprotect.Functions;
 import net.coreprotect.bukkit.BukkitAdapter;
-import net.coreprotect.consumer.Consumer;
 import net.coreprotect.consumer.Queue;
 import net.coreprotect.model.BlockInfo;
 import net.coreprotect.model.Config;
@@ -415,13 +414,11 @@ public class Lookup extends Queue {
    public static int countLookupRows(Statement statement, CommandSender user, List<String> check_uuids, List<String> check_users, List<Object> restrict_list, List<Object> exclude_list, List<String> exclude_user_list, List<Integer> action_list, Location location, Integer[] radius, int check_time, boolean restrict_world, boolean lookup) {
       int rows = 0;
 
+      // The is_paused check-then-set that used to wrap this was not a mutex --
+      // two threads could both pass the check, and Process cleared the flag
+      // regardless of who set it. SQLite concurrency is handled by the WAL and
+      // busy_timeout pragmas in Database instead.
       try {
-         while(Consumer.is_paused) {
-            Thread.sleep(1L);
-         }
-
-         Consumer.is_paused = true;
-
          ResultSet rs;
          for(rs = rawLookupResultSet(statement, user, check_uuids, check_users, restrict_list, exclude_list, exclude_user_list, action_list, location, radius, check_time, -1, -1, restrict_world, lookup, true); rs.next(); rows = rs.getInt("count")) {
          }
@@ -429,9 +426,9 @@ public class Lookup extends Queue {
          rs.close();
       } catch (Exception e) {
          e.printStackTrace();
+         return -1;
       }
 
-      Consumer.is_paused = false;
       return rows;
    }
 
@@ -760,6 +757,14 @@ public class Lookup extends Queue {
       try {
          long time1 = System.currentTimeMillis();
          final List<Object[]> lookup_list = performLookupRaw(statement, user, check_uuids, check_users, restrict_list, exclude_list, exclude_user_list, action_list, location, radius, check_time, -1, -1, restrict_world, lookup);
+         if (lookup_list == null) {
+            if (user != null) {
+               user.sendMessage(Language.get("database-query-failed"));
+            }
+
+            return;
+         }
+
          if (rollback_type == 1) {
             Collections.reverse(lookup_list);
          }
@@ -887,12 +892,11 @@ public class Lookup extends Queue {
          invalid_rollback_actions.add(3);
       }
 
+      // Returns null when the query itself failed, as distinct from an empty
+      // list meaning "nothing matched". Previously a failure was swallowed here
+      // and the empty list was returned, so a rollback whose SELECT lost a
+      // SQLITE_BUSY race ran over zero rows and still reported success.
       try {
-         while(Consumer.is_paused) {
-            Thread.sleep(1L);
-         }
-
-         Consumer.is_paused = true;
          ResultSet rs = rawLookupResultSet(statement, user, check_uuids, check_users, restrict_list, exclude_list, exclude_user_list, action_list, location, radius, check_time, limit_offset, limit_count, restrict_world, lookup, false);
 
          while(rs.next()) {
@@ -961,9 +965,9 @@ public class Lookup extends Queue {
          rs.close();
       } catch (Exception e) {
          e.printStackTrace();
+         return null;
       }
 
-      Consumer.is_paused = false;
       return list;
    }
 
@@ -1015,6 +1019,11 @@ public class Lookup extends Queue {
                }
 
                item_list = performLookupRaw(statement, user, check_uuids, check_users, itemRestrictList, itemExcludeList, exclude_user_list, item_action_list, location, radius, check_time, -1, -1, restrict_world, lookup);
+               if (item_list == null) {
+                  // Half a rollback is worse than none: the blocks would come
+                  // back without the container contents that belong in them.
+                  return null;
+               }
             }
 
             TreeMap<String, Integer> chunk_list = new TreeMap<>();
@@ -1042,17 +1051,6 @@ public class Lookup extends Queue {
 
                   if (Config.player_id_cache_reversed.get(user_id) == null) {
                      Database.loadUserName(statement.getConnection(), user_id);
-                  }
-
-                  // Deserialise the block meta blob here, on the rollback thread,
-                  // instead of once per row inside the main-thread chunk task.
-                  // Index 11 is the meta blob for block rows only -- on container
-                  // rows it is the item amount, and their blob is index 12.
-                  // Nothing downstream reads index 11 as a byte[]: Process reads
-                  // only [0] and [9], and convertRawLookup stringifies Integer and
-                  // String and leaves anything else null, which a List still is.
-                  if (list_c == 0 && result[11] instanceof byte[]) {
-                     result[11] = deserializeMeta((byte[])result[11]);
                   }
 
                   HashMap<String, ArrayList<Object[]>> modify_list = data_list;
@@ -1092,13 +1090,15 @@ public class Lookup extends Queue {
                }
             }
 
-            if (preview == 0) {
-               Queue.queueRollbackUpdate(user_string, location, lookup_list, rollback_type);
-               Queue.queueContainerRollbackUpdate(user_string, location, item_list, rollback_type);
-            }
-
             Config.rollback_hash.put(user_string, new int[]{0, 0, 0, 0});
             final String final_user_string = user_string;
+            // rolled_back used to be written for the whole range before the first
+            // chunk was even scheduled, so an abort left the database claiming
+            // work that never happened -- and the container path gates on that
+            // flag, so those rows could then be neither rolled back nor restored.
+            // Chunks are recorded as they finish instead.
+            List<String> completed_chunks = new ArrayList<>();
+            boolean aborted = false;
 
             for(Map.Entry<String, Integer> entry : Functions.entriesSortedByValues(chunk_list)) {
                ++file;
@@ -1109,9 +1109,23 @@ public class Lookup extends Queue {
                item_count = rollback_hash_data[0];
                block_count = rollback_hash_data[1];
                entity_count = rollback_hash_data[2];
-               String[] chunk_cords = ((String)entry.getKey()).split("\\.");
+               String chunk_key = entry.getKey();
+               String[] chunk_cords = chunk_key.split("\\.");
                final int final_chunk_x = Integer.parseInt(chunk_cords[0]);
                final int final_chunk_z = Integer.parseInt(chunk_cords[1]);
+               // Meta is deserialised one chunk ahead rather than for every row
+               // in the rollback up front, so only the chunk in flight holds a
+               // live object graph. Still off the main thread, which was the
+               // point of moving it out of the chunk task.
+               ArrayList<Object[]> chunk_rows = data_list.get(chunk_key);
+               if (chunk_rows != null) {
+                  for(Object[] chunk_row : chunk_rows) {
+                     if (chunk_row[11] instanceof byte[]) {
+                        chunk_row[11] = deserializeMeta((byte[])chunk_row[11]);
+                     }
+                  }
+               }
+
                Config.rollback_hash.put(final_user_string, new int[]{item_count, block_count, entity_count, 0});
                CoreProtect.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(CoreProtect.getInstance(), () -> {
                   long chunk_start_ns = System.nanoTime();
@@ -1678,8 +1692,18 @@ public class Lookup extends Queue {
                }
 
                if (abort == 1 || next == 2) {
-                  System.out.println("[CoreProtect] Rollback or restore aborted.");
+                  System.out.println("[CoreProtect] Rollback or restore aborted at chunk " + chunk_key + " (" + file + " of " + chunk_list.size() + "). Chunks already completed have been recorded; re-run the command to finish the rest.");
+                  aborted = true;
                   break;
+               }
+
+               completed_chunks.add(chunk_key);
+               // The chunk is done with its metadata; drop it so a large rollback
+               // does not accumulate every deserialised blob it has ever touched.
+               if (chunk_rows != null) {
+                  for(Object[] chunk_row : chunk_rows) {
+                     chunk_row[11] = null;
+                  }
                }
 
                rollback_hash_data = (int[])Config.rollback_hash.get(final_user_string);
@@ -1692,6 +1716,26 @@ public class Lookup extends Queue {
                }
             }
 
+            if (preview == 0) {
+               List<Object[]> applied_blocks = new ArrayList<>();
+               List<Object[]> applied_items = new ArrayList<>();
+
+               for(String completed : completed_chunks) {
+                  ArrayList<Object[]> completed_blocks = data_list.get(completed);
+                  if (completed_blocks != null) {
+                     applied_blocks.addAll(completed_blocks);
+                  }
+
+                  ArrayList<Object[]> completed_items = item_data_list.get(completed);
+                  if (completed_items != null) {
+                     applied_items.addAll(completed_items);
+                  }
+               }
+
+               Queue.queueRollbackUpdate(user_string, location, applied_blocks, rollback_type);
+               Queue.queueContainerRollbackUpdate(user_string, location, applied_items, rollback_type);
+            }
+
             int[] rollback_hash_data = (int[])Config.rollback_hash.get(final_user_string);
             int item_count = rollback_hash_data[0];
             int block_count = rollback_hash_data[1];
@@ -1700,6 +1744,12 @@ public class Lookup extends Queue {
             int seconds = (int)((time2 - time1) / 1000L);
             if (user != null) {
                finishRollbackRestore(user, location, check_users, restrict_list, exclude_list, exclude_user_list, action_list, time_string, file, seconds, item_count, block_count, entity_count, rollback_type, radius, verbose, restrict_world, preview);
+               // An abort used to fall through to the completion banner with no
+               // sign anything was wrong, so a rollback that stopped a tenth of
+               // the way in still read as finished.
+               if (aborted) {
+                  user.sendMessage(Language.get("rollback-restore-aborted", file, chunk_list.size()));
+               }
             }
 
              return convertRawLookup(statement, lookup_list);
@@ -1841,10 +1891,13 @@ public class Lookup extends Queue {
       }
    }
 
-   private static ResultSet rawLookupResultSet(Statement statement, CommandSender user, List<String> check_uuids, List<String> check_users, List<Object> restrict_list, List<Object> exclude_list, List<String> exclude_user_list, List<Integer> action_list, Location location, Integer[] radius, int check_time, int limit_offset, int limit_count, boolean restrict_world, boolean lookup, boolean count) {
-      ResultSet rs = null;
+   // Throws rather than returning null on failure. Swallowing here meant the
+   // caller could not tell a broken query from an empty result, which is how a
+   // failed rollback ended up reporting success.
+   private static ResultSet rawLookupResultSet(Statement statement, CommandSender user, List<String> check_uuids, List<String> check_users, List<Object> restrict_list, List<Object> exclude_list, List<String> exclude_user_list, List<Integer> action_list, Location location, Integer[] radius, int check_time, int limit_offset, int limit_count, boolean restrict_world, boolean lookup, boolean count) throws Exception {
+      ResultSet rs;
 
-      try {
+      {
          List<Integer> valid_actions = Arrays.asList(0, 1, 2, 3);
          if (radius != null) {
             restrict_world = true;
@@ -2106,8 +2159,6 @@ public class Lookup extends Queue {
 
          String query = "SELECT " + rows + " FROM " + Config.prefix + query_table + " " + index + "WHERE" + query_extra + query_order + query_limit + "";
          rs = statement.executeQuery(query);
-      } catch (Exception e) {
-         e.printStackTrace();
       }
 
       return rs;

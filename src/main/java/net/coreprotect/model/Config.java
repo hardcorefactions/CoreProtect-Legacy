@@ -38,10 +38,16 @@ public class Config extends Queue {
    public static volatile boolean server_running = false;
    public static volatile boolean converter_running = false;
    public static volatile boolean purge_running = false;
-   public static int world_id = 0;
-   public static int material_id = 0;
-   public static int entity_id = 0;
-   public static int art_id = 0;
+   /**
+    * Guards the four id counters below. They are allocated from check-then-act
+    * paths in Functions that the main thread, the consumer thread and rollback
+    * threads all reach, and a race there hands the same id to two names.
+    */
+   public static final Object ID_LOCK = new Object();
+   public static volatile int world_id = 0;
+   public static volatile int material_id = 0;
+   public static volatile int entity_id = 0;
+   public static volatile int art_id = 0;
    public static final Map<String, Integer> worlds = Collections.synchronizedMap(new HashMap<>());
    public static final Map<Integer, String> worlds_reversed = Collections.synchronizedMap(new HashMap<>());
    public static final Map<String, Integer> materials = Collections.synchronizedMap(new HashMap<>());
@@ -129,6 +135,8 @@ public class Config extends Queue {
          String maxradius = "\n# The maximum radius that can be used in a command. Set to \"0\" to disable.\n# To run a rollback or restore without a radius, you can use \"r:#global\".\nmax-radius: 100\n";
          String purgemin = "\n# The minimum age of data that a player can purge with \"/co purge\".\n# Uses the same time format as commands, for example \"30d\", \"12h\" or \"4w\".\n# Set to \"0\" to allow purging data of any age.\npurge-minimum-time: 30d\n";
          String purgeminconsole = "\n# As above, but for purges run from the console or a command block.\npurge-minimum-time-console: 24h\n";
+         String sqlitewal = "\n# Puts SQLite into write-ahead logging mode, which lets lookups and rollbacks\n# read the database while block logging keeps writing to it. Without this the\n# two block each other, and whichever loses has its work silently dropped.\n# Only disable this if the database file lives on a network share, where WAL\n# is not supported. Has no effect when use-mysql is enabled.\nsqlite-wal: true\n";
+         String sqlitebusytimeout = "\n# How long, in milliseconds, a SQLite query waits for the database to become\n# available before giving up. Set to \"0\" to fail immediately.\nsqlite-busy-timeout: 5000\n";
          String rollbackitems = "\n# If enabled, items taken from containers (etc) will be included in rollbacks.\nrollback-items: true\n";
          String rollbackentities = "\n# If enabled, entities, such as killed animals, will be included in rollbacks.\nrollback-entities: true\n";
          String skipgenericdata = "\n# If enabled, generic data, like zombies burning in daylight, won't be logged.\nskip-generic-data: true\n";
@@ -285,6 +293,25 @@ public class Config extends Queue {
                                     }
 
                                     config.put(option, parsed);
+                                 }
+
+                                 if (option.equals("sqlite-wal")) {
+                                    String setting = i2[1].trim().toLowerCase();
+                                    if (setting.startsWith("t")) {
+                                       config.put("sqlite-wal", 1);
+                                    } else if (setting.startsWith("f")) {
+                                       config.put("sqlite-wal", 0);
+                                    }
+                                 }
+
+                                 if (option.equals("sqlite-busy-timeout")) {
+                                    String setting = i2[1].trim();
+                                    setting = setting.replaceAll("[^0-9]", "");
+                                    if (setting.isEmpty()) {
+                                       setting = "5000";
+                                    }
+
+                                    config.put("sqlite-busy-timeout", Integer.parseInt(setting));
                                  }
 
                                  if (option.equals("rollback-items")) {
@@ -612,6 +639,18 @@ public class Config extends Queue {
                            config.put("purge-minimum-time-console", 86400);
                            configfile.seek(configfile.length());
                            configfile.write(purgeminconsole.getBytes());
+                        }
+
+                        if (config.get("sqlite-wal") == null) {
+                           config.put("sqlite-wal", 1);
+                           configfile.seek(configfile.length());
+                           configfile.write(sqlitewal.getBytes());
+                        }
+
+                        if (config.get("sqlite-busy-timeout") == null) {
+                           config.put("sqlite-busy-timeout", 5000);
+                           configfile.seek(configfile.length());
+                           configfile.write(sqlitebusytimeout.getBytes());
                         }
 
                         if (config.get("rollback-items") == null) {

@@ -44,11 +44,16 @@ public class Process {
    }
 
    public static void processConsumer(int process_id) {
-      label172: {
+      {
          try {
             validateConnection();
             if (connection != null) {
-               Consumer.is_paused = true;
+               // This used to raise Consumer.is_paused, which is a purge/patch
+               // pause request rather than a lock -- so a cycle starting while a
+               // purge held it cleared it out from under them on the way out.
+               // Reader/writer overlap is handled by the SQLite pragmas in
+               // Database.getConnection now; `flushing` only reports progress.
+               Consumer.flushing = true;
                Statement statement = connection.createStatement();
                ArrayList<Object[]> consumer_data = (ArrayList)Consumer.consumer.get(process_id);
                Map<Integer, String[]> users = (Map)Consumer.consumer_users.get(process_id);
@@ -79,6 +84,11 @@ public class Process {
                PreparedStatement preparedStmt_entity = Database.prepareStatement(connection, 11, false);
                Database.beginTransaction(statement);
 
+               // The drain is wrapped so the buffer is always emptied, even if a
+               // malformed row throws outside the per-row handler below. Leaving
+               // it behind made the batch grow on every following cycle, and its
+               // user/object entries have already been consumed either way.
+               try {
                for(Object[] data : consumer_data) {
                   if (data != null) {
                      int id = (Integer)data[0];
@@ -179,8 +189,11 @@ public class Process {
                   }
                }
 
-               Database.commitTransaction(statement);
-               consumer_data.clear();
+               } finally {
+                  Database.commitTransaction(statement);
+                  consumer_data.clear();
+               }
+
                preparedStmt_signs.close();
                preparedStmt_blocks.close();
                preparedStmt_skulls.close();
@@ -194,19 +207,15 @@ public class Process {
                preparedStmt_art.close();
                preparedStmt_entity.close();
                statement.close();
-               break label172;
             }
          } catch (Exception e) {
             e.printStackTrace();
-            break label172;
          } finally {
+            Consumer.flushing = false;
             validateConnection();
          }
 
-         return;
       }
-
-      Consumer.is_paused = false;
    }
 
    private static void processBlockBreak(PreparedStatement preparedStmt, PreparedStatement preparedStmt_skulls, int process_id, int id, Material block_type, int block_data, Material replace_type, int force_data, String user, Object object) {

@@ -52,6 +52,8 @@ messages:
   purge-in-progress-please-try-again: "{PREFIX}Purge in progress. Please try again later."
   database-busy-please-try-again-later: "{PREFIX}Database busy. Please try again later."
   database-busy-please-try-again-later-2: "Database busy. Please try again later."
+  database-query-failed: "{PREFIX}{ERROR}The database query failed, so nothing was changed. Check the server console for the error."
+  rollback-restore-aborted: "{PREFIX}{ERROR}Stopped after {0} of {1} chunk(s). Run the command again to finish the rest."
 
   # --- Lookup and inspector
   co-lookup-page-use-after-inspecting: "{PRIMARY}/co lookup <page> {SECONDARY}- Use after inspecting a block to view logs."

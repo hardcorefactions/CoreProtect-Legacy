@@ -562,6 +562,15 @@ public class LookupCommand {
 
                                                 if (check_rows) {
                                                    rows = Lookup.countLookupRows(statement, player, uuid_list, user_list, arg_blocks, arg_exclude, arg_exclude_users, arg_action, location, radius, stime, restrict_world, true);
+                                                   if (rows < 0) {
+                                                      // A failed count used to come back as 0 and be
+                                                      // reported as "no results found".
+                                                      player.sendMessage(Language.get("database-query-failed"));
+                                                      statement.close();
+                                                      connection.close();
+                                                      return;
+                                                   }
+
                                                    Config.lookup_rows.put(player.getName(), rows);
                                                 }
 
@@ -591,6 +600,13 @@ public class LookupCommand {
 
                                                    arrows = "";
                                                    List<String[]> lookup_list = Lookup.performPartialLookup(statement, player, uuid_list, user_list, arg_blocks, arg_exclude, arg_exclude_users, arg_action, location, radius, stime, page_start, re, restrict_world, true);
+                                                   if (lookup_list == null) {
+                                                      player.sendMessage(Language.get("database-query-failed"));
+                                                      statement.close();
+                                                      connection.close();
+                                                      return;
+                                                   }
+
                                                    player.sendMessage(Language.get("coreprotect-lookup-results", arrows));
                                                    if (!arg_action.contains(6) && !arg_action.contains(7)) {
                                                       if (arg_action.contains(8)) {

@@ -95,12 +95,22 @@ public class Functions extends Queue {
       if (Config.materials.get(name) != null) {
          id = (Integer)Config.materials.get(name);
       } else if (internal) {
-         int mid = Config.material_id + 1;
-         Config.materials.put(name, mid);
-         Config.materials_reversed.put(mid, name);
-         Config.material_id = mid;
-         Queue.queueMaterialInsert(mid, name);
-         id = (Integer)Config.materials.get(name);
+         // Allocation is check-then-act on a counter shared by the main thread,
+         // the consumer thread and rollback threads. Two threads racing here
+         // both handed out the same id and both queued an insert for it.
+         synchronized(Config.ID_LOCK) {
+            Integer existing = Config.materials.get(name);
+            if (existing != null) {
+               return existing;
+            }
+
+            int mid = Config.material_id + 1;
+            Config.materials.put(name, mid);
+            Config.materials_reversed.put(mid, name);
+            Config.material_id = mid;
+            Queue.queueMaterialInsert(mid, name);
+            id = mid;
+         }
       }
 
       return id;
@@ -503,12 +513,19 @@ public class Functions extends Queue {
       if (Config.art.get(name) != null) {
          id = (Integer)Config.art.get(name);
       } else if (internal) {
-         int artID = Config.art_id + 1;
-         Config.art.put(name, artID);
-         Config.art_reversed.put(artID, name);
-         Config.art_id = artID;
-         Queue.queueArtInsert(artID, name);
-         id = (Integer)Config.art.get(name);
+         synchronized(Config.ID_LOCK) {
+            Integer existing = Config.art.get(name);
+            if (existing != null) {
+               return existing;
+            }
+
+            int artID = Config.art_id + 1;
+            Config.art.put(name, artID);
+            Config.art_reversed.put(artID, name);
+            Config.art_id = artID;
+            Queue.queueArtInsert(artID, name);
+            id = artID;
+         }
       }
 
       return id;
@@ -688,12 +705,19 @@ public class Functions extends Queue {
       if (Config.entities.get(name) != null) {
          id = (Integer)Config.entities.get(name);
       } else if (internal) {
-         int entityID = Config.entity_id + 1;
-         Config.entities.put(name, entityID);
-         Config.entities_reversed.put(entityID, name);
-         Config.entity_id = entityID;
-         Queue.queueEntityInsert(entityID, name);
-         id = (Integer)Config.entities.get(name);
+         synchronized(Config.ID_LOCK) {
+            Integer existing = Config.entities.get(name);
+            if (existing != null) {
+               return existing;
+            }
+
+            int entityID = Config.entity_id + 1;
+            Config.entities.put(name, entityID);
+            Config.entities_reversed.put(entityID, name);
+            Config.entity_id = entityID;
+            Queue.queueEntityInsert(entityID, name);
+            id = entityID;
+         }
       }
 
       return id;
@@ -880,15 +904,24 @@ public class Functions extends Queue {
       int id = -1;
 
       try {
-         if (Config.worlds.get(name) == null) {
+         Integer existing = Config.worlds.get(name);
+         if (existing != null) {
+            return existing;
+         }
+
+         synchronized(Config.ID_LOCK) {
+            existing = Config.worlds.get(name);
+            if (existing != null) {
+               return existing;
+            }
+
             int wid = Config.world_id + 1;
             Config.worlds.put(name, wid);
             Config.worlds_reversed.put(wid, name);
             Config.world_id = wid;
             Queue.queueWorldInsert(wid, name);
+            id = wid;
          }
-
-         id = (Integer)Config.worlds.get(name);
       } catch (Exception e) {
          e.printStackTrace();
       }

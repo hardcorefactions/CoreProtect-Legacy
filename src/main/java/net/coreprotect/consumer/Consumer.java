@@ -16,9 +16,29 @@ public class Consumer implements Runnable, Thread.UncaughtExceptionHandler {
    // observe the write -- Thread.sleep() is not a synchronisation point.
    public static volatile boolean resetConnection = false;
    public static volatile int current_consumer = 0;
+   /**
+    * A request to hold the consumer still, set by /co purge and by the schema
+    * patcher. It is NOT a mutex: Process no longer sets or clears it, because a
+    * consumer cycle that started while a purge held the flag used to clear it on
+    * the way out, releasing a caller that thought it still had exclusive access.
+    */
    public static volatile boolean is_paused = false;
    private static volatile boolean running = false;
    protected static volatile boolean pause_success = false;
+   /**
+    * True while Process is writing a batch out. The schema patcher waits on this
+    * to know the backlog it built up has actually reached the database before it
+    * announces the upgrade finished; that used to be read off is_paused, which
+    * conflated "a flush is in progress" with "someone asked me to stop".
+    */
+   public static volatile boolean flushing = false;
+   /**
+    * Guards the active buffer index together with the contents of every map
+    * below. Held by Queue.enqueue for one append and by the buffer flip in
+    * run(); once the flip has happened under this lock no other thread can still
+    * be writing to the buffer being handed to Process.
+    */
+   public static final Object QUEUE_LOCK = new Object();
    static final Map<Integer, ArrayList<Object[]>> consumer = Collections.synchronizedMap(new HashMap<>());
    static final Map<Integer, Integer> consumer_id = Collections.synchronizedMap(new HashMap<>());
    static final Map<Integer, Map<Integer, String[]>> consumer_users = Collections.synchronizedMap(new HashMap<>());
@@ -38,10 +58,6 @@ public class Consumer implements Runnable, Thread.UncaughtExceptionHandler {
          e.printStackTrace();
       }
 
-   }
-
-   public static int getConsumerId() {
-      return (Integer)consumer_id.get(current_consumer);
    }
 
    public static void initialize() {
@@ -93,14 +109,19 @@ public class Consumer implements Runnable, Thread.UncaughtExceptionHandler {
 
       while(Config.server_running || Config.converter_running) {
          try {
-            int process_id = 0;
-            if (current_consumer == 0) {
-               current_consumer = 1;
-               consumer_id.put(current_consumer, 0);
-            } else {
-               process_id = 1;
-               current_consumer = 0;
-               consumer_id.put(current_consumer, 0);
+            int process_id;
+            // The flip takes the same lock as Queue.enqueue, so once it returns
+            // every append that read the old index has already finished and the
+            // buffer handed to Process is nobody else's to touch.
+            synchronized(QUEUE_LOCK) {
+               process_id = current_consumer;
+               current_consumer = current_consumer == 0 ? 1 : 0;
+               // Only restart ids from zero when the buffer really was drained.
+               // A cycle that failed to clear leaves rows behind, and resetting
+               // over them makes two live rows share an id.
+               if (consumer.get(current_consumer).isEmpty()) {
+                  consumer_id.put(current_consumer, 0);
+               }
             }
 
             Thread.sleep(500L);
@@ -117,7 +138,9 @@ public class Consumer implements Runnable, Thread.UncaughtExceptionHandler {
 
    public void uncaughtException(Thread thread, Throwable e) {
       running = false;
-      ((ArrayList)consumer.get(current_consumer == 1 ? 0 : 1)).clear();
+      // The buffer used to be cleared here, which threw away up to a full cycle
+      // of records that had never been written. Leave it: the restarted consumer
+      // picks it up on its next pass.
       e.printStackTrace();
       startConsumer();
    }

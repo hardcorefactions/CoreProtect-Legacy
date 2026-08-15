@@ -25,7 +25,7 @@ public class CancelCommand {
                user.sendMessage(Language.get("no-pending-rollback-restore-found"));
             } else {
                Config.last_rollback.remove(user.getName());
-               RollbackRestoreCommand.runCommand(user, permission, args, time);
+               RollbackRestoreCommand.runCommand(user, permission, args, time, RollbackRestoreCommand.storedLocation(list));
             }
          } else {
             user.sendMessage(Language.get("no-pending-rollback-restore-found"));

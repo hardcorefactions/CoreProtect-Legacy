@@ -72,6 +72,50 @@ public class Database extends Queue {
 
    }
 
+   /**
+    * SQLite was being opened with no concurrency settings at all, while the
+    * consumer, every rollback thread and every inspector click each held their
+    * own connection to the same file. In the default rollback-journal mode a
+    * reader and a writer are mutually exclusive, so a multi-second rollback
+    * SELECT and the consumer's insert transaction would collide and one of them
+    * would take SQLITE_BUSY -- which every call site here swallows, losing
+    * either a block log or an entire rollback.
+    *
+    * WAL lets them run at the same time; busy_timeout makes whatever still
+    * contends wait instead of failing on the spot. journal_mode is persisted in
+    * the database header so it only really takes on the first connection, but
+    * busy_timeout is per-connection and has to be set every time.
+    */
+   private static void applySqlitePragmas(Connection connection) {
+      try {
+         int busy_timeout = 5000;
+         Object configured_timeout = Config.config.get("sqlite-busy-timeout");
+         if (configured_timeout instanceof Integer) {
+            busy_timeout = (Integer)configured_timeout;
+         }
+
+         boolean wal = !Integer.valueOf(0).equals(Config.config.get("sqlite-wal"));
+         Statement statement = connection.createStatement();
+
+         try {
+            statement.execute("PRAGMA busy_timeout=" + busy_timeout);
+            if (wal) {
+               statement.execute("PRAGMA journal_mode=WAL");
+               // WAL alone still fsyncs on every commit; NORMAL defers that to
+               // the checkpoint, which is the safe pairing for WAL and is where
+               // most of the insert throughput comes from.
+               statement.execute("PRAGMA synchronous=NORMAL");
+            }
+         } finally {
+            statement.close();
+         }
+      } catch (Exception e) {
+         // A database on a filesystem that cannot do WAL still works without it.
+         System.out.println("[CoreProtect] Could not apply SQLite pragmas: " + e.getMessage());
+      }
+
+   }
+
    public static Connection getConnection(boolean force) {
       Connection connection = null;
 
@@ -90,6 +134,10 @@ public class Database extends Queue {
          } else {
             long start_time = System.currentTimeMillis();
 
+            // Only a purge or a schema patch holds the consumer still now, and
+            // those genuinely do rebuild the database underneath us. A normal
+            // consumer flush no longer sets this, so ordinary lookups stop
+            // being turned away with "database busy".
             while(Consumer.is_paused && !force) {
                Thread.sleep(1L);
                long pause_time = System.currentTimeMillis() - start_time;
@@ -101,6 +149,7 @@ public class Database extends Queue {
             String database = "jdbc:sqlite:" + Config.sqlite + "";
             Class.forName("org.sqlite.JDBC");
             connection = DriverManager.getConnection(database);
+            applySqlitePragmas(connection);
          }
       } catch (Exception e) {
          e.printStackTrace();

@@ -49,6 +49,39 @@ dependencies {
     compileOnly('com.sk89q.worldedit:worldedit-core:6.1') {
         transitive = false
     }
+
+    // Tests drive the real consumer queue and a real SQLite database, so they
+    // need the Bukkit interfaces on the classpath and a JDBC driver the server
+    // would normally supply from its own jar.
+    testImplementation('org.spigotmc:spigot-api:1.12.2-R0.1-SNAPSHOT') {
+        transitive = false
+    }
+    testImplementation 'org.xerial:sqlite-jdbc:3.45.3.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events 'passed', 'failed', 'skipped'
+        showStandardStreams = true
+        exceptionFormat = 'full'
+    }
+}
+
+// ./gradlew benchmark -- SQLite settings compared head to head. Not part of
+// `check`; it takes about a minute and reports timings rather than pass/fail.
+tasks.register('benchmark', JavaExec) {
+    group = 'verification'
+    description = 'Measures CoreProtect database operations under the old and new SQLite settings.'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'net.coreprotect.bench.DatabaseBenchmark'
+    // JavaExec forks, so -Dbench.* on the gradle command line has to be passed
+    // through explicitly or the benchmark silently uses its defaults.
+    systemProperty 'bench.rows', findProperty('bench.rows') ?: System.getProperty('bench.rows') ?: '300000'
+    systemProperty 'bench.seconds', findProperty('bench.seconds') ?: System.getProperty('bench.seconds') ?: '6'
+    jvmArgs '--enable-native-access=ALL-UNNAMED'
 }
 
 tasks.withType(JavaCompile).configureEach {

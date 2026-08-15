@@ -33,7 +33,7 @@ public class UndoCommand {
 
             if (valid) {
                Config.last_rollback.remove(user.getName());
-               RollbackRestoreCommand.runCommand(user, permission, args, time);
+               RollbackRestoreCommand.runCommand(user, permission, args, time, RollbackRestoreCommand.storedLocation(list));
             }
          } else {
             user.sendMessage(Language.get("no-previous-rollback-restore-found"));
