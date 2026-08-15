@@ -31,14 +31,14 @@ public class PurgeCommand extends Consumer {
          player.sendMessage(Language.get("please-use-co-purge-t-time"));
       } else if (seconds <= 0) {
          player.sendMessage(Language.get("please-use-co-purge-t-time"));
-      } else if (player instanceof Player && seconds < (Integer)Config.config.get("purge-minimum-time")) {
-         player.sendMessage(Language.get("purge-minimum-age", Functions.formatDuration((Integer)Config.config.get("purge-minimum-time"))));
-      } else if (seconds < (Integer)Config.config.get("purge-minimum-time-console")) {
-         player.sendMessage(Language.get("purge-minimum-age-console", Functions.formatDuration((Integer)Config.config.get("purge-minimum-time-console"))));
+      } else if (player instanceof Player && seconds < Config.config.get("purge-minimum-time")) {
+         player.sendMessage(Language.get("purge-minimum-age", Functions.formatDuration(Config.config.get("purge-minimum-time"))));
+      } else if (seconds < Config.config.get("purge-minimum-time-console")) {
+         player.sendMessage(Language.get("purge-minimum-age-console", Functions.formatDuration(Config.config.get("purge-minimum-time-console"))));
       } else {
          boolean optimizeCheckValue = false;
 
-         for(String arg : args) {
+         for (String arg : args) {
             if (arg.trim().equalsIgnoreCase("#optimize")) {
                optimizeCheckValue = true;
                break;
@@ -55,7 +55,7 @@ public class PurgeCommand extends Consumer {
                   long removed = 0L;
                   Connection connection = null;
 
-                  for(int i = 0; i <= 5; ++i) {
+                  for (int i = 0; i <= 5; ++i) {
                      connection = Database.getConnection(false);
                      if (connection != null) {
                         break;
@@ -73,7 +73,7 @@ public class PurgeCommand extends Consumer {
                   Functions.messageOwnerAndUser(player, Language.get("do-not-restart-your-server-until"));
                   Config.purge_running = true;
 
-                  while(!PurgeCommand.pause_success) {
+                  while (!PurgeCommand.pause_success) {
                      Thread.sleep(1L);
                   }
 
@@ -82,7 +82,7 @@ public class PurgeCommand extends Consumer {
                   PreparedStatement preparedStmt = null;
                   boolean abort = false;
                   String purge_prefix = "tmp_" + Config.prefix;
-                  if ((Integer)Config.config.get("use-mysql") == 0) {
+                  if (Config.config.get("use-mysql") == 0) {
                      query = "ATTACH DATABASE '" + Config.sqlite + ".tmp' AS tmp_db";
                      preparedStmt = connection.prepareStatement(query);
                      preparedStmt.execute();
@@ -99,8 +99,8 @@ public class PurgeCommand extends Consumer {
                      return;
                   }
 
-                  if ((Integer)Config.config.get("use-mysql") == 0) {
-                     for(String table : Config.databaseTables) {
+                  if (Config.config.get("use-mysql") == 0) {
+                     for (String table : Config.databaseTables) {
                         try {
                            query = "DROP TABLE IF EXISTS " + purge_prefix + table + "";
                            preparedStmt = connection.prepareStatement(query);
@@ -116,16 +116,16 @@ public class PurgeCommand extends Consumer {
 
                   List<String> purge_tables = Arrays.asList("sign", "container", "skull", "session", "chat", "command", "entity", "block");
 
-                  for(String table : Config.databaseTables) {
+                  for (String table : Config.databaseTables) {
                      String tableName = table.replace("_", " ");
                      Functions.messageOwnerAndUser(player, Language.get("processing-data", tableName));
-                     if ((Integer)Config.config.get("use-mysql") == 0) {
+                     if (Config.config.get("use-mysql") == 0) {
                         StringBuilder columns = new StringBuilder();
                         ResultSet rs = connection.createStatement().executeQuery("SELECT * FROM " + purge_prefix + table);
                         ResultSetMetaData resultSetMetaData = rs.getMetaData();
                         int columnCount = resultSetMetaData.getColumnCount();
 
-                        for(int i = 1; i <= columnCount; ++i) {
+                        for (int i = 1; i <= columnCount; ++i) {
                            String name = resultSetMetaData.getColumnName(i);
                            if (columns.length() == 0) {
                               columns = new StringBuilder(name);
@@ -205,7 +205,7 @@ public class PurgeCommand extends Consumer {
                            preparedStmt = connection.prepareStatement(query);
 
                            ResultSet resultSet;
-                           for(resultSet = preparedStmt.executeQuery(); resultSet.next(); old_count = resultSet.getInt("count")) {
+                           for (resultSet = preparedStmt.executeQuery(); resultSet.next(); old_count = resultSet.getInt("count")) {
                            }
 
                            resultSet.close();
@@ -221,7 +221,7 @@ public class PurgeCommand extends Consumer {
                            preparedStmt = connection.prepareStatement(query);
 
                            ResultSet resultSet;
-                           for(resultSet = preparedStmt.executeQuery(); resultSet.next(); new_count = resultSet.getInt("count")) {
+                           for (resultSet = preparedStmt.executeQuery(); resultSet.next(); new_count = resultSet.getInt("count")) {
                            }
 
                            resultSet.close();
@@ -233,7 +233,7 @@ public class PurgeCommand extends Consumer {
                         removed += (long)(old_count - new_count);
                      }
 
-                     if ((Integer)Config.config.get("use-mysql") == 1) {
+                     if (Config.config.get("use-mysql") == 1) {
                         try {
                            if (purge_tables.contains(table)) {
                               query = "DELETE FROM " + Config.prefix + table + " WHERE time < '" + ptime + "'";
@@ -248,10 +248,10 @@ public class PurgeCommand extends Consumer {
                      }
                   }
 
-                  if ((Integer)Config.config.get("use-mysql") == 1 && optimizeCheck) {
+                  if (Config.config.get("use-mysql") == 1 && optimizeCheck) {
                      Functions.messageOwnerAndUser(player, Language.get("optimizing-database-please-wait"));
 
-                     for(String table : Config.databaseTables) {
+                     for (String table : Config.databaseTables) {
                         query = "OPTIMIZE LOCAL TABLE " + Config.prefix + table + "";
                         preparedStmt = connection.prepareStatement(query);
                         preparedStmt.execute();
@@ -261,7 +261,7 @@ public class PurgeCommand extends Consumer {
 
                   connection.close();
                   if (abort) {
-                     if ((Integer)Config.config.get("use-mysql") == 0) {
+                     if (Config.config.get("use-mysql") == 0) {
                         (new File(Config.sqlite + ".tmp")).delete();
                         (new File(Config.sqlite + ".tmp-wal")).delete();
                         (new File(Config.sqlite + ".tmp-shm")).delete();
@@ -275,7 +275,7 @@ public class PurgeCommand extends Consumer {
                      return;
                   }
 
-                  if ((Integer)Config.config.get("use-mysql") == 0) {
+                  if (Config.config.get("use-mysql") == 0) {
                      (new File(Config.sqlite)).delete();
                      // In WAL mode the database has -wal and -shm sidecars. They
                      // belong to the file being replaced, and leaving them next

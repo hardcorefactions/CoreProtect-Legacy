@@ -67,7 +67,7 @@ public class RollbackRestoreCommand {
       String corecommand = args[0].toLowerCase();
       if (arg_blocks != null && arg_exclude != null && arg_exclude_users != null) {
          if (arg_action.isEmpty() && !arg_blocks.isEmpty()) {
-            for(Object arg_block : arg_blocks) {
+            for (Object arg_block : arg_blocks) {
                if (arg_block instanceof Material) {
                   arg_action.add(0);
                   arg_action.add(1);
@@ -110,7 +110,7 @@ public class RollbackRestoreCommand {
                }
 
                final int final_action = a;
-               int default_radius = (Integer)Config.config.get("default-radius");
+               int default_radius = Config.config.get("default-radius");
                if ((player instanceof Player || player instanceof BlockCommandSender) && arg_radius == null && default_radius > 0 && !forceglobal) {
                   int xmin = lo0.getBlockX() - default_radius;
                   int xmax = lo0.getBlockX() + default_radius;
@@ -135,7 +135,7 @@ public class RollbackRestoreCommand {
                }
 
                if (g == 1 && (!arg_users.isEmpty() || arg_users.isEmpty() && arg_radius != null)) {
-                  int max_radius = (Integer)Config.config.get("max-radius");
+                  int max_radius = Config.config.get("max-radius");
                   if (arg_radius != null) {
                      int radius_value = arg_radius[0];
                      if (radius_value > max_radius && max_radius > 0) {
@@ -173,8 +173,8 @@ public class RollbackRestoreCommand {
 
                    int c = 0;
 
-                  for(String ruser : arg_users) {
-                     for(Player p : CoreProtect.getInstance().getServer().matchPlayer(ruser)) {
+                  for (String ruser : arg_users) {
+                     for (Player p : CoreProtect.getInstance().getServer().matchPlayer(ruser)) {
                         if (p.getName().equalsIgnoreCase(ruser)) {
                            arg_users.set(c, p.getName());
                         }
@@ -190,10 +190,10 @@ public class RollbackRestoreCommand {
                   if (arg_users.contains("#container")) {
                      boolean valid = false;
                      if (Config.lookup_type.get(player.getName()) != null) {
-                        int lookup_type = (Integer)Config.lookup_type.get(player.getName());
+                        int lookup_type = Config.lookup_type.get(player.getName());
                         if (lookup_type == 1) {
                            valid = true;
-                        } else if (lookup_type == 5 && ((List)Config.lookup_ulist.get(player.getName())).contains("#container")) {
+                        } else if (lookup_type == 5 && (Config.lookup_ulist.get(player.getName())).contains("#container")) {
                            valid = true;
                         }
                      }
@@ -208,7 +208,7 @@ public class RollbackRestoreCommand {
                         return;
                      }
 
-                     String lcommand = (String)Config.lookup_command.get(player.getName());
+                     String lcommand = Config.lookup_command.get(player.getName());
                      String[] data = lcommand.split("\\.");
                      x = Integer.parseInt(data[0]);
                      y = Integer.parseInt(data[1]);
@@ -222,13 +222,13 @@ public class RollbackRestoreCommand {
                      if (block.getState() instanceof Chest) {
                         BlockFace[] block_sides = new BlockFace[]{BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
 
-                        for(BlockFace face : block_sides) {
+                        for (BlockFace face : block_sides) {
                            if (block.getRelative(face, 1).getState() instanceof Chest) {
                               Block relative = block.getRelative(face, 1);
                               int x2 = relative.getX();
                               int z2 = relative.getZ();
-                              double new_x = (double)(x + x2) / (double)2.0F;
-                              double new_z = (double)(z + z2) / (double)2.0F;
+                              double new_x = (double)(x + x2) / 2.0D;
+                              double new_z = (double)(z + z2) / 2.0D;
                               lo0.setX(new_x);
                               lo0.setZ(new_z);
                               break;
@@ -264,7 +264,7 @@ public class RollbackRestoreCommand {
                                     String baduser = "";
                                     boolean exists = false;
 
-                                    for(String check : rollbackusers2) {
+                                    for (String check : rollbackusers2) {
                                        if (!check.equals("#global") && !check.equals("#container")) {
                                           exists = Lookup.playerExists(connection, check);
                                           if (!exists) {
@@ -277,7 +277,7 @@ public class RollbackRestoreCommand {
                                     }
 
                                     if (exists) {
-                                       for(String check : arg_exclude_users) {
+                                       for (String check : arg_exclude_users) {
                                           if (!check.equals("#global")) {
                                              exists = Lookup.playerExists(connection, check);
                                              if (!exists) {
@@ -302,14 +302,14 @@ public class RollbackRestoreCommand {
 
                                        if (arg_wid > 0) {
                                           restrict_world = true;
-                                          location = new Location(CoreProtect.getInstance().getServer().getWorld(Functions.getWorldName(arg_wid)), (double)0.0F, (double)0.0F, (double)0.0F);
+                                          location = new Location(CoreProtect.getInstance().getServer().getWorld(Functions.getWorldName(arg_wid)), 0.0D, 0.0D, 0.0D);
                                        }
 
                                        boolean verbose = arg_noisy == 1;
 
                                         StringBuilder users = new StringBuilder();
 
-                                       for(String value : rollbackusers2) {
+                                       for (String value : rollbackusers2) {
                                           if (users.length() == 0) {
                                              users = new StringBuilder("" + value + "");
                                           } else {

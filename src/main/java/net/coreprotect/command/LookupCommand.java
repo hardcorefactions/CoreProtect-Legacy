@@ -42,7 +42,7 @@ public class LookupCommand {
          int arg_excluded0 = arg_exclude0.size();
          int arg_restricted0 = arg_blocks0.size();
          if (arg_action0.isEmpty() && !arg_blocks0.isEmpty()) {
-            for(Object arg_block : arg_blocks0) {
+            for (Object arg_block : arg_blocks0) {
                if (arg_block instanceof Material) {
                   arg_action0.add(0);
                   arg_action0.add(1);
@@ -58,7 +58,7 @@ public class LookupCommand {
          } else {
             int type0 = 0;
             if (Config.lookup_type.get(player.getName()) != null) {
-               type0 = (Integer)Config.lookup_type.get(player.getName());
+               type0 = Config.lookup_type.get(player.getName());
             }
 
             if (type0 == 0 && resultc > 1) {
@@ -215,7 +215,7 @@ public class LookupCommand {
                            p0 = 1;
                         }
 
-                        String lcommand = (String)Config.lookup_command.get(player.getName());
+                        String lcommand = Config.lookup_command.get(player.getName());
                         String[] data = lcommand.split("\\.");
                         int x = Integer.parseInt(data[0]);
                         int y = Integer.parseInt(data[1]);
@@ -231,9 +231,9 @@ public class LookupCommand {
                         String bc = x + "." + y + "." + z + "." + wid + "." + x2 + "." + y2 + "." + z2 + "." + re0;
                         Config.lookup_command.put(player.getName(), bc);
                         String world = Functions.getWorldName(wid);
-                        double dx = (double)0.5F * (double)(x + x2);
-                        double dy = (double)0.5F * (double)(y + y2);
-                        double dz = (double)0.5F * (double)(z + z2);
+                        double dx = 0.5D * (double)(x + x2);
+                        double dy = 0.5D * (double)(y + y2);
+                        double dz = 0.5D * (double)(z + z2);
                         final Location location = new Location(CoreProtect.getInstance().getServer().getWorld(world), dx, dy, dz);
 
                         final int p = p0;
@@ -247,7 +247,7 @@ public class LookupCommand {
                                     Statement statement = connection.createStatement();
                                     String blockdata = Lookup.chest_transactions(statement, location, player.getName(), p, re);
                                     if (blockdata.contains("\n")) {
-                                       for(String b : blockdata.split("\n")) {
+                                       for (String b : blockdata.split("\n")) {
                                           player.sendMessage(b);
                                        }
                                     } else {
@@ -335,7 +335,7 @@ public class LookupCommand {
                            }
 
                            if (g == 1 && (page_lookup || !arg_blocks0.isEmpty() || !arg_users.isEmpty() || arg_users.isEmpty() && arg_radius != null)) {
-                              int max_radius = (Integer)Config.config.get("max-radius");
+                              int max_radius = Config.config.get("max-radius");
                               if (arg_radius != null) {
                                  int radius_value = arg_radius[0];
                                  if (radius_value > max_radius && max_radius > 0) {
@@ -352,8 +352,8 @@ public class LookupCommand {
                               List<String> rollbackusers = arg_users;
                               int c = 0;
 
-                              for(String ruser : arg_users) {
-                                 for(Player p : CoreProtect.getInstance().getServer().matchPlayer(ruser)) {
+                              for (String ruser : arg_users) {
+                                 for (Player p : CoreProtect.getInstance().getServer().matchPlayer(ruser)) {
                                     if (p.getName().equalsIgnoreCase(ruser)) {
                                        rollbackusers.set(c, p.getName());
                                     }
@@ -368,7 +368,7 @@ public class LookupCommand {
                               int z0 = 0;
                               int wid0 = 0;
                               if (type == 5) {
-                                 String lcommand = (String)Config.lookup_command.get(player.getName());
+                                 String lcommand = Config.lookup_command.get(player.getName());
                                  String[] data = lcommand.split("\\.");
                                  x0 = Integer.parseInt(data[0]);
                                  y0 = Integer.parseInt(data[1]);
@@ -383,13 +383,13 @@ public class LookupCommand {
                                     re0 = Integer.parseInt(data[9]);
                                  }
 
-                                 rollbackusers = (List)Config.lookup_ulist.get(player.getName());
-                                 arg_blocks0 = (List)Config.lookup_blist.get(player.getName());
-                                 arg_exclude0 = (List)Config.lookup_elist.get(player.getName());
-                                 arg_exclude_users0 = (List)Config.lookup_e_userlist.get(player.getName());
-                                 arg_action0 = (List)Config.lookup_alist.get(player.getName());
+                                 rollbackusers = Config.lookup_ulist.get(player.getName());
+                                 arg_blocks0 = Config.lookup_blist.get(player.getName());
+                                 arg_exclude0 = Config.lookup_elist.get(player.getName());
+                                 arg_exclude_users0 = Config.lookup_e_userlist.get(player.getName());
+                                 arg_action0 = Config.lookup_alist.get(player.getName());
                                  arg_radius = (Integer[])Config.lookup_radius.get(player.getName());
-                                 ts0 = (String)Config.lookup_time.get(player.getName());
+                                 ts0 = Config.lookup_time.get(player.getName());
                                  rbseconds = 1;
                               } else {
                                  if (lo != null) {
@@ -411,10 +411,10 @@ public class LookupCommand {
 
                                     boolean valid = false;
                                     if (Config.lookup_type.get(player.getName()) != null) {
-                                       int lookup_type = (Integer)Config.lookup_type.get(player.getName());
+                                       int lookup_type = Config.lookup_type.get(player.getName());
                                        if (lookup_type == 1) {
                                           valid = true;
-                                       } else if (lookup_type == 5 && ((List)Config.lookup_ulist.get(player.getName())).contains("#container")) {
+                                       } else if (lookup_type == 5 && (Config.lookup_ulist.get(player.getName())).contains("#container")) {
                                           valid = true;
                                        }
                                     }
@@ -429,7 +429,7 @@ public class LookupCommand {
                                        return;
                                     }
 
-                                    String lcommand = (String)Config.lookup_command.get(player.getName());
+                                    String lcommand = Config.lookup_command.get(player.getName());
                                     String[] data = lcommand.split("\\.");
                                     x0 = Integer.parseInt(data[0]);
                                     y0 = Integer.parseInt(data[1]);
@@ -495,7 +495,7 @@ public class LookupCommand {
                                              Statement statement = connection.createStatement();
                                              String baduser = "";
 
-                                             for(String check : rollbackusers2) {
+                                             for (String check : rollbackusers2) {
                                                 if ((check.equals("#global") || check.equals("#container")) && !arg_action.contains(9)) {
                                                    exists = true;
                                                 } else {
@@ -506,14 +506,14 @@ public class LookupCommand {
                                                    }
 
                                                    if (arg_action.contains(9) && Config.uuid_cache.get(check.toLowerCase()) != null) {
-                                                      String uuid = (String)Config.uuid_cache.get(check.toLowerCase());
+                                                      String uuid = Config.uuid_cache.get(check.toLowerCase());
                                                       uuid_list.add(uuid);
                                                    }
                                                 }
                                              }
 
                                              if (exists) {
-                                                for(String check : arg_exclude_users) {
+                                                for (String check : arg_exclude_users) {
                                                    if (!check.equals("#global")) {
                                                       exists = Lookup.playerExists(connection, check);
                                                       if (!exists) {
@@ -554,7 +554,7 @@ public class LookupCommand {
                                                 int rows = 0;
                                                 boolean check_rows = true;
                                                 if (type == 5 && pa > 1) {
-                                                   rows = (Integer)Config.lookup_rows.get(player.getName());
+                                                   rows = Config.lookup_rows.get(player.getName());
                                                    if (page_start < rows) {
                                                       check_rows = false;
                                                    }
@@ -584,21 +584,12 @@ public class LookupCommand {
                                                       player.sendMessage(Language.get("no-results-found"));
                                                    }
                                                 } else {
-                                                   String arrows = "                      ";
-                                                   if (rows > re) {
-                                                      int total_pages = (int)Math.ceil((double)rows / ((double)re + (double)0.0F));
-                                                      String page_back = "«";
-                                                      String page_next = "»";
-                                                      if (pa > 1 && pa < total_pages) {
-                                                         (new StringBuilder()).append(page_back).append(" | ").append(page_next).toString();
-                                                      } else if (pa > 1) {
-                                                         (new StringBuilder()).append("    ").append(page_back).toString();
-                                                      } else {
-                                                         (new StringBuilder()).append("    ").append(page_next).toString();
-                                                      }
-                                                   }
-
-                                                   arrows = "";
+                                                   // The « / » pagination arrows this used to
+                                                   // assemble were thrown away -- the result of
+                                                   // each branch was never assigned, and `arrows`
+                                                   // was overwritten with "" before the header was
+                                                   // sent. The header takes the empty value now.
+                                                   String arrows = "";
                                                    List<String[]> lookup_list = Lookup.performPartialLookup(statement, player, uuid_list, user_list, arg_blocks, arg_exclude, arg_exclude_users, arg_action, location, radius, stime, page_start, re, restrict_world, true);
                                                    if (lookup_list == null) {
                                                       player.sendMessage(Language.get("database-query-failed"));
@@ -610,7 +601,7 @@ public class LookupCommand {
                                                    player.sendMessage(Language.get("coreprotect-lookup-results", arrows));
                                                    if (!arg_action.contains(6) && !arg_action.contains(7)) {
                                                       if (arg_action.contains(8)) {
-                                                         for(String[] data : lookup_list) {
+                                                         for (String[] data : lookup_list) {
                                                             String time = data[0];
                                                             String dplayer = data[1];
                                                             int wid = Integer.parseInt(data[2]);
@@ -619,8 +610,8 @@ public class LookupCommand {
                                                             int z = Integer.parseInt(data[5]);
                                                             int action = Integer.parseInt(data[6]);
                                                             double time_since = (double)unixtimestamp - Double.parseDouble(time);
-                                                            time_since /= (double)60.0F;
-                                                            time_since /= (double)60.0F;
+                                                            time_since /= 60.0D;
+                                                            time_since /= 60.0D;
                                                             String timeago = (new DecimalFormat("0.00")).format(time_since);
                                                             String action_string = "in";
                                                             if (action == 0) {
@@ -628,25 +619,25 @@ public class LookupCommand {
                                                             }
 
                                                             String world = Functions.getWorldName(wid);
-                                                            double time_length = (double)timeago.replaceAll("[^0-9]", "").length() * (double)1.5F;
-                                                            int padding = (int)(time_length + (double)12.5F);
+                                                            double time_length = (double)timeago.replaceAll("[^0-9]", "").length() * 1.5D;
+                                                            int padding = (int)(time_length + 12.5D);
                                                             String left_padding = StringUtils.leftPad("", padding, ' ');
                                                             player.sendMessage(Language.get("h-ago-logged", timeago, dplayer, action_string));
                                                             player.sendMessage(Language.get("x-y-z", left_padding, x, y, z, world));
                                                          }
                                                       } else if (arg_action.contains(9)) {
-                                                         for(String[] data : lookup_list) {
+                                                         for (String[] data : lookup_list) {
                                                             String time = data[0];
                                                             String user = (String)Config.uuid_cache_reversed.get(data[1]);
                                                             String username = data[2];
                                                             double time_since = (double)unixtimestamp - Double.parseDouble(time);
-                                                            time_since /= (double)60.0F;
-                                                            time_since /= (double)60.0F;
+                                                            time_since /= 60.0D;
+                                                            time_since /= 60.0D;
                                                             String timeago = (new DecimalFormat("0.00")).format(time_since);
                                                             player.sendMessage(Language.get("h-ago-logged-in-as", timeago, user, username));
                                                          }
                                                       } else {
-                                                         for(String[] data : lookup_list) {
+                                                         for (String[] data : lookup_list) {
                                                             String string_amount = "";
                                                             int drb = Integer.parseInt(data[8]);
                                                             String rbd = "";
@@ -681,11 +672,11 @@ public class LookupCommand {
                                                             }
 
                                                             double time_since = (double)unixtimestamp - Double.parseDouble(time);
-                                                            time_since /= (double)60.0F;
-                                                            time_since /= (double)60.0F;
+                                                            time_since /= 60.0D;
+                                                            time_since /= 60.0D;
                                                             String timeago = (new DecimalFormat("0.00")).format(time_since);
-                                                            double time_length = (double)timeago.replaceAll("[^0-9]", "").length() * (double)1.5F;
-                                                            int padding = (int)(time_length + (double)12.5F);
+                                                            double time_length = (double)timeago.replaceAll("[^0-9]", "").length() * 1.5D;
+                                                            int padding = (int)(time_length + 12.5D);
                                                             String left_padding = StringUtils.leftPad("", padding, ' ');
                                                             String world = Functions.getWorldName(wid);
                                                             String dname = "";
@@ -721,20 +712,20 @@ public class LookupCommand {
                                                          }
                                                       }
                                                    } else {
-                                                      for(String[] data : lookup_list) {
+                                                      for (String[] data : lookup_list) {
                                                          String time = data[0];
                                                          String dplayer = data[1];
                                                          String message = data[2];
                                                          double time_since = (double)unixtimestamp - Double.parseDouble(time);
-                                                         time_since /= (double)60.0F;
-                                                         time_since /= (double)60.0F;
+                                                         time_since /= 60.0D;
+                                                         time_since /= 60.0D;
                                                          String timeago = (new DecimalFormat("0.00")).format(time_since);
                                                          player.sendMessage(Language.get("h-ago-2", timeago, dplayer, message));
                                                       }
                                                    }
 
                                                    if (rows > re) {
-                                                      int total_pages = (int)Math.ceil((double)rows / ((double)re + (double)0.0F));
+                                                      int total_pages = (int)Math.ceil((double)rows / ((double)re + 0.0D));
                                                       if (arg_action.contains(6) || arg_action.contains(7) || arg_action.contains(9)) {
                                                          player.sendMessage("-----");
                                                       }
@@ -799,7 +790,7 @@ public class LookupCommand {
                            }
                         }
 
-                        String lcommand = (String)Config.lookup_command.get(player.getName());
+                        String lcommand = Config.lookup_command.get(player.getName());
                         String[] data = lcommand.split("\\.");
                         int x = Integer.parseInt(data[0]);
                         int y = Integer.parseInt(data[1]);
@@ -833,7 +824,7 @@ public class LookupCommand {
                                     }
 
                                     if (blockdata.contains("\n")) {
-                                       for(String b : blockdata.split("\n")) {
+                                       for (String b : blockdata.split("\n")) {
                                           player.sendMessage(b);
                                        }
                                     } else if (!blockdata.isEmpty()) {

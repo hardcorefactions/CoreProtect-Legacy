@@ -91,7 +91,7 @@ public class Config extends Queue {
    private static void checkPlayers(Connection connection) {
       player_id_cache.clear();
 
-      for(Player player : CoreProtect.getInstance().getServer().getOnlinePlayers()) {
+      for (Player player : CoreProtect.getInstance().getServer().getOnlinePlayers()) {
          if (player_id_cache.get(player.getName().toLowerCase()) == null) {
             Database.loadUserID(connection, player.getName(), player.getUniqueId().toString());
          }
@@ -108,7 +108,7 @@ public class Config extends Queue {
             RandomAccessFile blfile = new RandomAccessFile(blacklist, "rw");
             long blc = blfile.length();
             if (blc > 0L) {
-               while(blfile.getFilePointer() < blfile.length()) {
+               while (blfile.getFilePointer() < blfile.length()) {
                   String blacklist_user = blfile.readLine().replace(" ", "").toLowerCase();
                   if (!blacklist_user.isEmpty()) {
                      Config.blacklist.put(blacklist_user, true);
@@ -177,7 +177,7 @@ public class Config extends Queue {
          File dir = new File("plugins/CoreProtect");
          String[] children = dir.list();
          if (children != null) {
-            for(String element : children) {
+            for (String element : children) {
                 if (!element.startsWith(".") && element.endsWith(".yml") && !element.equalsIgnoreCase("language.yml")) {
                   try {
                      String key = element.replaceAll(".yml", "-");
@@ -188,7 +188,7 @@ public class Config extends Queue {
                      RandomAccessFile configfile = new RandomAccessFile("plugins/CoreProtect/" + element, "rw");
                      long config_length = configfile.length();
                      if (config_length > 0L) {
-                        while(configfile.getFilePointer() < configfile.length()) {
+                        while (configfile.getFilePointer() < configfile.length()) {
                            String line = configfile.readLine();
                            if (line.contains(":") && !line.startsWith("#")) {
                               line = line.replaceFirst(":", "§ ");
@@ -889,7 +889,7 @@ public class Config extends Queue {
          String query = "SELECT id,material FROM " + prefix + "material_map";
          ResultSet rs = statement.executeQuery(query);
 
-         while(rs.next()) {
+         while (rs.next()) {
             int id = rs.getInt("id");
             String material = rs.getString("material");
             materials.put(material, id);
@@ -906,7 +906,7 @@ public class Config extends Queue {
          query = "SELECT id,art FROM " + prefix + "art_map";
          rs = statement.executeQuery(query);
 
-         while(rs.next()) {
+         while (rs.next()) {
             int id = rs.getInt("id");
             String art = rs.getString("art");
             Config.art.put(art, id);
@@ -923,7 +923,7 @@ public class Config extends Queue {
          query = "SELECT id,entity FROM " + prefix + "entity_map";
          rs = statement.executeQuery(query);
 
-         while(rs.next()) {
+         while (rs.next()) {
             int id = rs.getInt("id");
             String entity = rs.getString("entity");
             entities.put(entity, id);
@@ -949,7 +949,7 @@ public class Config extends Queue {
          String query = "SELECT id,world FROM " + prefix + "world";
          ResultSet rs = statement.executeQuery(query);
 
-         while(rs.next()) {
+         while (rs.next()) {
             int id = rs.getInt("id");
             String world = rs.getString("world");
             Config.worlds.put(world, id);
@@ -959,7 +959,7 @@ public class Config extends Queue {
             }
          }
 
-         for(World world : CoreProtect.getInstance().getServer().getWorlds()) {
+         for (World world : CoreProtect.getInstance().getServer().getWorlds()) {
             String worldname = world.getName();
             if (Config.worlds.get(worldname) == null) {
                int id = world_id + 1;

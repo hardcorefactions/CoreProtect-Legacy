@@ -39,11 +39,11 @@ public class Patch extends CoreProtect {
          Statement statement = connection.createStatement();
          ResultSet rs = statement.executeQuery(query);
 
-         while(rs.next()) {
+         while (rs.next()) {
             String version = rs.getString("version");
             if (!version.contains(".")) {
                int version_int = Integer.parseInt(version);
-               version = String.format("%3.2f", (double)version_int / (double)100.0F);
+               version = String.format("%3.2f", (double)version_int / 100.0D);
             }
 
             version = version.replace(",", ".");
@@ -82,7 +82,7 @@ public class Patch extends CoreProtect {
          if (pluginFile.getPath().endsWith(".jar")) {
             JarInputStream jarInputStream = new JarInputStream(Files.newInputStream(pluginFile.toPath()));
 
-            while(true) {
+            while (true) {
                JarEntry jarEntry = jarInputStream.getNextJarEntry();
                if (jarEntry == null) {
                   jarInputStream.close();
@@ -135,7 +135,7 @@ public class Patch extends CoreProtect {
          // Wait for the backlog built up during the upgrade to reach the
          // database before announcing it finished. This watched is_paused, which
          // Process no longer raises; Consumer.flushing is the flush signal.
-         while(Consumer.flushing) {
+         while (Consumer.flushing) {
             Thread.sleep(500L);
          }
       } catch (Exception e) {
@@ -159,7 +159,7 @@ public class Patch extends CoreProtect {
             last_version[2] = 0;
          }
 
-         for(String patchData : getPatches()) {
+         for (String patchData : getPatches()) {
             String[] thePatch = patchData.split("\\.");
             int patchMajor = Integer.parseInt(thePatch[0]);
             int patchMinor = Integer.parseInt(thePatch[1]);

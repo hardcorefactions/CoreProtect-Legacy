@@ -29,7 +29,7 @@ import org.bukkit.inventory.ItemStack;
 public class Database extends Queue {
    public static void beginTransaction(Statement statement) {
       try {
-         if ((Integer)Config.config.get("use-mysql") == 1) {
+         if (Config.config.get("use-mysql") == 1) {
             statement.executeUpdate("START TRANSACTION");
          } else {
             statement.executeUpdate("BEGIN TRANSACTION");
@@ -42,7 +42,7 @@ public class Database extends Queue {
 
    public static void commitTransaction(Statement statement) {
       try {
-         if ((Integer)Config.config.get("use-mysql") == 1) {
+         if (Config.config.get("use-mysql") == 1) {
             statement.executeUpdate("COMMIT");
          } else {
             statement.executeUpdate("COMMIT TRANSACTION");
@@ -131,7 +131,7 @@ public class Database extends Queue {
             return connection;
          }
 
-         if ((Integer)Config.config.get("use-mysql") == 1) {
+         if (Config.config.get("use-mysql") == 1) {
             String database = "jdbc:mysql://" + Config.host + ":" + Config.port + "/" + Config.database + "?useUnicode=true&characterEncoding=utf-8&connectTimeout=10000&useSSL=false";
             Class.forName(Config.driver).newInstance();
             connection = DriverManager.getConnection(database, Config.username, Config.password);
@@ -145,7 +145,7 @@ public class Database extends Queue {
             // those genuinely do rebuild the database underneath us. A normal
             // consumer flush no longer sets this, so ordinary lookups stop
             // being turned away with "database busy".
-            while(Consumer.is_paused && !force) {
+            while (Consumer.is_paused && !force) {
                Thread.sleep(1L);
                long pause_time = System.currentTimeMillis() - start_time;
                if (pause_time >= 250L) {
@@ -171,7 +171,7 @@ public class Database extends Queue {
       try {
          ResultSet rs;
          List<Object> input;
-         for(rs = statement.executeQuery(query); rs.next(); result = input) {
+         for (rs = statement.executeQuery(query); rs.next(); result = input) {
             byte[] data = rs.getBytes("data");
             ByteArrayInputStream bais = new ByteArrayInputStream(data);
             ObjectInputStream ins = new ObjectInputStream(bais);
@@ -195,7 +195,7 @@ public class Database extends Queue {
          Sign sign = (Sign)block;
          ResultSet rs = statement.executeQuery(query);
 
-         while(rs.next()) {
+         while (rs.next()) {
             String line1 = rs.getString("line_1");
             String line2 = rs.getString("line_2");
             String line3 = rs.getString("line_3");
@@ -222,7 +222,7 @@ public class Database extends Queue {
          Skull skull = (Skull)block;
          ResultSet rs = statement.executeQuery(query);
 
-         while(rs.next()) {
+         while (rs.next()) {
             int type = rs.getInt("type");
             int data = rs.getInt("data");
             int rotation = rs.getInt("rotation");
@@ -462,7 +462,7 @@ public class Database extends Queue {
          }
 
          ResultSet rs;
-         for(rs = preparedStmt.executeQuery(); rs.next(); uuid = rs.getString("uuid")) {
+         for (rs = preparedStmt.executeQuery(); rs.next(); uuid = rs.getString("uuid")) {
             id = rs.getInt("id");
          }
 
@@ -494,7 +494,7 @@ public class Database extends Queue {
          String query = "SELECT user, uuid FROM " + Config.prefix + "user WHERE rowid='" + id + "' LIMIT 0, 1";
 
          ResultSet rs;
-         for(rs = statement.executeQuery(query); rs.next(); uuid = rs.getString("uuid")) {
+         for (rs = statement.executeQuery(query); rs.next(); uuid = rs.getString("uuid")) {
             user = rs.getString("user");
          }
 

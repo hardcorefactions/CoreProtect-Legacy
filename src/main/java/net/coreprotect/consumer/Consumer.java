@@ -91,7 +91,7 @@ public class Consumer implements Runnable, Thread.UncaughtExceptionHandler {
 
    private static void pauseConsumer() {
       try {
-         while(Config.server_running && (is_paused || Config.purge_running)) {
+         while (Config.server_running && (is_paused || Config.purge_running)) {
             pause_success = true;
             resetConnection = true;
             Thread.sleep(100L);
@@ -107,13 +107,13 @@ public class Consumer implements Runnable, Thread.UncaughtExceptionHandler {
       running = true;
       is_paused = false;
 
-      while(Config.server_running || Config.converter_running) {
+      while (Config.server_running || Config.converter_running) {
          try {
             int process_id;
             // The flip takes the same lock as Queue.enqueue, so once it returns
             // every append that read the old index has already finished and the
             // buffer handed to Process is nobody else's to touch.
-            synchronized(QUEUE_LOCK) {
+            synchronized (QUEUE_LOCK) {
                process_id = current_consumer;
                current_consumer = current_consumer == 0 ? 1 : 0;
                // Only restart ids from zero when the buffer really was drained.

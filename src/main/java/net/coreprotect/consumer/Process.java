@@ -43,45 +43,49 @@ public class Process {
 
    }
 
+   /**
+    * Writes one consumer buffer out to the database. The buffer index is handed
+    * over by Consumer.run() after it has flipped under QUEUE_LOCK, so nothing
+    * else is writing to it by the time this runs.
+    */
    public static void processConsumer(int process_id) {
-      {
+      try {
+         validateConnection();
+         if (connection == null) {
+            return;
+         }
+
+         // This used to raise Consumer.is_paused, which is a purge/patch pause
+         // request rather than a lock -- so a cycle starting while a purge held
+         // it cleared it out from under them on the way out. Reader/writer
+         // overlap is handled by the SQLite pragmas in Database.getConnection
+         // now; `flushing` only reports progress to the schema patcher.
+         Consumer.flushing = true;
+
+         ArrayList<Object[]> consumer_data = Consumer.consumer.get(process_id);
+         Map<Integer, String[]> users = Consumer.consumer_users.get(process_id);
+         Map<Integer, Object> blocks = Consumer.consumer_object.get(process_id);
+
+         Statement statement = connection.createStatement();
+
          try {
-            validateConnection();
-            if (connection != null) {
-               // This used to raise Consumer.is_paused, which is a purge/patch
-               // pause request rather than a lock -- so a cycle starting while a
-               // purge held it cleared it out from under them on the way out.
-               // Reader/writer overlap is handled by the SQLite pragmas in
-               // Database.getConnection now; `flushing` only reports progress.
-               Consumer.flushing = true;
-               Statement statement = connection.createStatement();
-               ArrayList<Object[]> consumer_data = (ArrayList)Consumer.consumer.get(process_id);
-               Map<Integer, String[]> users = (Map)Consumer.consumer_users.get(process_id);
-               Map<Integer, Object> blocks = (Map)Consumer.consumer_object.get(process_id);
-               Database.beginTransaction(statement);
+            resolveUserIds(statement, users);
 
-               for(Map.Entry<Integer, String[]> entry : users.entrySet()) {
-                  String[] user_data = (String[])entry.getValue();
-                  String user = user_data[0];
-                  String uuid = user_data[1];
-                  if (Config.player_id_cache.get(user.toLowerCase()) == null) {
-                     Database.loadUserID(connection, user, uuid);
-                  }
-               }
+            PreparedStatement[] batch = openBatchStatements();
+            PreparedStatement signs = batch[0];
+            PreparedStatement blockRows = batch[1];
+            PreparedStatement skulls = batch[2];
+            PreparedStatement containers = batch[3];
+            PreparedStatement worlds = batch[4];
+            PreparedStatement chat = batch[5];
+            PreparedStatement command = batch[6];
+            PreparedStatement session = batch[7];
+            PreparedStatement entities = batch[8];
+            PreparedStatement materials = batch[9];
+            PreparedStatement art = batch[10];
+            PreparedStatement entityMap = batch[11];
 
-               Database.commitTransaction(statement);
-               PreparedStatement preparedStmt_signs = Database.prepareStatement(connection, 0, false);
-               PreparedStatement preparedStmt_blocks = Database.prepareStatement(connection, 1, false);
-               PreparedStatement preparedStmt_skulls = Database.prepareStatement(connection, 2, true);
-               PreparedStatement preparedStmt_containers = Database.prepareStatement(connection, 3, false);
-               PreparedStatement preparedStmt_worlds = Database.prepareStatement(connection, 4, false);
-               PreparedStatement preparedStmt_chat = Database.prepareStatement(connection, 5, false);
-               PreparedStatement preparedStmt_command = Database.prepareStatement(connection, 6, false);
-               PreparedStatement preparedStmt_session = Database.prepareStatement(connection, 7, false);
-               PreparedStatement preparedStmt_entities = Database.prepareStatement(connection, 8, true);
-               PreparedStatement preparedStmt_materials = Database.prepareStatement(connection, 9, false);
-               PreparedStatement preparedStmt_art = Database.prepareStatement(connection, 10, false);
-               PreparedStatement preparedStmt_entity = Database.prepareStatement(connection, 11, false);
+            try {
                Database.beginTransaction(statement);
 
                // The drain is wrapped so the buffer is always emptied, even if a
@@ -89,132 +93,175 @@ public class Process {
                // it behind made the batch grow on every following cycle, and its
                // user/object entries have already been consumed either way.
                try {
-               for(Object[] data : consumer_data) {
-                  if (data != null) {
-                     int id = (Integer)data[0];
-                     int action = (Integer)data[1];
-                     Material block_type = (Material)data[2];
-                     int block_data = (Integer)data[3];
-                     Material replace_type = (Material)data[4];
-                     int replace_data = (Integer)data[5];
-                     int force_data = (Integer)data[6];
-                     if (users.get(id) != null && blocks.get(id) != null) {
-                        String user = ((String[])users.get(id))[0];
-                        Object object = blocks.get(id);
-
-                        try {
-                           switch (action) {
-                              case 0:
-                                 processBlockBreak(preparedStmt_blocks, preparedStmt_skulls, process_id, id, block_type, block_data, replace_type, force_data, user, object);
-                                 break;
-                              case 1:
-                                 processBlockPlace(preparedStmt_blocks, preparedStmt_skulls, block_type, block_data, replace_type, replace_data, force_data, user, object);
-                                 break;
-                              case 2:
-                                 processSignText(preparedStmt_signs, process_id, id, force_data, user, object);
-                                 break;
-                              case 3:
-                                 processContainerBreak(preparedStmt_containers, process_id, id, user, object);
-                                 break;
-                              case 4:
-                                 processPlayerInteraction(preparedStmt_blocks, user, object);
-                                 break;
-                              case 5:
-                                 processContainerTransaction(preparedStmt_containers, process_id, id, force_data, user, object);
-                                 break;
-                              case 6:
-                                 processStructureGrowth(statement, preparedStmt_blocks, process_id, id, user, object);
-                                 break;
-                              case 7:
-                                 processRollbackUpdate(statement, process_id, id, force_data, 0);
-                                 break;
-                              case 8:
-                                 processRollbackUpdate(statement, process_id, id, force_data, 1);
-                                 break;
-                              case 9:
-                                 processWorldInsert(preparedStmt_worlds, user, force_data);
-                                 break;
-                              case 10:
-                                 processSignUpdate(statement, object, block_data, force_data);
-                                 break;
-                              case 11:
-                                 processSkullUpdate(statement, object, force_data);
-                                 break;
-                              case 12:
-                                 processPlayerChat(preparedStmt_chat, process_id, id, force_data, user);
-                                 break;
-                              case 13:
-                                 processPlayerCommand(preparedStmt_command, process_id, id, force_data, user);
-                                 break;
-                              case 14:
-                                 processPlayerLogin(connection, preparedStmt_session, process_id, id, object, block_data, replace_data, force_data, user);
-                                 break;
-                              case 15:
-                                 processPlayerLogout(preparedStmt_session, object, force_data, user);
-                                 break;
-                              case 16:
-                                 processEntityKill(preparedStmt_blocks, preparedStmt_entities, process_id, id, object, user);
-                                 break;
-                              case 17:
-                                 processEntitySpawn(statement, object, force_data);
-                                 break;
-                              case 18:
-                                 processHangingRemove(object, force_data);
-                                 break;
-                              case 19:
-                                 processHangingSpawn(object, block_type, block_data, force_data);
-                                 break;
-                              case 20:
-                                 processNaturalBlockBreak(statement, preparedStmt_blocks, process_id, id, user, object, block_type, block_data);
-                                 break;
-                              case 21:
-                                 processMaterialInsert(preparedStmt_materials, user, force_data);
-                                 break;
-                              case 22:
-                                 processMaterialInsert(preparedStmt_art, user, force_data);
-                                 break;
-                              case 23:
-                                 processMaterialInsert(preparedStmt_entity, user, force_data);
-                                 break;
-                              case 24:
-                                 processPlayerKill(preparedStmt_blocks, id, object, user);
-                           }
-                        } catch (Exception e) {
-                           e.printStackTrace();
-                        }
-
-                        users.remove(id);
-                        blocks.remove(id);
+                  for (Object[] data : consumer_data) {
+                     if (data == null) {
+                        continue;
                      }
-                  }
-               }
 
+                     int id = (Integer) data[0];
+                     int action = (Integer) data[1];
+                     Material block_type = (Material) data[2];
+                     int block_data = (Integer) data[3];
+                     Material replace_type = (Material) data[4];
+                     int replace_data = (Integer) data[5];
+                     int force_data = (Integer) data[6];
+
+                     String[] user_data = users.get(id);
+                     Object object = blocks.get(id);
+                     if (user_data == null || object == null) {
+                        continue;
+                     }
+
+                     String user = user_data[0];
+
+                     try {
+                        switch (action) {
+                           case 0:
+                              processBlockBreak(blockRows, skulls, process_id, id, block_type, block_data, replace_type, force_data, user, object);
+                              break;
+                           case 1:
+                              processBlockPlace(blockRows, skulls, block_type, block_data, replace_type, replace_data, force_data, user, object);
+                              break;
+                           case 2:
+                              processSignText(signs, process_id, id, force_data, user, object);
+                              break;
+                           case 3:
+                              processContainerBreak(containers, process_id, id, user, object);
+                              break;
+                           case 4:
+                              processPlayerInteraction(blockRows, user, object);
+                              break;
+                           case 5:
+                              processContainerTransaction(containers, process_id, id, force_data, user, object);
+                              break;
+                           case 6:
+                              processStructureGrowth(statement, blockRows, process_id, id, user, object);
+                              break;
+                           case 7:
+                              processRollbackUpdate(statement, process_id, id, force_data, 0);
+                              break;
+                           case 8:
+                              processRollbackUpdate(statement, process_id, id, force_data, 1);
+                              break;
+                           case 9:
+                              processWorldInsert(worlds, user, force_data);
+                              break;
+                           case 10:
+                              processSignUpdate(statement, object, block_data, force_data);
+                              break;
+                           case 11:
+                              processSkullUpdate(statement, object, force_data);
+                              break;
+                           case 12:
+                              processPlayerChat(chat, process_id, id, force_data, user);
+                              break;
+                           case 13:
+                              processPlayerCommand(command, process_id, id, force_data, user);
+                              break;
+                           case 14:
+                              processPlayerLogin(connection, session, process_id, id, object, block_data, replace_data, force_data, user);
+                              break;
+                           case 15:
+                              processPlayerLogout(session, object, force_data, user);
+                              break;
+                           case 16:
+                              processEntityKill(blockRows, entities, process_id, id, object, user);
+                              break;
+                           case 17:
+                              processEntitySpawn(statement, object, force_data);
+                              break;
+                           case 18:
+                              processHangingRemove(object, force_data);
+                              break;
+                           case 19:
+                              processHangingSpawn(object, block_type, block_data, force_data);
+                              break;
+                           case 20:
+                              processNaturalBlockBreak(statement, blockRows, process_id, id, user, object, block_type, block_data);
+                              break;
+                           case 21:
+                              processMaterialInsert(materials, user, force_data);
+                              break;
+                           case 22:
+                              processMaterialInsert(art, user, force_data);
+                              break;
+                           case 23:
+                              processMaterialInsert(entityMap, user, force_data);
+                              break;
+                           case 24:
+                              processPlayerKill(blockRows, id, object, user);
+                              break;
+                           default:
+                              break;
+                        }
+                     } catch (Exception e) {
+                        e.printStackTrace();
+                     }
+
+                     users.remove(id);
+                     blocks.remove(id);
+                  }
                } finally {
                   Database.commitTransaction(statement);
                   consumer_data.clear();
                }
-
-               preparedStmt_signs.close();
-               preparedStmt_blocks.close();
-               preparedStmt_skulls.close();
-               preparedStmt_containers.close();
-               preparedStmt_worlds.close();
-               preparedStmt_chat.close();
-               preparedStmt_command.close();
-               preparedStmt_session.close();
-               preparedStmt_entities.close();
-               preparedStmt_materials.close();
-               preparedStmt_art.close();
-               preparedStmt_entity.close();
-               statement.close();
+            } finally {
+               closeQuietly(batch);
             }
-         } catch (Exception e) {
-            e.printStackTrace();
          } finally {
-            Consumer.flushing = false;
-            validateConnection();
+            closeQuietly(statement);
          }
+      } catch (Exception e) {
+         e.printStackTrace();
+      } finally {
+         Consumer.flushing = false;
+         validateConnection();
+      }
+   }
 
+   /**
+    * Makes sure every user named in this batch has a row in co_user, so the
+    * inserts below can resolve them from the cache without hitting the database.
+    */
+   private static void resolveUserIds(Statement statement, Map<Integer, String[]> users) {
+      Database.beginTransaction(statement);
+
+      for (String[] user_data : users.values()) {
+         String user = user_data[0];
+         if (Config.player_id_cache.get(user.toLowerCase()) == null) {
+            Database.loadUserID(connection, user, user_data[1]);
+         }
+      }
+
+      Database.commitTransaction(statement);
+   }
+
+   /** One prepared statement per table this batch can write to. */
+   private static PreparedStatement[] openBatchStatements() {
+      PreparedStatement[] batch = new PreparedStatement[12];
+
+      for (int type = 0; type < batch.length; ++type) {
+         // Skulls and entities are read back for their generated key.
+         boolean keys = type == 2 || type == 8;
+         batch[type] = Database.prepareStatement(connection, type, keys);
+      }
+
+      return batch;
+   }
+
+   /**
+    * Closes every statement even if one of them throws. They used to be closed
+    * in a straight line, so a failure part way through leaked the rest.
+    */
+   private static void closeQuietly(AutoCloseable... closeables) {
+      for (AutoCloseable closeable : closeables) {
+         if (closeable != null) {
+            try {
+               closeable.close();
+            } catch (Exception e) {
+               e.printStackTrace();
+            }
+         }
       }
    }
 
@@ -233,8 +280,8 @@ public class Process {
                }
 
                Location location = block.getLocation();
-               location.setY(location.getY() + (double)1.0F);
-               Logger.log_break(preparedStmt, user, location, Functions.block_id(block_type), d, (List)null);
+               location.setY(location.getY() + 1.0D);
+               Logger.log_break(preparedStmt, user, location, Functions.block_id(block_type), d, null);
             }
          }
       }
@@ -255,7 +302,7 @@ public class Process {
    private static void processContainerBreak(PreparedStatement preparedStmt, int process_id, int id, String user, Object object) {
       if (object instanceof BlockState) {
          BlockState block = (BlockState)object;
-         Map<Integer, ItemStack[]> containers = (Map)Consumer.consumer_containers.get(process_id);
+         Map<Integer, ItemStack[]> containers = Consumer.consumer_containers.get(process_id);
          if (containers.get(id) != null) {
             ItemStack[] container = (ItemStack[])containers.get(id);
             Logger.log_container_break(preparedStmt, user, block.getLocation(), block.getType(), container);
@@ -268,24 +315,24 @@ public class Process {
    private static void processContainerTransaction(PreparedStatement preparedStmt, int process_id, int id, int force_data, String user, Object object) {
       if (object instanceof BlockState) {
          BlockState block = (BlockState)object;
-         Map<Integer, Object> inventories = (Map)Consumer.consumer_inventories.get(process_id);
+         Map<Integer, Object> inventories = Consumer.consumer_inventories.get(process_id);
          if (inventories.get(id) != null) {
             Object inventory = inventories.get(id);
             String logging_chest_id = user.toLowerCase() + "." + block.getX() + "." + block.getY() + "." + block.getZ();
             if (Config.logging_chest.get(logging_chest_id) != null) {
-               int current_chest = (Integer)Config.logging_chest.get(logging_chest_id);
+               int current_chest = Config.logging_chest.get(logging_chest_id);
                if (Config.old_container.get(logging_chest_id) == null) {
                   return;
                }
 
                int force_size = 0;
                if (Config.force_containers.get(logging_chest_id) != null) {
-                  force_size = ((List)Config.force_containers.get(logging_chest_id)).size();
+                  force_size = Config.force_containers.get(logging_chest_id).size();
                }
 
                if (current_chest == force_data || force_size > 0) {
                   Logger.log_container(preparedStmt, user, block.getType(), inventory, block.getLocation());
-                  List<ItemStack[]> old = (List)Config.old_container.get(logging_chest_id);
+                  List<ItemStack[]> old = Config.old_container.get(logging_chest_id);
                   if (old.isEmpty()) {
                      Config.old_container.remove(logging_chest_id);
                      Config.logging_chest.remove(logging_chest_id);
@@ -303,9 +350,9 @@ public class Process {
       if (object instanceof Object[]) {
          BlockState block = (BlockState)((Object[])object)[0];
          EntityType type = (EntityType)((Object[])object)[1];
-         Map<Integer, List<Object>> object_lists = (Map)Consumer.consumer_object_list.get(process_id);
+         Map<Integer, List<Object>> object_lists = Consumer.consumer_object_list.get(process_id);
          if (object_lists.get(id) != null) {
-            List<Object> object_list = (List)object_lists.get(id);
+            List<Object> object_list = object_lists.get(id);
             int entityId = Functions.getEntityId(type);
             Logger.log_entity_kill(preparedStmt, preparedStmt_entities, user, block, object_list, entityId);
             object_lists.remove(id);
@@ -348,9 +395,9 @@ public class Process {
    private static void processNaturalBlockBreak(Statement statement, PreparedStatement preparedStmt, int process_id, int id, String user, Object object, Material block_type, int block_data) {
       if (object instanceof BlockState) {
          BlockState block = (BlockState)object;
-         Map<Integer, List<BlockState>> block_lists = (Map)Consumer.consumer_block_list.get(process_id);
+         Map<Integer, List<BlockState>> block_lists = Consumer.consumer_block_list.get(process_id);
          if (block_lists.get(id) != null) {
-            for(BlockState list_block : block_lists.get(id)) {
+            for (BlockState list_block : block_lists.get(id)) {
                String removed = Lookup.who_removed_cache(list_block);
                if (!removed.isEmpty()) {
                   user = removed;
@@ -358,14 +405,14 @@ public class Process {
             }
 
             block_lists.remove(id);
-            Logger.log_break(preparedStmt, user, block.getLocation(), Functions.block_id(block_type), block_data, (List)null);
+            Logger.log_break(preparedStmt, user, block.getLocation(), Functions.block_id(block_type), block_data, null);
          }
       }
 
    }
 
    private static void processPlayerChat(PreparedStatement preparedStmt, int process_id, int id, int time, String user) {
-      Map<Integer, String> strings = (Map)Consumer.consumer_strings.get(process_id);
+      Map<Integer, String> strings = Consumer.consumer_strings.get(process_id);
       if (strings.get(id) != null) {
          String message = (String)strings.get(id);
          Logger.log_chat(preparedStmt, time, user, message);
@@ -375,7 +422,7 @@ public class Process {
    }
 
    private static void processPlayerCommand(PreparedStatement preparedStmt, int process_id, int id, int time, String user) {
-      Map<Integer, String> strings = (Map)Consumer.consumer_strings.get(process_id);
+      Map<Integer, String> strings = Consumer.consumer_strings.get(process_id);
       if (strings.get(id) != null) {
          String message = (String)strings.get(id);
          Logger.log_command(preparedStmt, time, user, message);
@@ -403,7 +450,7 @@ public class Process {
 
    private static void processPlayerLogin(Connection connection, PreparedStatement preparedStmt, int process_id, int id, Object object, int configSessions, int configUsernames, int time, String user) {
       if (object instanceof BlockState) {
-         Map<Integer, String> strings = (Map)Consumer.consumer_strings.get(process_id);
+         Map<Integer, String> strings = Consumer.consumer_strings.get(process_id);
          if (strings.get(id) != null) {
             String uuid = (String)strings.get(id);
             BlockState block = (BlockState)object;
@@ -427,11 +474,11 @@ public class Process {
    }
 
    private static void processRollbackUpdate(Statement statement, int process_id, int id, int action, int table) {
-      Map<Integer, List<Object[]>> update_lists = (Map)Consumer.consumer_object_array_list.get(process_id);
+      Map<Integer, List<Object[]>> update_lists = Consumer.consumer_object_array_list.get(process_id);
       if (update_lists.get(id) != null) {
-         for(Object[] list_row : update_lists.get(id)) {
-            int rowid = (Integer)list_row[0];
-            int rolled_back = (Integer)list_row[9];
+         for (Object[] list_row : update_lists.get(id)) {
+            int rowid = (Integer) list_row[0];
+            int rolled_back = (Integer) list_row[9];
             if (rolled_back == action) {
                Database.performUpdate(statement, rowid, action, table);
             }
@@ -445,7 +492,7 @@ public class Process {
    private static void processSignText(PreparedStatement preparedStmt, int process_id, int id, int force_data, String user, Object object) {
       if (object instanceof BlockState) {
          BlockState block = (BlockState)object;
-         Map<Integer, String[]> signs = (Map)Consumer.consumer_signs.get(process_id);
+         Map<Integer, String[]> signs = Consumer.consumer_signs.get(process_id);
          if (signs.get(id) != null) {
             String[] sign_text = (String[])signs.get(id);
             Logger.sign_text(preparedStmt, user, block, sign_text[0], sign_text[1], sign_text[2], sign_text[3], force_data);
@@ -488,17 +535,17 @@ public class Process {
    private static void processStructureGrowth(Statement statement, PreparedStatement preparedStmt, int process_id, int id, String user, Object object) {
       if (object instanceof BlockState) {
          BlockState block = (BlockState)object;
-         Map<Integer, List<BlockState>> block_lists = (Map)Consumer.consumer_block_list.get(process_id);
+         Map<Integer, List<BlockState>> block_lists = Consumer.consumer_block_list.get(process_id);
          if (block_lists.get(id) != null) {
-            List<BlockState> block_list = (List)block_lists.get(id);
+            List<BlockState> block_list = block_lists.get(id);
             String result_data = Lookup.who_placed(statement, block);
             if (!result_data.isEmpty()) {
                user = result_data;
             }
 
-            for(BlockState list_block : block_list) {
+            for (BlockState list_block : block_list) {
                if (list_block.getY() >= block.getY()) {
-                  Logger.log_place(preparedStmt, user, list_block, 0, 0, (Material)null, -1, false, (List)null);
+                  Logger.log_place(preparedStmt, user, list_block, 0, 0, null, -1, false, null);
                }
             }
 

@@ -93,12 +93,12 @@ public class Functions extends Queue {
       }
 
       if (Config.materials.get(name) != null) {
-         id = (Integer)Config.materials.get(name);
+         id = Config.materials.get(name);
       } else if (internal) {
          // Allocation is check-then-act on a counter shared by the main thread,
          // the consumer thread and rollback threads. Two threads racing here
          // both handed out the same id and both queued an insert for it.
-         synchronized(Config.ID_LOCK) {
+         synchronized (Config.ID_LOCK) {
             Integer existing = Config.materials.get(name);
             if (existing != null) {
                return existing;
@@ -119,7 +119,7 @@ public class Functions extends Queue {
    public static String block_name_lookup(int id) {
       String name = "";
       if (Config.materials_reversed.get(id) != null) {
-         name = (String)Config.materials_reversed.get(id);
+         name = Config.materials_reversed.get(id);
       } else if (BlockInfo.legacy_block_names.get(id) != null) {
          name = (String)BlockInfo.legacy_block_names.get(id);
       }
@@ -140,9 +140,9 @@ public class Functions extends Queue {
    public static int checkConfig(World world, String option) {
       int result = -1;
       if (Config.config.get(world.getName() + "-" + option) != null) {
-         result = (Integer)Config.config.get(world.getName() + "-" + option);
+         result = Config.config.get(world.getName() + "-" + option);
       } else if (Config.config.get(option) != null) {
-         result = (Integer)Config.config.get(option);
+         result = Config.config.get(option);
       }
 
       return result;
@@ -153,10 +153,10 @@ public class Functions extends Queue {
          try {
             int c1 = 0;
 
-            for(ItemStack o1 : items) {
+            for (ItemStack o1 : items) {
                int c2 = 0;
 
-               for(ItemStack o2 : items) {
+               for (ItemStack o2 : items) {
                   if (o1 != null && o2 != null && o1.isSimilar(o2) && c2 > c1) {
                      int namount = o1.getAmount() + o2.getAmount();
                      o1.setAmount(namount);
@@ -178,7 +178,7 @@ public class Functions extends Queue {
    public static Integer[] convertArray(String[] array) {
       List<Integer> list = new ArrayList<>();
 
-      for(String item : array) {
+      for (String item : array) {
          list.add(Integer.parseInt(item));
       }
 
@@ -206,7 +206,7 @@ public class Functions extends Queue {
    public static void createDatabaseTables(String prefix, boolean purge) {
       Config.databaseTables.clear();
       Config.databaseTables.addAll(Arrays.asList("art_map", "block", "chat", "command", "container", "entity", "entity_map", "material_map", "session", "sign", "skull", "user", "username_log", "version", "world"));
-      if ((Integer)Config.config.get("use-mysql") == 1) {
+      if (Config.config.get("use-mysql") == 1) {
          boolean success = false;
 
          try {
@@ -250,7 +250,7 @@ public class Functions extends Queue {
          }
       }
 
-      if ((Integer)Config.config.get("use-mysql") == 0) {
+      if (Config.config.get("use-mysql") == 0) {
          try {
             Connection connection = Database.getConnection(true);
             Statement statement = connection.createStatement();
@@ -259,7 +259,7 @@ public class Functions extends Queue {
             String query = "SELECT type,name FROM sqlite_master WHERE type='table' OR type='index';";
             ResultSet rs = statement.executeQuery(query);
 
-            while(rs.next()) {
+            while (rs.next()) {
                String type = rs.getString("type");
                if (type.equalsIgnoreCase("table")) {
                   tableData.add(rs.getString("name"));
@@ -409,7 +409,7 @@ public class Functions extends Queue {
                   if (!indexData.contains("username_log_uuid_index")) {
                      statement.executeUpdate("CREATE INDEX IF NOT EXISTS username_log_uuid_index ON " + prefix + "username_log(uuid,user);");
                   }
-               } catch (Exception var9) {
+               } catch (Exception ignored) {
                   System.out.println("[CoreProtect] Unable to validate database structure.");
                }
             }
@@ -454,7 +454,7 @@ public class Functions extends Queue {
       if (BlockInfo.falling_block_types.contains(type)) {
          int bottomfound = 0;
 
-         while(bottomfound == 0) {
+         while (bottomfound == 0) {
             if (yc < 0) {
                bl = world.getBlockAt(x, yc + 1, z);
                bottomfound = 1;
@@ -490,7 +490,7 @@ public class Functions extends Queue {
       ItemStack[] result = (ItemStack[])array.clone();
       int c = 0;
 
-      for(ItemStack i : array) {
+      for (ItemStack i : array) {
          ItemStack clone = null;
          if (i != null) {
             clone = i.clone();
@@ -511,9 +511,9 @@ public class Functions extends Queue {
       int id = -1;
       name = name.toLowerCase().trim();
       if (Config.art.get(name) != null) {
-         id = (Integer)Config.art.get(name);
+         id = Config.art.get(name);
       } else if (internal) {
-         synchronized(Config.ID_LOCK) {
+         synchronized (Config.ID_LOCK) {
             Integer existing = Config.art.get(name);
             if (existing != null) {
                return existing;
@@ -534,7 +534,7 @@ public class Functions extends Queue {
    public static String getArtName(int id) {
       String artname = "";
       if (Config.art_reversed.get(id) != null) {
-         artname = (String)Config.art_reversed.get(id);
+         artname = Config.art_reversed.get(id);
       }
 
       return artname;
@@ -703,9 +703,9 @@ public class Functions extends Queue {
       int id = -1;
       name = name.toLowerCase().trim();
       if (Config.entities.get(name) != null) {
-         id = (Integer)Config.entities.get(name);
+         id = Config.entities.get(name);
       } else if (internal) {
-         synchronized(Config.ID_LOCK) {
+         synchronized (Config.ID_LOCK) {
             Integer existing = Config.entities.get(name);
             if (existing != null) {
                return existing;
@@ -730,7 +730,7 @@ public class Functions extends Queue {
    public static String getEntityName(int id) {
       String entityName = "";
       if (Config.entities_reversed.get(id) != null) {
-         entityName = (String)Config.entities_reversed.get(id);
+         entityName = Config.entities_reversed.get(id);
       }
 
       return entityName;
@@ -739,7 +739,7 @@ public class Functions extends Queue {
    public static EntityType getEntityType(int id) {
       EntityType entitytype = null;
       if (Config.entities_reversed.get(id) != null) {
-         String name = (String)Config.entities_reversed.get(id);
+         String name = Config.entities_reversed.get(id);
          if (name.contains("minecraft:")) {
             String[] block_name_split = name.split(":");
             name = block_name_split[1];
@@ -769,7 +769,7 @@ public class Functions extends Queue {
       String token = row_wid + "." + row_x + "." + row_y + "." + row_z;
       int delay = 0;
       if (hanging_delay.get(token) != null) {
-         delay = (Integer)hanging_delay.get(token) + 1;
+         delay = hanging_delay.get(token) + 1;
       }
 
       hanging_delay.put(token, delay);
@@ -841,7 +841,7 @@ public class Functions extends Queue {
    public static String getTypeName(int id) {
       String result = null;
       if (Config.materials_reversed.get(id) != null && id > 0) {
-         String name = (String)Config.materials_reversed.get(id);
+         String name = Config.materials_reversed.get(id);
          if (name.contains("minecraft:")) {
             String[] block_name_split = name.split(":");
             name = block_name_split[1];
@@ -856,7 +856,7 @@ public class Functions extends Queue {
    public static Material getType(int id) {
       Material material = null;
       if (Config.materials_reversed.get(id) != null && id > 0) {
-         String name = ((String)Config.materials_reversed.get(id)).toUpperCase(Locale.ENGLISH);
+         String name = Config.materials_reversed.get(id).toUpperCase(Locale.ENGLISH);
          if (name.contains("MINECRAFT:")) {
             String[] block_name_split = name.split(":");
             name = block_name_split[1];
@@ -909,7 +909,7 @@ public class Functions extends Queue {
             return existing;
          }
 
-         synchronized(Config.ID_LOCK) {
+         synchronized (Config.ID_LOCK) {
             existing = Config.worlds.get(name);
             if (existing != null) {
                return existing;
@@ -934,7 +934,7 @@ public class Functions extends Queue {
 
       try {
          if (Config.worlds_reversed.get(id) != null) {
-            name = (String)Config.worlds_reversed.get(id);
+            name = Config.worlds_reversed.get(id);
          }
       } catch (Exception e) {
          e.printStackTrace();
@@ -955,7 +955,7 @@ public class Functions extends Queue {
    public static boolean listContains(List<Material> list, Material value) {
       boolean result = false;
 
-      for(Material list_value : list) {
+      for (Material list_value : list) {
          if (list_value.equals(value)) {
             result = true;
             break;
@@ -973,7 +973,7 @@ public class Functions extends Queue {
          if (version.contains(".")) {
             String[] version_split = version.replaceAll("[^0-9.]", "").split("\\.");
             double value = Double.parseDouble(version_split[0] + "." + version_split[1]);
-            if (value > (double)0.0F && value < (double)6.0F) {
+            if (value > 0.0D && value < 6.0D) {
                validVersion = false;
             }
          } else if (version.contains("-")) {
@@ -1001,7 +1001,7 @@ public class Functions extends Queue {
          String result = "";
          name = name.replaceFirst("#", "").toLowerCase().trim();
 
-         for(World world : CoreProtect.getInstance().getServer().getWorlds()) {
+         for (World world : CoreProtect.getInstance().getServer().getWorlds()) {
             String world_name = world.getName();
             if (world_name.toLowerCase().equals(name)) {
                result = world.getName();
@@ -1048,7 +1048,7 @@ public class Functions extends Queue {
       if (string.startsWith("-")) {
          CoreProtect.getInstance().getServer().getConsoleSender().sendMessage(string);
 
-         for(Player player : CoreProtect.getInstance().getServer().getOnlinePlayers()) {
+         for (Player player : CoreProtect.getInstance().getServer().getOnlinePlayers()) {
             if (player.isOp()) {
                player.sendMessage(string);
             }
@@ -1056,7 +1056,7 @@ public class Functions extends Queue {
       } else {
          CoreProtect.getInstance().getServer().getConsoleSender().sendMessage("[CoreProtect] " + string);
 
-         for(Player player : CoreProtect.getInstance().getServer().getOnlinePlayers()) {
+         for (Player player : CoreProtect.getInstance().getServer().getOnlinePlayers()) {
             if (player.isOp()) {
                player.sendMessage(Language.get("message", string));
             }
@@ -1068,7 +1068,7 @@ public class Functions extends Queue {
    public static void messageOwnerAndUser(CommandSender user, String string) {
       CoreProtect.getInstance().getServer().getConsoleSender().sendMessage("[CoreProtect] " + string);
 
-      for(Player player : CoreProtect.getInstance().getServer().getOnlinePlayers()) {
+      for (Player player : CoreProtect.getInstance().getServer().getOnlinePlayers()) {
          if (player.isOp() && !player.getName().equals(user.getName())) {
             player.sendMessage(Language.get("message", string));
          }
@@ -1153,7 +1153,7 @@ public class Functions extends Queue {
          result = string.split(",", -1);
       }
 
-      for(int i = 0; i < result.length; ++i) {
+      for (int i = 0; i < result.length; ++i) {
          String value = result[i];
          if (value.isEmpty()) {
             value = null;
@@ -1182,7 +1182,7 @@ public class Functions extends Queue {
             Banner banner = (Banner)block;
             meta.add(banner.getBaseColor());
 
-            for(org.bukkit.block.banner.Pattern pattern : banner.getPatterns()) {
+            for (org.bukkit.block.banner.Pattern pattern : banner.getPatterns()) {
                meta.add(pattern.serialize());
             }
          } else {
@@ -1202,7 +1202,7 @@ public class Functions extends Queue {
    public static void removeHanging(final BlockState block, int delay) {
       CoreProtect.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(CoreProtect.getInstance(), () -> {
          try {
-            for(Entity e : block.getChunk().getEntities()) {
+            for (Entity e : block.getChunk().getEntities()) {
                if (e instanceof ItemFrame || e instanceof Painting) {
                   Location el = e.getLocation();
                   if (el.getBlockX() == block.getX() && el.getBlockY() == block.getY() && el.getBlockZ() == block.getZ()) {
@@ -1254,8 +1254,8 @@ public class Functions extends Queue {
       CoreProtect.getInstance().getServer().getScheduler().runTask(CoreProtect.getInstance(), () -> {
          try {
             Location location = block.getLocation();
-            location.setX(location.getX() + (double)0.5F);
-            location.setZ(location.getZ() + (double)0.5F);
+            location.setX(location.getX() + 0.5D);
+            location.setZ(location.getZ() + 0.5D);
             Entity entity = block.getLocation().getWorld().spawnEntity(location, type);
             if (list.isEmpty()) {
                return;
@@ -1277,7 +1277,7 @@ public class Functions extends Queue {
                int count = 0;
                Ageable ageable = (Ageable)entity;
 
-               for(Object value : age) {
+               for (Object value : age) {
                   if (count == 0) {
                      int set = (Integer)value;
                      ageable.setAge(set);
@@ -1307,7 +1307,7 @@ public class Functions extends Queue {
                int count = 0;
                Tameable tameable = (Tameable)entity;
 
-               for(Object value : tame) {
+               for (Object value : tame) {
                   if (count == 0) {
                      boolean set = (Boolean)value;
                      tameable.setTamed(set);
@@ -1333,7 +1333,7 @@ public class Functions extends Queue {
             BukkitAdapter.ADAPTER.setEntityAttributes(entity, list);
             int count = 0;
 
-            for(Object value : data) {
+            for (Object value : data) {
                if (entity instanceof Creeper) {
                   Creeper creeper = (Creeper)entity;
                   if (count == 0) {
@@ -1427,7 +1427,7 @@ public class Functions extends Queue {
             int row_y = block.getY();
             int row_z = block.getZ();
 
-            for(Entity e : block.getChunk().getEntities()) {
+            for (Entity e : block.getChunk().getEntities()) {
                if (row_type.equals(Material.ITEM_FRAME) && e instanceof ItemFrame || row_type.equals(Material.PAINTING) && e instanceof Painting) {
                   Location el = e.getLocation();
                   if (el.getBlockX() == row_x && el.getBlockY() == row_y && el.getBlockZ() == row_z) {
@@ -1600,7 +1600,7 @@ public class Functions extends Queue {
       boolean result = false;
       CoreProtect pl = CoreProtect.getInstance();
 
-      for(World world : pl.getServer().getWorlds()) {
+      for (World world : pl.getServer().getWorlds()) {
          if (checkConfig(world, "worldedit") == 1) {
             result = true;
             break;

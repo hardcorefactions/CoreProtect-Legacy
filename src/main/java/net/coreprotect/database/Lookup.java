@@ -114,11 +114,11 @@ public class Lookup extends Queue {
          String query = "SELECT COUNT(*) as count from " + Config.prefix + "block WHERE wid = '" + wid + "' AND x = '" + x + "' AND z = '" + z + "' AND y = '" + y + "' AND action IN(0,1) AND time >= '" + check_time + "' LIMIT 0, 1";
 
          ResultSet rs;
-         for(rs = statement.executeQuery(query); rs.next(); count = rs.getInt("count")) {
+         for (rs = statement.executeQuery(query); rs.next(); count = rs.getInt("count")) {
          }
 
          rs.close();
-         int total_pages = (int)Math.ceil((double)count / ((double)limit + (double)0.0F));
+         int total_pages = (int)Math.ceil((double)count / ((double)limit + 0.0D));
          query = "SELECT time,user,action,type,data,rolled_back FROM " + Config.prefix + "block WHERE wid = '" + wid + "' AND x = '" + x + "' AND z = '" + z + "' AND y = '" + y + "' AND action IN(0,1) AND time >= '" + check_time + "' ORDER BY rowid DESC LIMIT " + page_start + ", " + limit + "";
 
          String result_user;
@@ -126,7 +126,7 @@ public class Lookup extends Queue {
          String a2;
          String rbd;
          String dname;
-         for(rs = statement.executeQuery(query); rs.next(); result = result + Language.get("lookup-row", timeago, rbd, result_user, a2, dname)) {
+         for (rs = statement.executeQuery(query); rs.next(); result = result + Language.get("lookup-row", timeago, rbd, result_user, a2, dname)) {
             int result_userid = rs.getInt("user");
             int result_action = rs.getInt("action");
             int result_type = rs.getInt("type");
@@ -137,10 +137,10 @@ public class Lookup extends Queue {
                Database.loadUserName(statement.getConnection(), result_userid);
             }
 
-            result_user = (String)Config.player_id_cache_reversed.get(result_userid);
-            double time_since = (double)time - ((double)result_time + (double)0.0F);
-            time_since /= (double)60.0F;
-            time_since /= (double)60.0F;
+            result_user = Config.player_id_cache_reversed.get(result_userid);
+            double time_since = (double)time - ((double)result_time + 0.0D);
+            time_since /= 60.0D;
+            time_since /= 60.0D;
             timeago = (new DecimalFormat("0.00")).format(time_since);
             if (!found) {
                result = Language.get("lookup-header", x, y, z);
@@ -235,7 +235,7 @@ public class Lookup extends Queue {
          String query = "SELECT time,user,action,type,data,rolled_back FROM " + Config.prefix + "block WHERE wid = '" + wid + "' AND x = '" + x + "' AND z = '" + z + "' AND y = '" + y + "' AND time > '" + check_time + "' ORDER BY rowid DESC";
          ResultSet rs = statement.executeQuery(query);
 
-         while(rs.next()) {
+         while (rs.next()) {
             int result_time = rs.getInt("time");
             int result_userid = rs.getInt("user");
             int result_action = rs.getInt("action");
@@ -246,7 +246,7 @@ public class Lookup extends Queue {
                Database.loadUserName(connection, result_userid);
             }
 
-            String result_user = (String)Config.player_id_cache_reversed.get(result_userid);
+            String result_user = Config.player_id_cache_reversed.get(result_userid);
             String line = result_time + "," + result_user + "," + x + "." + y + "." + z + "," + result_type + "," + result_data + "," + result_action + "," + result_rolled_back + "," + wid + ",";
             String[] ldata = Functions.toStringArray(line);
             result.add(ldata);
@@ -285,11 +285,11 @@ public class Lookup extends Queue {
          String query = "SELECT COUNT(*) as count from " + Config.prefix + "container WHERE wid = '" + wid + "' AND (x = '" + x + "' OR x = '" + x2 + "') AND (z = '" + z + "' OR z = '" + z2 + "') AND y = '" + y + "' LIMIT 0, 1";
 
          ResultSet rs;
-         for(rs = statement.executeQuery(query); rs.next(); count = rs.getInt("count")) {
+         for (rs = statement.executeQuery(query); rs.next(); count = rs.getInt("count")) {
          }
 
          rs.close();
-         int total_pages = (int)Math.ceil((double)count / ((double)limit + (double)0.0F));
+         int total_pages = (int)Math.ceil((double)count / ((double)limit + 0.0D));
          query = "SELECT time,user,action,type,data,amount,rolled_back FROM " + Config.prefix + "container WHERE wid = '" + wid + "' AND (x = '" + x + "' OR x = '" + x2 + "') AND (z = '" + z + "' OR z = '" + z2 + "') AND y = '" + y + "' ORDER BY rowid DESC LIMIT " + page_start + ", " + limit + "";
 
          int result_amount;
@@ -298,7 +298,7 @@ public class Lookup extends Queue {
          String a2;
          String rbd;
          String dname;
-         for(rs = statement.executeQuery(query); rs.next(); result = result + Language.get("lookup-row-container", timeago, rbd, result_user, a2, result_amount, dname)) {
+         for (rs = statement.executeQuery(query); rs.next(); result = result + Language.get("lookup-row-container", timeago, rbd, result_user, a2, result_amount, dname)) {
             int result_userid = rs.getInt("user");
             int result_action = rs.getInt("action");
             int result_type = rs.getInt("type");
@@ -310,10 +310,10 @@ public class Lookup extends Queue {
                Database.loadUserName(statement.getConnection(), result_userid);
             }
 
-            result_user = (String)Config.player_id_cache_reversed.get(result_userid);
-            double time_since = (double)time - ((double)result_time + (double)0.0F);
-            time_since /= (double)60.0F;
-            time_since /= (double)60.0F;
+            result_user = Config.player_id_cache_reversed.get(result_userid);
+            double time_since = (double)time - ((double)result_time + 0.0D);
+            time_since /= 60.0D;
+            time_since /= 60.0D;
             timeago = (new DecimalFormat("0.00")).format(time_since);
             if (!found) {
                result = Language.get("lookup-header-container", x, y, z);
@@ -373,11 +373,11 @@ public class Lookup extends Queue {
       if (list == null) {
          return null;
       } else {
-         for(Object[] map : list) {
+         for (Object[] map : list) {
             int new_length = map.length - 1;
             String[] results = new String[new_length];
 
-            for(int i2 = 0; i2 < map.length; ++i2) {
+            for (int i2 = 0; i2 < map.length; ++i2) {
                try {
                   int new_id = i2 - 1;
                   if (i2 == 2) {
@@ -387,7 +387,7 @@ public class Lookup extends Queue {
                            Database.loadUserName(statement.getConnection(), user_id);
                         }
 
-                        String user_result = (String)Config.player_id_cache_reversed.get(user_id);
+                        String user_result = Config.player_id_cache_reversed.get(user_id);
                         results[new_id] = user_result;
                      } else {
                         results[new_id] = (String)map[i2];
@@ -420,7 +420,7 @@ public class Lookup extends Queue {
       // busy_timeout pragmas in Database instead.
       try {
          ResultSet rs;
-         for(rs = rawLookupResultSet(statement, user, check_uuids, check_users, restrict_list, exclude_list, exclude_user_list, action_list, location, radius, check_time, -1, -1, restrict_world, lookup, true); rs.next(); rows = rs.getInt("count")) {
+         for (rs = rawLookupResultSet(statement, user, check_uuids, check_users, restrict_list, exclude_list, exclude_user_list, action_list, location, radius, check_time, -1, -1, restrict_world, lookup, true); rs.next(); rows = rs.getInt("count")) {
          }
 
          rs.close();
@@ -442,7 +442,7 @@ public class Lookup extends Queue {
          user.sendMessage("-----");
          StringBuilder users = new StringBuilder();
 
-         for(String value : check_users) {
+         for (String value : check_users) {
             if (users.length() == 0) {
                users = new StringBuilder("" + value + "");
             } else {
@@ -504,7 +504,7 @@ public class Lookup extends Queue {
             StringBuilder r = new StringBuilder();
             int rc = 0;
 
-            for(Object rt : restrict_list) {
+            for (Object rt : restrict_list) {
                String value_name = "";
                if (rt instanceof Material) {
                   value_name = ((Material)rt).name().toLowerCase();
@@ -528,7 +528,7 @@ public class Lookup extends Queue {
             StringBuilder e = new StringBuilder();
             int ec = 0;
 
-            for(Object et : exclude_list) {
+            for (Object et : exclude_list) {
                String value_name = "";
                if (et instanceof Material) {
                   value_name = ((Material)et).name().toLowerCase();
@@ -552,7 +552,7 @@ public class Lookup extends Queue {
             StringBuilder e = new StringBuilder();
             int ec = 0;
 
-            for(String et : exclude_user_list) {
+            for (String et : exclude_user_list) {
                if (ec == 0) {
                   e = new StringBuilder("" + et + "");
                } else {
@@ -628,11 +628,11 @@ public class Lookup extends Queue {
          String query = "SELECT COUNT(*) as count from " + Config.prefix + "block WHERE wid = '" + wid + "' AND x = '" + x + "' AND z = '" + z + "' AND y = '" + y + "' AND action='2' AND time >= '" + check_time + "' LIMIT 0, 1";
 
          ResultSet rs;
-         for(rs = statement.executeQuery(query); rs.next(); count = rs.getInt("count")) {
+         for (rs = statement.executeQuery(query); rs.next(); count = rs.getInt("count")) {
          }
 
          rs.close();
-         int total_pages = (int)Math.ceil((double)count / ((double)limit + (double)0.0F));
+         int total_pages = (int)Math.ceil((double)count / ((double)limit + 0.0D));
          query = "SELECT time,user,action,type,data,rolled_back FROM " + Config.prefix + "block WHERE wid = '" + wid + "' AND x = '" + x + "' AND z = '" + z + "' AND y = '" + y + "' AND action='2' AND time >= '" + check_time + "' ORDER BY rowid DESC LIMIT " + page_start + ", " + limit + "";
 
          String result_user;
@@ -640,7 +640,7 @@ public class Lookup extends Queue {
          String a2;
          String rbd;
          String dname;
-         for(rs = statement.executeQuery(query); rs.next(); result = result + Language.get("lookup-row", timeago, rbd, result_user, a2, dname)) {
+         for (rs = statement.executeQuery(query); rs.next(); result = result + Language.get("lookup-row", timeago, rbd, result_user, a2, dname)) {
             int result_userid = rs.getInt("user");
             int result_action = rs.getInt("action");
             int result_type = rs.getInt("type");
@@ -651,10 +651,10 @@ public class Lookup extends Queue {
                Database.loadUserName(statement.getConnection(), result_userid);
             }
 
-            result_user = (String)Config.player_id_cache_reversed.get(result_userid);
-            double time_since = (double)time - ((double)result_time + (double)0.0F);
-            time_since /= (double)60.0F;
-            time_since /= (double)60.0F;
+            result_user = Config.player_id_cache_reversed.get(result_userid);
+            double time_since = (double)time - ((double)result_time + 0.0D);
+            time_since /= 60.0D;
+            time_since /= 60.0D;
             timeago = (new DecimalFormat("0.00")).format(time_since);
             if (!found) {
                result = Language.get("lookup-header-interaction", x, y, z);
@@ -738,7 +738,7 @@ public class Lookup extends Queue {
                int amount = itemstack.getAmount();
                itemstack.setAmount(1);
 
-               for(; count < amount; ++count) {
+               for (; count < amount; ++count) {
                   if (action == 1) {
                      inventory.addItem(new ItemStack[]{itemstack});
                   } else {
@@ -779,7 +779,7 @@ public class Lookup extends Queue {
          Config.rollback_hash.put(user_string, new int[]{0, 0, 0, 0});
          CoreProtect.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(CoreProtect.getInstance(), () -> {
             try {
-               int[] rollback_hash_data = (int[])Config.rollback_hash.get(final_user_string);
+               int[] rollback_hash_data = Config.rollback_hash.get(final_user_string);
                int item_count = rollback_hash_data[0];
                int entity_count = rollback_hash_data[2];
                Block block = location.getBlock();
@@ -792,7 +792,7 @@ public class Lookup extends Queue {
                if (BlockInfo.containers.contains(type)) {
                   container = Functions.getContainerInventory(block.getState(), false);
                } else {
-                  for(Entity entity : block.getChunk().getEntities()) {
+                  for (Entity entity : block.getChunk().getEntities()) {
                      if (entity instanceof ArmorStand && entity.getLocation().getBlockX() == location.getBlockX() && entity.getLocation().getBlockY() == location.getBlockY() && entity.getLocation().getBlockZ() == location.getBlockZ()) {
                         type = Material.ARMOR_STAND;
                         container = Functions.getEntityEquipment((LivingEntity)entity);
@@ -802,7 +802,7 @@ public class Lookup extends Queue {
 
                int modify_count = 0;
                if (container != null) {
-                  for(Object[] row : lookup_list) {
+                  for (Object[] row : lookup_list) {
                      int row_type_raw = (Integer)row[6];
                      int row_data = (Integer)row[7];
                      int row_action = (Integer)row[8];
@@ -836,14 +836,14 @@ public class Lookup extends Queue {
             }
 
          }, 0L);
-         int[] rollback_hash_data = (int[])Config.rollback_hash.get(user_string);
+         int[] rollback_hash_data = Config.rollback_hash.get(user_string);
          int next = rollback_hash_data[3];
          int sleep_time = 0;
 
-         while(next == 0) {
+         while (next == 0) {
             sleep_time += 5;
             Thread.sleep(5L);
-            rollback_hash_data = (int[])Config.rollback_hash.get(final_user_string);
+            rollback_hash_data = Config.rollback_hash.get(final_user_string);
             next = rollback_hash_data[3];
             if (sleep_time > 300000) {
                System.out.println("[CoreProtect] Rollback or restore aborted.");
@@ -851,7 +851,7 @@ public class Lookup extends Queue {
             }
          }
 
-         rollback_hash_data = (int[])Config.rollback_hash.get(final_user_string);
+         rollback_hash_data = Config.rollback_hash.get(final_user_string);
          int block_count = rollback_hash_data[1];
          long time2 = System.currentTimeMillis();
          int seconds = (int)((time2 - time1) / 1000L);
@@ -888,7 +888,7 @@ public class Lookup extends Queue {
       List<Object[]> list = new ArrayList<>();
       List<Integer> invalid_rollback_actions = new ArrayList<>();
       invalid_rollback_actions.add(2);
-      if ((Integer)Config.config.get("rollback-entities") == 0 && !action_list.contains(3)) {
+      if (Config.config.get("rollback-entities") == 0 && !action_list.contains(3)) {
          invalid_rollback_actions.add(3);
       }
 
@@ -899,7 +899,7 @@ public class Lookup extends Queue {
       try {
          ResultSet rs = rawLookupResultSet(statement, user, check_uuids, check_users, restrict_list, exclude_list, exclude_user_list, action_list, location, radius, check_time, limit_offset, limit_count, restrict_world, lookup, false);
 
-         while(rs.next()) {
+         while (rs.next()) {
             if (!action_list.contains(6) && !action_list.contains(7)) {
                if (action_list.contains(8)) {
                   int result_id = rs.getInt("id");
@@ -1001,7 +1001,7 @@ public class Lookup extends Queue {
             List<Object> itemRestrictList = new ArrayList<>(restrict_list);
             List<Object> itemExcludeList = new ArrayList<>(exclude_list);
             if (action_list.contains(1)) {
-               for(Object value : restrict_list) {
+               for (Object value : restrict_list) {
                   if (value instanceof Material && !exclude_list.contains(value) && BlockInfo.containers.contains(value)) {
                      rollbackItems = true;
                      itemRestrictList.clear();
@@ -1012,7 +1012,7 @@ public class Lookup extends Queue {
             }
 
             List<Object[]> item_list = new ArrayList<>();
-            if ((Integer)Config.config.get("rollback-items") == 1 && !check_users.contains("#container") && (action_list.isEmpty() || action_list.contains(4) || rollbackItems) && preview == 0) {
+            if (Config.config.get("rollback-items") == 1 && !check_users.contains("#container") && (action_list.isEmpty() || action_list.contains(4) || rollbackItems) && preview == 0) {
                 List<Integer> item_action_list = new ArrayList<>(action_list);
                if (!item_action_list.contains(4)) {
                   item_action_list.add(4);
@@ -1030,20 +1030,20 @@ public class Lookup extends Queue {
             final HashMap<String, ArrayList<Object[]>> data_list = new HashMap<>();
             final HashMap<String, ArrayList<Object[]>> item_data_list = new HashMap<>();
 
-            for(int list_c = 0; list_c < 2; ++list_c) {
+            for (int list_c = 0; list_c < 2; ++list_c) {
                List<Object[]> scan_list = lookup_list;
                if (list_c == 1) {
                   scan_list = item_list;
                }
 
-               for(Object[] result : scan_list) {
+               for (Object[] result : scan_list) {
                   int user_id = (Integer)result[2];
                   int chunk_x = (Integer)result[3] >> 4;
                   int chunk_z = (Integer)result[5] >> 4;
                   if (chunk_list.get(chunk_x + "." + chunk_z) == null) {
                      int distance = 0;
                      if (location != null) {
-                        distance = (int)Math.sqrt(Math.pow((double)((Integer)result[3] - location.getBlockX()), (double)2.0F) + Math.pow((double)((Integer)result[5] - location.getBlockZ()), (double)2.0F));
+                        distance = (int)Math.sqrt(Math.pow((double)((Integer)result[3] - location.getBlockX()), 2.0D) + Math.pow((double)((Integer)result[5] - location.getBlockZ()), 2.0D));
                      }
 
                      chunk_list.put(chunk_x + "." + chunk_z, distance);
@@ -1063,21 +1063,21 @@ public class Lookup extends Queue {
                      item_data_list.put(chunk_x + "." + chunk_z, new ArrayList<>());
                   }
 
-                  ((ArrayList)modify_list.get(chunk_x + "." + chunk_z)).add(result);
+                  modify_list.get(chunk_x + "." + chunk_z).add(result);
                }
             }
 
             if (rollback_type == 1) {
                Iterator<Map.Entry<String, ArrayList<Object[]>>> it = data_list.entrySet().iterator();
 
-               while(it.hasNext()) {
-                  Collections.reverse((List)((Map.Entry)it.next()).getValue());
+               while (it.hasNext()) {
+                  Collections.reverse(it.next().getValue());
                }
 
                it = item_data_list.entrySet().iterator();
 
-               while(it.hasNext()) {
-                  Collections.reverse((List)((Map.Entry)it.next()).getValue());
+               while (it.hasNext()) {
+                  Collections.reverse(it.next().getValue());
                }
             }
 
@@ -1100,12 +1100,12 @@ public class Lookup extends Queue {
             List<String> completed_chunks = new ArrayList<>();
             boolean aborted = false;
 
-            for(Map.Entry<String, Integer> entry : Functions.entriesSortedByValues(chunk_list)) {
+            for (Map.Entry<String, Integer> entry : Functions.entriesSortedByValues(chunk_list)) {
                ++file;
                int item_count = 0;
                int block_count = 0;
                int entity_count = 0;
-               int[] rollback_hash_data = (int[])Config.rollback_hash.get(final_user_string);
+               int[] rollback_hash_data = Config.rollback_hash.get(final_user_string);
                item_count = rollback_hash_data[0];
                block_count = rollback_hash_data[1];
                entity_count = rollback_hash_data[2];
@@ -1119,7 +1119,7 @@ public class Lookup extends Queue {
                // point of moving it out of the chunk task.
                ArrayList<Object[]> chunk_rows = data_list.get(chunk_key);
                if (chunk_rows != null) {
-                  for(Object[] chunk_row : chunk_rows) {
+                  for (Object[] chunk_row : chunk_rows) {
                      if (chunk_row[11] instanceof byte[]) {
                         chunk_row[11] = deserializeMeta((byte[])chunk_row[11]);
                      }
@@ -1134,7 +1134,7 @@ public class Lookup extends Queue {
                   // every single row. Nothing else mutates this entry while the
                   // chunk task is running -- the rollback thread only touches it
                   // between chunks, gated on the completion flag.
-                  int[] chunk_counts = (int[])Config.rollback_hash.get(final_user_string);
+                  int[] chunk_counts = Config.rollback_hash.get(final_user_string);
                   int item_count1 = chunk_counts[0];
                   int block_count1 = chunk_counts[1];
                   int entity_count1 = chunk_counts[2];
@@ -1142,11 +1142,11 @@ public class Lookup extends Queue {
                   try {
                      boolean clearInventories = (Integer) Config.config.get("rollback-items") == 1;
 
-                      ArrayList<Object[]> data = (ArrayList)data_list.get(final_chunk_x + "." + final_chunk_z);
-                     ArrayList<Object[]> item_data = (ArrayList)item_data_list.get(final_chunk_x + "." + final_chunk_z);
+                      ArrayList<Object[]> data = data_list.get(final_chunk_x + "." + final_chunk_z);
+                     ArrayList<Object[]> item_data = item_data_list.get(final_chunk_x + "." + final_chunk_z);
                      Map<String, Integer> hanging_delay = new HashMap<>();
 
-                     for(Object[] row : data) {
+                     for (Object[] row : data) {
                         int unixtimestamp = (int)(System.currentTimeMillis() / 1000L);
                         int row_time = (Integer)row[1];
                         int row_userid = (Integer)row[2];
@@ -1161,7 +1161,7 @@ public class Lookup extends Queue {
                         // Already deserialised on the rollback thread.
                         List<Object> meta = (List)row[11];
                         Material row_type = Functions.getType(row_type_raw);
-                        String row_user = (String)Config.player_id_cache_reversed.get(row_userid);
+                        String row_user = Config.player_id_cache_reversed.get(row_userid);
                         int old_type_raw = row_type_raw;
                         Material old_type_material = Functions.getType(row_type_raw);
                         if (row_action == 1 && rollback_type == 0) {
@@ -1234,7 +1234,7 @@ public class Lookup extends Queue {
                               int zmin = row_z - 5;
                               int zmax = row_z + 5;
 
-                              for(Entity e : block.getChunk().getEntities()) {
+                              for (Entity e : block.getChunk().getEntities()) {
                                  if (entity_id > -1) {
                                     int id = e.getEntityId();
                                     if (id == entity_id) {
@@ -1258,7 +1258,7 @@ public class Lookup extends Queue {
                               }
 
                               if (!removed && entity_id > -1) {
-                                 for(Entity e : block.getWorld().getLivingEntities()) {
+                                 for (Entity e : block.getWorld().getLivingEntities()) {
                                     int id = e.getEntityId();
                                     if (id == entity_id) {
                                        ++entity_count1;
@@ -1304,7 +1304,7 @@ public class Lookup extends Queue {
                               List<Material> c2 = Arrays.asList(Material.DIRT, Material.STATIONARY_WATER, Material.STATIONARY_LAVA);
                               int c = 0;
 
-                              for(Material cv1 : c1) {
+                              for (Material cv1 : c1) {
                                  Material cv2 = (Material)c2.get(c);
                                  if (row_type.equals(cv1) && ctype.equals(cv2) || row_type.equals(cv2) && ctype.equals(cv1)) {
                                     count_block = false;
@@ -1331,12 +1331,12 @@ public class Lookup extends Queue {
                                     } else if (!row_type.equals(Material.PAINTING) && !row_type.equals(Material.ITEM_FRAME)) {
                                        if (row_type.equals(Material.ARMOR_STAND)) {
                                           Location location1 = block.getLocation();
-                                          location1.setX(location1.getX() + (double)0.5F);
-                                          location1.setZ(location1.getZ() + (double)0.5F);
+                                          location1.setX(location1.getX() + 0.5D);
+                                          location1.setZ(location1.getZ() + 0.5D);
                                           location1.setYaw((float)row_data);
                                           boolean exists = false;
 
-                                          for(Entity entity : block.getChunk().getEntities()) {
+                                          for (Entity entity : block.getChunk().getEntities()) {
                                              if (entity instanceof ArmorStand && entity.getLocation().getBlockX() == location1.getBlockX() && entity.getLocation().getBlockY() == location1.getBlockY() && entity.getLocation().getBlockZ() == location1.getBlockZ()) {
                                                 exists = true;
                                              }
@@ -1348,11 +1348,11 @@ public class Lookup extends Queue {
                                           }
                                        } else if (BukkitAdapter.ADAPTER.isEndCrystal(row_type)) {
                                           Location location1 = block.getLocation();
-                                          location1.setX(location1.getX() + (double)0.5F);
-                                          location1.setZ(location1.getZ() + (double)0.5F);
+                                          location1.setX(location1.getX() + 0.5D);
+                                          location1.setZ(location1.getZ() + 0.5D);
                                           boolean exists = false;
 
-                                          for(Entity entity : block.getChunk().getEntities()) {
+                                          for (Entity entity : block.getChunk().getEntities()) {
                                              if (entity instanceof EnderCrystal && entity.getLocation().getBlockX() == location1.getBlockX() && entity.getLocation().getBlockY() == location1.getBlockY() && entity.getLocation().getBlockZ() == location1.getBlockZ()) {
                                                 exists = true;
                                              }
@@ -1362,7 +1362,7 @@ public class Lookup extends Queue {
                                              BukkitAdapter.ADAPTER.spawnEndCrystal(location1, block, row_data);
                                           }
                                        } else if (row_type.equals(Material.AIR) && BukkitAdapter.ADAPTER.isEndCrystal(old_type_material)) {
-                                          for(Entity entity : block.getChunk().getEntities()) {
+                                          for (Entity entity : block.getChunk().getEntities()) {
                                              if (entity instanceof EnderCrystal && entity.getLocation().getBlockX() == row_x && entity.getLocation().getBlockY() == row_y && entity.getLocation().getBlockZ() == row_z) {
                                                 entity.remove();
                                              }
@@ -1395,7 +1395,7 @@ public class Lookup extends Queue {
                                                    if (meta != null) {
                                                       Inventory inventory = Functions.getContainerInventory(block.getState(), false);
 
-                                                      for(Object value : meta) {
+                                                      for (Object value : meta) {
                                                          if (value instanceof Map) {
                                                             Map<Integer, Object> itemMap = (Map)value;
                                                             ItemStack item = ItemStack.deserialize((Map)itemMap.get(0));
@@ -1415,7 +1415,7 @@ public class Lookup extends Queue {
                                                    if (meta != null) {
                                                       CommandBlock command_block = (CommandBlock)block.getState();
 
-                                                      for(Object value : meta) {
+                                                      for (Object value : meta) {
                                                          if (value instanceof String) {
                                                             String string = (String)value;
                                                             command_block.setCommand(string);
@@ -1456,7 +1456,7 @@ public class Lookup extends Queue {
                                                    if (meta != null) {
                                                       Banner banner = (Banner)block.getState();
 
-                                                      for(Object value : meta) {
+                                                      for (Object value : meta) {
                                                          if (value instanceof DyeColor) {
                                                             banner.setBaseColor((DyeColor)value);
                                                          } else if (value instanceof Map) {
@@ -1483,7 +1483,7 @@ public class Lookup extends Queue {
                                                       inventory.clear();
                                                    }
                                                 } else if (BlockInfo.containers.contains(Material.ARMOR_STAND) && old_type_material.equals(Material.ARMOR_STAND)) {
-                                                   for(Entity entity : block.getChunk().getEntities()) {
+                                                   for (Entity entity : block.getChunk().getEntities()) {
                                                       if (entity instanceof ArmorStand && entity.getLocation().getBlockX() == row_x && entity.getLocation().getBlockY() == row_y && entity.getLocation().getBlockZ() == row_z) {
                                                          EntityEquipment equipment = Functions.getEntityEquipment((LivingEntity)entity);
                                                          if (equipment != null) {
@@ -1491,7 +1491,7 @@ public class Lookup extends Queue {
                                                          }
 
                                                          Location location1 = entity.getLocation();
-                                                         location1.setY(location1.getY() - (double)1.0F);
+                                                         location1.setY(location1.getY() - 1.0D);
                                                          entity.teleport(location1);
                                                          entity.remove();
                                                       }
@@ -1533,7 +1533,7 @@ public class Lookup extends Queue {
                      int last_z = 0;
                      int last_wid = 0;
 
-                     for(Object[] row : item_data) {
+                     for (Object[] row : item_data) {
                         int row_x = (Integer)row[3];
                         int row_y = (Integer)row[4];
                         int row_z = (Integer)row[5];
@@ -1558,7 +1558,7 @@ public class Lookup extends Queue {
                                  container = Functions.getContainerInventory(block.getState(), false);
                                  container_type = block.getType();
                               } else if (BlockInfo.containers.contains(Material.ARMOR_STAND)) {
-                                 for(Entity entity : block.getChunk().getEntities()) {
+                                 for (Entity entity : block.getChunk().getEntities()) {
                                     if (entity instanceof ArmorStand && entity.getLocation().getBlockX() == row_x && entity.getLocation().getBlockY() == row_y && entity.getLocation().getBlockZ() == row_z) {
                                        container = Functions.getEntityEquipment((LivingEntity)entity);
                                        container_type = Material.ARMOR_STAND;
@@ -1607,7 +1607,7 @@ public class Lookup extends Queue {
                            int check_y = player_y - 1;
                            boolean safe_block = false;
 
-                           for(boolean place_safe = false; !safe_block; ++check_y) {
+                           for (boolean place_safe = false; !safe_block; ++check_y) {
                               int above = check_y + 1;
                               if (above > 256) {
                                  above = 256;
@@ -1662,19 +1662,19 @@ public class Lookup extends Queue {
                      // nothing behind to say which chunk was responsible.
                      long chunk_ms = (System.nanoTime() - chunk_start_ns) / 1000000L;
                      if (chunk_ms >= 50L) {
-                        ArrayList<Object[]> d = (ArrayList)data_list.get(final_chunk_x + "." + final_chunk_z);
-                        ArrayList<Object[]> i = (ArrayList)item_data_list.get(final_chunk_x + "." + final_chunk_z);
+                        ArrayList<Object[]> d = data_list.get(final_chunk_x + "." + final_chunk_z);
+                        ArrayList<Object[]> i = item_data_list.get(final_chunk_x + "." + final_chunk_z);
                         System.out.println("[CoreProtect] Slow rollback chunk " + final_chunk_x + "," + final_chunk_z + ": " + chunk_ms + "ms for " + (d == null ? 0 : d.size()) + " block row(s), " + (i == null ? 0 : i.size()) + " container row(s).");
                      }
                   }
 
                }, 0L);
-               rollback_hash_data = (int[])Config.rollback_hash.get(final_user_string);
+               rollback_hash_data = Config.rollback_hash.get(final_user_string);
                int next = rollback_hash_data[3];
                int sleep_time = 0;
                int abort = 0;
 
-               while(next == 0) {
+               while (next == 0) {
                   if (preview == 1) {
                      ++sleep_time;
                      Thread.sleep(1L);
@@ -1683,7 +1683,7 @@ public class Lookup extends Queue {
                      Thread.sleep(5L);
                   }
 
-                  rollback_hash_data = (int[])Config.rollback_hash.get(final_user_string);
+                  rollback_hash_data = Config.rollback_hash.get(final_user_string);
                   next = rollback_hash_data[3];
                   if (sleep_time > 300000) {
                      abort = 1;
@@ -1701,12 +1701,12 @@ public class Lookup extends Queue {
                // The chunk is done with its metadata; drop it so a large rollback
                // does not accumulate every deserialised blob it has ever touched.
                if (chunk_rows != null) {
-                  for(Object[] chunk_row : chunk_rows) {
+                  for (Object[] chunk_row : chunk_rows) {
                      chunk_row[11] = null;
                   }
                }
 
-               rollback_hash_data = (int[])Config.rollback_hash.get(final_user_string);
+               rollback_hash_data = Config.rollback_hash.get(final_user_string);
                item_count = rollback_hash_data[0];
                block_count = rollback_hash_data[1];
                entity_count = rollback_hash_data[2];
@@ -1720,7 +1720,7 @@ public class Lookup extends Queue {
                List<Object[]> applied_blocks = new ArrayList<>();
                List<Object[]> applied_items = new ArrayList<>();
 
-               for(String completed : completed_chunks) {
+               for (String completed : completed_chunks) {
                   ArrayList<Object[]> completed_blocks = data_list.get(completed);
                   if (completed_blocks != null) {
                      applied_blocks.addAll(completed_blocks);
@@ -1736,7 +1736,7 @@ public class Lookup extends Queue {
                Queue.queueContainerRollbackUpdate(user_string, location, applied_items, rollback_type);
             }
 
-            int[] rollback_hash_data = (int[])Config.rollback_hash.get(final_user_string);
+            int[] rollback_hash_data = Config.rollback_hash.get(final_user_string);
             int item_count = rollback_hash_data[0];
             int block_count = rollback_hash_data[1];
             int entity_count = rollback_hash_data[2];
@@ -1773,7 +1773,7 @@ public class Lookup extends Queue {
          preparedStmt.setString(1, user);
 
          ResultSet rs;
-         for(rs = preparedStmt.executeQuery(); rs.next(); uuid = rs.getString("uuid")) {
+         for (rs = preparedStmt.executeQuery(); rs.next(); uuid = rs.getString("uuid")) {
             id = rs.getInt("id");
          }
 
@@ -1804,7 +1804,7 @@ public class Lookup extends Queue {
          int item_count = 0;
          FireworkEffect.Builder effect_builder = FireworkEffect.builder();
 
-         for(List<Map<String, Object>> map : list) {
+         for (List<Map<String, Object>> map : list) {
             Map<String, Object> mapData = (Map)map.get(0);
             if (mapData.get("slot") != null) {
                slot = (Integer)mapData.get("slot");
@@ -1814,14 +1814,14 @@ public class Lookup extends Queue {
                BukkitAdapter.ADAPTER.setPotionMeta(row_type, map, itemstack);
             } else if (!row_type.equals(Material.LEATHER_HELMET) && !row_type.equals(Material.LEATHER_CHESTPLATE) && !row_type.equals(Material.LEATHER_LEGGINGS) && !row_type.equals(Material.LEATHER_BOOTS)) {
                if (row_type.equals(Material.POTION)) {
-                  for(Map<String, Object> l : map) {
+                  for (Map<String, Object> l : map) {
                      PotionMeta meta = (PotionMeta)itemstack.getItemMeta();
                      PotionEffect effect = new PotionEffect(l);
                      meta.addCustomEffect(effect, true);
                      itemstack.setItemMeta(meta);
                   }
                } else if (row_type.equals(Material.BANNER)) {
-                  for(Map<String, Object> l : map) {
+                  for (Map<String, Object> l : map) {
                      BannerMeta meta = (BannerMeta)itemstack.getItemMeta();
                      Pattern pattern = new Pattern(l);
                      meta.addPattern(pattern);
@@ -1830,19 +1830,19 @@ public class Lookup extends Queue {
                } else if (!row_type.equals(Material.FIREWORK) && !row_type.equals(Material.FIREWORK_CHARGE)) {
                   BukkitAdapter.ADAPTER.setItemMeta(row_type, map, itemstack, item_count);
                } else if (item_count == 1) {
-                  for(Map<String, Object> l : map) {
+                  for (Map<String, Object> l : map) {
                      boolean hasFlicker = (Boolean)l.get("flicker");
                      boolean hasTrail = (Boolean)l.get("trail");
                      effect_builder.flicker(hasFlicker);
                      effect_builder.trail(hasTrail);
                   }
                } else if (item_count == 2) {
-                  for(Map<String, Object> l : map) {
+                  for (Map<String, Object> l : map) {
                      Color color = Color.deserialize(l);
                      effect_builder.withColor(color);
                   }
                } else if (item_count == 3) {
-                  for(Map<String, Object> l : map) {
+                  for (Map<String, Object> l : map) {
                      Color color = Color.deserialize(l);
                      effect_builder.withFade(color);
                   }
@@ -1862,7 +1862,7 @@ public class Lookup extends Queue {
                   item_count = 0;
                }
             } else {
-               for(Map<String, Object> l : map) {
+               for (Map<String, Object> l : map) {
                   LeatherArmorMeta meta = (LeatherArmorMeta)itemstack.getItemMeta();
                   Color color = Color.deserialize(l);
                   meta.setColor(color);
@@ -1923,7 +1923,7 @@ public class Lookup extends Queue {
          if (!check_uuids.isEmpty()) {
             StringBuilder list = new StringBuilder();
 
-            for(String value : check_uuids) {
+            for (String value : check_uuids) {
                if (list.length() == 0) {
                   list = new StringBuilder("'" + value + "'");
                } else {
@@ -1937,13 +1937,13 @@ public class Lookup extends Queue {
          if (!check_users.contains("#global")) {
             StringBuilder list = new StringBuilder();
 
-            for(String value : check_users) {
+            for (String value : check_users) {
                if (!value.equals("#container")) {
                   if (Config.player_id_cache.get(value.toLowerCase()) == null) {
-                     Database.loadUserID(statement.getConnection(), value, (String)null);
+                     Database.loadUserID(statement.getConnection(), value, null);
                   }
 
-                  int userid = (Integer)Config.player_id_cache.get(value.toLowerCase());
+                  int userid = Config.player_id_cache.get(value.toLowerCase());
                   if (list.length() == 0) {
                      list = new StringBuilder("" + userid + "");
                   } else {
@@ -1958,7 +1958,7 @@ public class Lookup extends Queue {
          if (!restrict_list.isEmpty()) {
             StringBuilder list = new StringBuilder();
 
-            for(Object value : restrict_list) {
+            for (Object value : restrict_list) {
                String value_name = "";
                if (value instanceof Material) {
                   value_name = ((Material)value).name();
@@ -1983,7 +1983,7 @@ public class Lookup extends Queue {
          if (!exclude_list.isEmpty()) {
             StringBuilder list = new StringBuilder();
 
-            for(Object value : exclude_list) {
+            for (Object value : exclude_list) {
                String value_name = "";
                if (value instanceof Material) {
                   value_name = ((Material)value).name();
@@ -2008,12 +2008,12 @@ public class Lookup extends Queue {
          if (!exclude_user_list.isEmpty()) {
             StringBuilder list = new StringBuilder();
 
-            for(String value : exclude_user_list) {
+            for (String value : exclude_user_list) {
                if (Config.player_id_cache.get(value.toLowerCase()) == null) {
-                  Database.loadUserID(statement.getConnection(), value, (String)null);
+                  Database.loadUserID(statement.getConnection(), value, null);
                }
 
-               int userid = (Integer)Config.player_id_cache.get(value.toLowerCase());
+               int userid = Config.player_id_cache.get(value.toLowerCase());
                if (list.length() == 0) {
                   list = new StringBuilder("" + userid + "");
                } else {
@@ -2027,7 +2027,7 @@ public class Lookup extends Queue {
          if (!action_list.isEmpty()) {
             StringBuilder list = new StringBuilder();
 
-            for(Integer value : action_list) {
+            for (Integer value : action_list) {
                if (valid_actions.contains(value)) {
                   if (list.length() == 0) {
                      list = new StringBuilder("" + value + "");
@@ -2040,7 +2040,7 @@ public class Lookup extends Queue {
             action = list.toString();
          }
 
-         for(Integer value : action_list) {
+         for (Integer value : action_list) {
             if (valid_actions.contains(value)) {
                valid_action = true;
             }
@@ -2146,7 +2146,7 @@ public class Lookup extends Queue {
             query_order = "";
          }
 
-         if ((Integer)Config.config.get("use-mysql") == 1) {
+         if (Config.config.get("use-mysql") == 1) {
             if ((radius == null || !users.isEmpty() || !restrict.isEmpty()) && !users.isEmpty()) {
             }
          } else if (query_table.equals("block")) {
@@ -2186,14 +2186,14 @@ public class Lookup extends Queue {
          String query = "SELECT user,type FROM " + Config.prefix + "block WHERE wid = '" + wid + "' AND x = '" + x + "' AND z = '" + z + "' AND y = '" + y + "' AND rolled_back = '0' AND action='1' ORDER BY rowid DESC LIMIT 0, 1";
          ResultSet rs = statement.executeQuery(query);
 
-         while(rs.next()) {
+         while (rs.next()) {
             int result_userid = rs.getInt("user");
             int result_type = rs.getInt("type");
             if (Config.player_id_cache_reversed.get(result_userid) == null) {
                Database.loadUserName(statement.getConnection(), result_userid);
             }
 
-            result = (String)Config.player_id_cache_reversed.get(result_userid);
+            result = Config.player_id_cache_reversed.get(result_userid);
             if (!result.isEmpty()) {
                Material result_material = Functions.getType(result_type);
                Config.lookup_cache.put("" + x + "." + y + "." + z + "." + wid + "", new Object[]{time, result, result_material});
