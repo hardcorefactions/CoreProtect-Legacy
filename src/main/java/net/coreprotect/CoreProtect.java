@@ -19,7 +19,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class CoreProtect extends JavaPlugin {
    protected static CoreProtect instance;
-   private CoreProtectAPI api = new CoreProtectAPI();
+   private final CoreProtectAPI api = new CoreProtectAPI();
 
    public static CoreProtect getInstance() {
       return instance;
@@ -100,7 +100,7 @@ public class CoreProtect extends JavaPlugin {
 
          try {
             new MetricsLite(this, 2876);
-         } catch (Exception var5) {
+         } catch (Exception ignored) {
          }
       } else {
          System.out.println("[CoreProtect] " + pluginDescription.getName() + " was unable to start.");

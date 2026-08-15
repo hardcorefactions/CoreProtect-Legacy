@@ -117,15 +117,13 @@ public class Queue {
    }
 
    protected static void queueBlockPlaceDelayed(final String user, final Block placed, final BlockState replaced, int ticks) {
-      CoreProtect.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(CoreProtect.getInstance(), new Runnable() {
-         public void run() {
-            try {
-               Queue.queueBlockPlace(user, placed.getState(), placed, replaced, (Material)null, -1, 0);
-            } catch (Exception e) {
-               e.printStackTrace();
-            }
-
+      CoreProtect.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(CoreProtect.getInstance(), () -> {
+         try {
+            Queue.queueBlockPlace(user, placed.getState(), placed, replaced, (Material)null, -1, 0);
+         } catch (Exception e) {
+            e.printStackTrace();
          }
+
       }, (long)ticks);
    }
 
@@ -196,7 +194,7 @@ public class Queue {
    }
 
    protected static void queueNaturalBlockBreak(String user, BlockState block, Block relative, Material type, int data) {
-      List<BlockState> relative_list = new ArrayList();
+      List<BlockState> relative_list = new ArrayList<>();
       if (relative != null) {
          relative_list.add(relative.getState());
       }

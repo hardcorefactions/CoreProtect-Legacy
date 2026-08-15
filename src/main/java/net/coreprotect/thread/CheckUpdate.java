@@ -39,7 +39,7 @@ public class CheckUpdate implements Runnable {
             connection.setConnectTimeout(5000);
             connection.connect();
             status = connection.getResponseCode();
-         } catch (Exception var11) {
+         } catch (Exception ignored) {
          }
 
          if (status == 200) {
@@ -47,7 +47,7 @@ public class CheckUpdate implements Runnable {
                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                String response = reader.readLine();
                JSONArray array = (JSONArray)JSONValue.parse(response);
-               if (array.size() > 0) {
+               if (!array.isEmpty()) {
                   String remoteVersion = ((String)((JSONObject)array.get(array.size() - 1)).get("name")).replaceAll("[^0-9.]", "");
                   if (remoteVersion.contains(".")) {
                      Thread.sleep(2000L);
@@ -84,7 +84,7 @@ public class CheckUpdate implements Runnable {
             connection.connect();
             connection.getResponseCode();
             connection.disconnect();
-         } catch (Exception var9) {
+         } catch (Exception ignored) {
          }
       } catch (Exception e) {
          System.err.println("[CoreProtect] An error occurred while checking for updates.");

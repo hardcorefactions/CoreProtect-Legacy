@@ -8,17 +8,17 @@ import java.util.Map;
 import org.bukkit.Material;
 
 public class BlockInfo {
-   public static List<Material> track_any;
-   public static List<Material> track_top;
-   public static List<Material> track_side;
+   public static final List<Material> track_any;
+   public static final List<Material> track_top;
+   public static final List<Material> track_side;
    public static List<Material> shulker_boxes;
    public static List<Material> containers;
    public static List<Material> interact_blocks;
-   public static List<Material> falling_block_types;
-   public static List<Material> non_attachable;
-   public static List<Material> natural_blocks;
-   public static Map<String, Integer> legacy_block_ids;
-   public static Map<Integer, String> legacy_block_names;
+   public static final List<Material> falling_block_types;
+   public static final List<Material> non_attachable;
+   public static final List<Material> natural_blocks;
+   public static final Map<String, Integer> legacy_block_ids;
+   public static final Map<Integer, String> legacy_block_names;
 
    protected static void loadData() {
       Map<Integer, String> n = legacy_block_names;
@@ -498,13 +498,13 @@ public class BlockInfo {
       track_any = Arrays.asList(Material.PISTON_EXTENSION, Material.TORCH, Material.LEVER, Material.REDSTONE_TORCH_OFF, Material.REDSTONE_TORCH_ON);
       track_top = Arrays.asList(Material.SAPLING, Material.POWERED_RAIL, Material.DETECTOR_RAIL, Material.LONG_GRASS, Material.DEAD_BUSH, Material.YELLOW_FLOWER, Material.RED_ROSE, Material.BROWN_MUSHROOM, Material.RED_MUSHROOM, Material.REDSTONE_WIRE, Material.CROPS, Material.SIGN_POST, Material.STANDING_BANNER, Material.WOODEN_DOOR, Material.SPRUCE_DOOR, Material.BIRCH_DOOR, Material.JUNGLE_DOOR, Material.ACACIA_DOOR, Material.DARK_OAK_DOOR, Material.RAILS, Material.STONE_PLATE, Material.WOOD_PLATE, Material.IRON_DOOR_BLOCK, Material.WOOD_PLATE, Material.SNOW, Material.CACTUS, Material.SUGAR_CANE_BLOCK, Material.DIODE_BLOCK_OFF, Material.DIODE_BLOCK_ON, Material.PUMPKIN_STEM, Material.MELON_STEM, Material.FLOWER_POT, Material.CARROT, Material.POTATO, Material.GOLD_PLATE, Material.IRON_PLATE, Material.REDSTONE_COMPARATOR_OFF, Material.REDSTONE_COMPARATOR_ON, Material.ACTIVATOR_RAIL, Material.CARPET, Material.DOUBLE_PLANT, Material.NETHER_WARTS);
       track_side = Arrays.asList(Material.RAILS, Material.POWERED_RAIL, Material.DETECTOR_RAIL, Material.ACTIVATOR_RAIL, Material.WALL_BANNER, Material.BED_BLOCK, Material.LADDER, Material.WALL_SIGN, Material.STONE_BUTTON, Material.TRAP_DOOR, Material.IRON_TRAPDOOR, Material.VINE, Material.COCOA, Material.TRIPWIRE_HOOK, Material.WOOD_BUTTON);
-      shulker_boxes = Arrays.asList();
+      shulker_boxes = Collections.emptyList();
       containers = Arrays.asList(Material.DISPENSER, Material.CHEST, Material.FURNACE, Material.BURNING_FURNACE, Material.BREWING_STAND, Material.TRAPPED_CHEST, Material.HOPPER, Material.DROPPER, Material.ARMOR_STAND);
       interact_blocks = Arrays.asList(Material.SPRUCE_DOOR, Material.BIRCH_DOOR, Material.JUNGLE_DOOR, Material.ACACIA_DOOR, Material.DARK_OAK_DOOR, Material.SPRUCE_FENCE_GATE, Material.BIRCH_FENCE_GATE, Material.JUNGLE_FENCE_GATE, Material.DARK_OAK_FENCE_GATE, Material.ACACIA_FENCE_GATE, Material.DISPENSER, Material.NOTE_BLOCK, Material.CHEST, Material.FURNACE, Material.BURNING_FURNACE, Material.WOODEN_DOOR, Material.LEVER, Material.STONE_BUTTON, Material.DIODE_BLOCK_OFF, Material.DIODE_BLOCK_ON, Material.TRAP_DOOR, Material.FENCE_GATE, Material.BREWING_STAND, Material.WOOD_BUTTON, Material.ANVIL, Material.TRAPPED_CHEST, Material.REDSTONE_COMPARATOR_OFF, Material.REDSTONE_COMPARATOR_ON, Material.HOPPER, Material.DROPPER);
       falling_block_types = Arrays.asList(Material.SAND, Material.GRAVEL, Material.ANVIL);
       non_attachable = Arrays.asList(Material.AIR, Material.SAPLING, Material.WATER, Material.STATIONARY_WATER, Material.LAVA, Material.STATIONARY_LAVA, Material.POWERED_RAIL, Material.DETECTOR_RAIL, Material.LONG_GRASS, Material.DEAD_BUSH, Material.YELLOW_FLOWER, Material.RED_ROSE, Material.BROWN_MUSHROOM, Material.RED_MUSHROOM, Material.TORCH, Material.FIRE, Material.REDSTONE_WIRE, Material.LADDER, Material.RAILS, Material.LEVER, Material.REDSTONE_TORCH_OFF, Material.REDSTONE_TORCH_ON, Material.STONE_BUTTON, Material.SNOW, Material.SUGAR_CANE_BLOCK, Material.PORTAL, Material.DIODE_BLOCK_OFF, Material.DIODE_BLOCK_ON);
       natural_blocks = Arrays.asList(Material.STONE, Material.GRASS, Material.DIRT, Material.SAND, Material.GRAVEL, Material.GOLD_ORE, Material.IRON_ORE, Material.COAL_ORE, Material.LOG, Material.LEAVES, Material.LAPIS_ORE, Material.SANDSTONE, Material.WEB, Material.LONG_GRASS, Material.DEAD_BUSH, Material.YELLOW_FLOWER, Material.RED_ROSE, Material.BROWN_MUSHROOM, Material.RED_MUSHROOM, Material.OBSIDIAN, Material.DIAMOND_ORE, Material.CROPS, Material.REDSTONE_ORE, Material.GLOWING_REDSTONE_ORE, Material.SNOW, Material.ICE, Material.CACTUS, Material.CLAY, Material.SUGAR_CANE_BLOCK, Material.PUMPKIN, Material.NETHERRACK, Material.SOUL_SAND, Material.MELON_BLOCK, Material.PUMPKIN_STEM, Material.MELON_STEM, Material.VINE, Material.MYCEL, Material.WATER_LILY, Material.NETHER_WARTS, Material.ENDER_STONE, Material.EMERALD_ORE, Material.CARROT, Material.POTATO);
-      legacy_block_ids = Collections.synchronizedMap(new HashMap());
-      legacy_block_names = Collections.synchronizedMap(new HashMap());
+      legacy_block_ids = Collections.synchronizedMap(new HashMap<>());
+      legacy_block_names = Collections.synchronizedMap(new HashMap<>());
    }
 }

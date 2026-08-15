@@ -59,7 +59,7 @@ public class Database extends Queue {
             ItemStack[] contents = Functions.getContainerContents(type, container, location);
             if (contents != null) {
                BlockState blockState = location.getBlock().getState();
-               List<ItemStack[]> force_list = new ArrayList();
+               List<ItemStack[]> force_list = new ArrayList<>();
                force_list.add(Functions.get_container_state(contents));
                Config.force_containers.put(user.toLowerCase() + "." + blockState.getX() + "." + blockState.getY() + "." + blockState.getZ(), force_list);
                ItemStack[] containerState = Functions.get_container_state(contents);
@@ -110,7 +110,7 @@ public class Database extends Queue {
    }
 
    public static List<Object> getEntityData(Statement statement, BlockState block, String query) {
-      List<Object> result = new ArrayList();
+      List<Object> result = new ArrayList<>();
 
       try {
          ResultSet rs;
@@ -176,7 +176,7 @@ public class Database extends Queue {
             skull = (Skull)Functions.setRawData(skull, (byte)data);
             skull.setSkullType(skulltype);
             skull.setRotation(skullrotation);
-            if (owner != null && owner.length() > 0) {
+            if (owner != null && !owner.isEmpty()) {
                skull.setOwner(owner);
             }
          }
@@ -432,7 +432,7 @@ public class Database extends Queue {
             user = rs.getString("user");
          }
 
-         if (user.length() == 0) {
+         if (user.isEmpty()) {
             return user;
          }
 

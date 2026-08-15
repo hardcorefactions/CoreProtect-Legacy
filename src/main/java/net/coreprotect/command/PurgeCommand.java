@@ -117,10 +117,10 @@ public class PurgeCommand extends Consumer {
                   List<String> purge_tables = Arrays.asList("sign", "container", "skull", "session", "chat", "command", "entity", "block");
 
                   for(String table : Config.databaseTables) {
-                     String tableName = table.replaceAll("_", " ");
+                     String tableName = table.replace("_", " ");
                      Functions.messageOwnerAndUser(player, Language.get("processing-data", tableName));
                      if ((Integer)Config.config.get("use-mysql") == 0) {
-                        String columns = "";
+                        StringBuilder columns = new StringBuilder();
                         ResultSet rs = connection.createStatement().executeQuery("SELECT * FROM " + purge_prefix + table);
                         ResultSetMetaData resultSetMetaData = rs.getMetaData();
                         int columnCount = resultSetMetaData.getColumnCount();
@@ -128,9 +128,9 @@ public class PurgeCommand extends Consumer {
                         for(int i = 1; i <= columnCount; ++i) {
                            String name = resultSetMetaData.getColumnName(i);
                            if (columns.length() == 0) {
-                              columns = name;
+                              columns = new StringBuilder(name);
                            } else {
-                              columns = columns + "," + name;
+                              columns.append(",").append(name);
                            }
                         }
 

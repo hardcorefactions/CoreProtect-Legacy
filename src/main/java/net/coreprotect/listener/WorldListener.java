@@ -46,7 +46,7 @@ public class WorldListener extends Queue implements Listener {
             Material type = block.getType();
             if (type.equals(Material.FIRE)) {
                String result_data = Lookup.who_placed_cache(block);
-               if (result_data.length() > 0) {
+               if (!result_data.isEmpty()) {
                   user = result_data;
                }
                break;

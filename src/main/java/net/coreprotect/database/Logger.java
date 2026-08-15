@@ -30,8 +30,8 @@ import org.bukkit.potion.PotionEffect;
 
 public class Logger {
    public static List<List<Map<String, Object>>> getItemMeta(ItemStack i, Material type, int slot) {
-      List<List<Map<String, Object>>> metadata = new ArrayList();
-      List<Map<String, Object>> list = new ArrayList();
+      List<List<Map<String, Object>>> metadata = new ArrayList<>();
+      List<Map<String, Object>> list = new ArrayList<>();
       if (i.hasItemMeta() && i.getItemMeta() != null) {
          if (i.getItemMeta() instanceof LeatherArmorMeta) {
             LeatherArmorMeta meta = (LeatherArmorMeta)i.getItemMeta().clone();
@@ -39,7 +39,7 @@ public class Logger {
             meta.setColor((Color)null);
             list.add(meta.serialize());
             metadata.add(list);
-            List<Map<String, Object>> var9 = new ArrayList();
+            List<Map<String, Object>> var9 = new ArrayList<>();
             var9.add(sub_meta.getColor().serialize());
             metadata.add(var9);
          } else if (i.getItemMeta() instanceof FireworkMeta) {
@@ -66,12 +66,12 @@ public class Logger {
          } else if (i.getItemMeta() instanceof BannerMeta) {
             BannerMeta meta = (BannerMeta)i.getItemMeta().clone();
             BannerMeta sub_meta = (BannerMeta)meta.clone();
-            meta.setPatterns(new ArrayList());
+            meta.setPatterns(new ArrayList<>());
             list.add(meta.serialize());
             metadata.add(list);
 
             for(Pattern pattern : sub_meta.getPatterns()) {
-               List<Map<String, Object>> var10 = new ArrayList();
+               List<Map<String, Object>> var10 = new ArrayList<>();
                var10.add(pattern.serialize());
                metadata.add(var10);
             }
@@ -84,7 +84,7 @@ public class Logger {
                metadata.add(list);
                if (sub_meta.hasCustomEffects()) {
                   for(PotionEffect effect : sub_meta.getCustomEffects()) {
-                     List<Map<String, Object>> var11 = new ArrayList();
+                     List<Map<String, Object>> var11 = new ArrayList<>();
                      var11.add(effect.serialize());
                      metadata.add(var11);
                   }
@@ -98,9 +98,9 @@ public class Logger {
       }
 
       if (type != null && type.equals(Material.ARMOR_STAND)) {
-         Map<String, Object> meta = new HashMap();
+         Map<String, Object> meta = new HashMap<>();
          meta.put("slot", slot);
-         List<Map<String, Object>> var12 = new ArrayList();
+         List<Map<String, Object>> var12 = new ArrayList<>();
          var12.add(meta);
          metadata.add(var12);
       }
@@ -140,9 +140,9 @@ public class Logger {
    }
 
    private static void getFireworkEffect(FireworkEffect effect, List<List<Map<String, Object>>> metadata) {
-      List<Map<String, Object>> color_list = new ArrayList();
-      List<Map<String, Object>> fade_list = new ArrayList();
-      List<Map<String, Object>> list = new ArrayList();
+      List<Map<String, Object>> color_list = new ArrayList<>();
+      List<Map<String, Object>> fade_list = new ArrayList<>();
+      List<Map<String, Object>> list = new ArrayList<>();
 
       for(Color color : effect.getColors()) {
          color_list.add(color.serialize());
@@ -152,7 +152,7 @@ public class Logger {
          fade_list.add(color.serialize());
       }
 
-      Map<String, Object> has_check = new HashMap();
+      Map<String, Object> has_check = new HashMap<>();
       has_check.put("flicker", effect.hasFlicker());
       has_check.put("trail", effect.hasTrail());
       list.add(has_check);
@@ -250,7 +250,7 @@ public class Logger {
             List<ItemStack[]> force_list = (List)Config.force_containers.get(logging_container_id);
             new_inventory = Functions.get_container_state((ItemStack[])force_list.get(0));
             force_list.remove(0);
-            if (force_list.size() == 0) {
+            if (force_list.isEmpty()) {
                Config.force_containers.remove(logging_container_id);
             } else {
                Config.force_containers.put(logging_container_id, force_list);
@@ -383,7 +383,7 @@ public class Logger {
          int dz = z;
          int doubledata = data;
          int logdouble = 0;
-         if (user.length() > 0) {
+         if (!user.isEmpty()) {
             Config.lookup_cache.put("" + x + "." + y + "." + z + "." + wid + "", new Object[]{time, user, type});
          }
 

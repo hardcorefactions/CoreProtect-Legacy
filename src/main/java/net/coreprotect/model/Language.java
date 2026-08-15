@@ -3,6 +3,7 @@ package net.coreprotect.model;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -46,9 +47,9 @@ public class Language {
     * either the old maps or the new ones, never a half-built map.
     */
    public static void load() {
-      Map<String, String> newDefaults = new HashMap<String, String>();
-      Map<String, String> newMessages = new HashMap<String, String>();
-      Map<String, String> newTokens = new LinkedHashMap<String, String>();
+      Map<String, String> newDefaults = new HashMap<>();
+      Map<String, String> newMessages = new HashMap<>();
+      Map<String, String> newTokens = new LinkedHashMap<>();
 
       try {
          YamlConfiguration bundled = loadBundled();
@@ -81,7 +82,7 @@ public class Language {
          }
 
          try {
-            return YamlConfiguration.loadConfiguration(new InputStreamReader(stream, "UTF-8"));
+            return YamlConfiguration.loadConfiguration(new InputStreamReader(stream, StandardCharsets.UTF_8));
          } finally {
             stream.close();
          }
@@ -198,7 +199,7 @@ public class Language {
    }
 
    private static String lookup(String name, Object[] args, int depth) {
-      if (name.length() > 0 && isDigits(name)) {
+      if (!name.isEmpty() && isDigits(name)) {
          try {
             int index = Integer.parseInt(name);
             if (args != null && index >= 0 && index < args.length) {

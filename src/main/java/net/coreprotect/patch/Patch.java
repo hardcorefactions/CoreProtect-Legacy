@@ -3,6 +3,7 @@ package net.coreprotect.patch;
 import java.io.File;
 import java.io.FileInputStream;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -27,7 +28,7 @@ public class Patch extends CoreProtect {
    }
 
    protected static String getClassVersion(String version) {
-      return version.split(".__")[1].replaceAll("_", ".");
+      return version.split(".__")[1].replace("_", ".");
    }
 
    public static Integer[] getLastVersion(Connection connection) {
@@ -45,7 +46,7 @@ public class Patch extends CoreProtect {
                version = String.format("%3.2f", (double)version_int / (double)100.0F);
             }
 
-            version = version.replaceAll(",", ".");
+            version = version.replace(",", ".");
             String[] old_version_split = version.split("\\.");
             if (old_version_split.length > 2) {
                last_version[0] = Integer.parseInt(old_version_split[0]);
@@ -74,12 +75,12 @@ public class Patch extends CoreProtect {
    }
 
    private static List<String> getPatches() {
-      List<String> patches = new ArrayList();
+      List<String> patches = new ArrayList<>();
 
       try {
          File pluginFile = new File(CoreProtect.class.getProtectionDomain().getCodeSource().getLocation().toURI());
          if (pluginFile.getPath().endsWith(".jar")) {
-            JarInputStream jarInputStream = new JarInputStream(new FileInputStream(pluginFile));
+            JarInputStream jarInputStream = new JarInputStream(Files.newInputStream(pluginFile.toPath()));
 
             while(true) {
                JarEntry jarEntry = jarInputStream.getNextJarEntry();
@@ -90,7 +91,7 @@ public class Patch extends CoreProtect {
 
                String className = jarEntry.getName();
                if (className.startsWith("net/coreprotect/patch/script/__") && className.endsWith(".class")) {
-                  Class<?> patchClass = Class.forName(className.substring(0, className.length() - 6).replaceAll("/", "."));
+                  Class<?> patchClass = Class.forName(className.substring(0, className.length() - 6).replace("/", "."));
                   String patchVersion = getClassVersion(patchClass.getName());
                   if (!Functions.newVersion(getPluginVersion(), patchVersion)) {
                      patches.add(patchVersion);
@@ -99,14 +100,12 @@ public class Patch extends CoreProtect {
             }
          }
 
-         Collections.sort(patches, new Comparator<String>() {
-            public int compare(String o1, String o2) {
-               if (Functions.newVersion(o1, o2)) {
-                  return -1;
-               } else {
-                  return Functions.newVersion(o2, o1) ? 1 : 0;
-               }
-            }
+         patches.sort((o1, o2) -> {
+             if (Functions.newVersion(o1, o2)) {
+                 return -1;
+             } else {
+                 return Functions.newVersion(o2, o1) ? 1 : 0;
+             }
          });
       } catch (Exception e) {
          e.printStackTrace();

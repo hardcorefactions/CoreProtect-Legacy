@@ -38,7 +38,7 @@ public class HangingListener extends Queue implements Listener {
                      for(String b : blockdata.split("\n")) {
                         player.sendMessage(b);
                      }
-                  } else if (blockdata.length() > 0) {
+                  } else if (!blockdata.isEmpty()) {
                      player.sendMessage(blockdata);
                   }
 

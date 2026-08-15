@@ -26,8 +26,8 @@ import org.bukkit.inventory.ItemStack;
 
 public class Config extends Queue {
    public static int SPIGOT_VERSION = 0;
-   public static String driver = "com.mysql.jdbc.Driver";
-   public static String sqlite = "plugins/CoreProtect/database.db";
+   public static final String driver = "com.mysql.jdbc.Driver";
+   public static final String sqlite = "plugins/CoreProtect/database.db";
    public static String host = "127.0.0.1";
    public static int port = 3306;
    public static String database = "database";
@@ -42,45 +42,45 @@ public class Config extends Queue {
    public static int material_id = 0;
    public static int entity_id = 0;
    public static int art_id = 0;
-   public static Map<String, Integer> worlds = Collections.synchronizedMap(new HashMap());
-   public static Map<Integer, String> worlds_reversed = Collections.synchronizedMap(new HashMap());
-   public static Map<String, Integer> materials = Collections.synchronizedMap(new HashMap());
-   public static Map<Integer, String> materials_reversed = Collections.synchronizedMap(new HashMap());
-   public static Map<String, Integer> entities = Collections.synchronizedMap(new HashMap());
-   public static Map<Integer, String> entities_reversed = Collections.synchronizedMap(new HashMap());
-   public static Map<String, Integer> art = Collections.synchronizedMap(new HashMap());
-   public static Map<Integer, String> art_reversed = Collections.synchronizedMap(new HashMap());
-   public static Map<String, Integer> config = Collections.synchronizedMap(new HashMap());
-   public static Map<String, int[]> rollback_hash = Collections.synchronizedMap(new HashMap());
-   public static Map<String, Boolean> inspecting = Collections.synchronizedMap(new HashMap());
-   public static Map<String, Object[]> lookup_cache = Collections.synchronizedMap(new HashMap());
-   public static Map<String, Object[]> break_cache = Collections.synchronizedMap(new HashMap());
-   public static Map<String, Object[]> piston_cache = Collections.synchronizedMap(new HashMap());
-   public static Map<String, Object[]> entity_cache = Collections.synchronizedMap(new HashMap());
-   public static Map<String, Boolean> blacklist = Collections.synchronizedMap(new HashMap());
-   public static Map<String, Integer> logging_chest = Collections.synchronizedMap(new HashMap());
-   public static Map<String, List<ItemStack[]>> old_container = Collections.synchronizedMap(new HashMap());
-   public static Map<String, List<ItemStack[]>> force_containers = Collections.synchronizedMap(new HashMap());
-   public static Map<String, Integer> lookup_type = Collections.synchronizedMap(new HashMap());
-   public static Map<String, Integer> lookup_page = Collections.synchronizedMap(new HashMap());
-   public static Map<String, String> lookup_command = Collections.synchronizedMap(new HashMap());
-   public static Map<String, List<Object>> lookup_blist = Collections.synchronizedMap(new HashMap());
-   public static Map<String, List<Object>> lookup_elist = Collections.synchronizedMap(new HashMap());
-   public static Map<String, List<String>> lookup_e_userlist = Collections.synchronizedMap(new HashMap());
-   public static Map<String, List<String>> lookup_ulist = Collections.synchronizedMap(new HashMap());
-   public static Map<String, List<Integer>> lookup_alist = Collections.synchronizedMap(new HashMap());
-   public static Map<String, Integer[]> lookup_radius = Collections.synchronizedMap(new HashMap());
-   public static Map<String, String> lookup_time = Collections.synchronizedMap(new HashMap());
-   public static Map<String, Integer> lookup_rows = Collections.synchronizedMap(new HashMap());
-   public static Map<String, String> uuid_cache = Collections.synchronizedMap(new HashMap());
-   public static Map<String, String> uuid_cache_reversed = Collections.synchronizedMap(new HashMap());
-   public static Map<String, Integer> player_id_cache = Collections.synchronizedMap(new HashMap());
-   public static Map<Integer, String> player_id_cache_reversed = Collections.synchronizedMap(new HashMap());
-   public static Map<String, List<Object[]>> last_rollback = Collections.synchronizedMap(new HashMap());
-   public static Map<String, Boolean> active_rollbacks = Collections.synchronizedMap(new HashMap());
-   public static Map<UUID, Object[]> entity_block_mapper = Collections.synchronizedMap(new HashMap());
-   public static ConcurrentHashMap<String, String> language = new ConcurrentHashMap();
-   public static List<String> databaseTables = new ArrayList();
+   public static final Map<String, Integer> worlds = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<Integer, String> worlds_reversed = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, Integer> materials = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<Integer, String> materials_reversed = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, Integer> entities = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<Integer, String> entities_reversed = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, Integer> art = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<Integer, String> art_reversed = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, Integer> config = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, int[]> rollback_hash = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, Boolean> inspecting = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, Object[]> lookup_cache = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, Object[]> break_cache = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, Object[]> piston_cache = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, Object[]> entity_cache = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, Boolean> blacklist = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, Integer> logging_chest = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, List<ItemStack[]>> old_container = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, List<ItemStack[]>> force_containers = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, Integer> lookup_type = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, Integer> lookup_page = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, String> lookup_command = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, List<Object>> lookup_blist = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, List<Object>> lookup_elist = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, List<String>> lookup_e_userlist = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, List<String>> lookup_ulist = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, List<Integer>> lookup_alist = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, Integer[]> lookup_radius = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, String> lookup_time = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, Integer> lookup_rows = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, String> uuid_cache = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, String> uuid_cache_reversed = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, Integer> player_id_cache = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<Integer, String> player_id_cache_reversed = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, List<Object[]>> last_rollback = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<String, Boolean> active_rollbacks = Collections.synchronizedMap(new HashMap<>());
+   public static final Map<UUID, Object[]> entity_block_mapper = Collections.synchronizedMap(new HashMap<>());
+   public static ConcurrentHashMap<String, String> language = new ConcurrentHashMap<>();
+   public static final List<String> databaseTables = new ArrayList<>();
 
    private static void checkPlayers(Connection connection) {
       player_id_cache.clear();
@@ -103,8 +103,8 @@ public class Config extends Queue {
             long blc = blfile.length();
             if (blc > 0L) {
                while(blfile.getFilePointer() < blfile.length()) {
-                  String blacklist_user = blfile.readLine().replaceAll(" ", "").toLowerCase();
-                  if (blacklist_user.length() > 0) {
+                  String blacklist_user = blfile.readLine().replace(" ", "").toLowerCase();
+                  if (!blacklist_user.isEmpty()) {
                      Config.blacklist.put(blacklist_user, true);
                   }
                }
@@ -170,15 +170,14 @@ public class Config extends Queue {
          String[] children = dir.list();
          if (children != null) {
             for(String element : children) {
-               String filename = element;
-               if (!element.startsWith(".") && element.endsWith(".yml") && !element.equalsIgnoreCase("language.yml")) {
+                if (!element.startsWith(".") && element.endsWith(".yml") && !element.equalsIgnoreCase("language.yml")) {
                   try {
-                     String key = filename.replaceAll(".yml", "-");
+                     String key = element.replaceAll(".yml", "-");
                      if (key.equals("config-")) {
                         key = "";
                      }
 
-                     RandomAccessFile configfile = new RandomAccessFile("plugins/CoreProtect/" + filename, "rw");
+                     RandomAccessFile configfile = new RandomAccessFile("plugins/CoreProtect/" + element, "rw");
                      long config_length = configfile.length();
                      if (config_length > 0L) {
                         while(configfile.getFilePointer() < configfile.length()) {
@@ -187,7 +186,7 @@ public class Config extends Queue {
                               line = line.replaceFirst(":", "§ ");
                               String[] i2 = line.split("§");
                               String option = i2[0].trim().toLowerCase();
-                              if (key.length() == 0) {
+                              if (key.isEmpty()) {
                                  if (option.equals("verbose")) {
                                     String setting = i2[1].trim().toLowerCase();
                                     if (setting.startsWith("t")) {
@@ -217,7 +216,7 @@ public class Config extends Queue {
                                  if (option.equals("mysql-port")) {
                                     String setting = i2[1].trim();
                                     setting = setting.replaceAll("[^0-9]", "");
-                                    if (setting.length() == 0) {
+                                    if (setting.isEmpty()) {
                                        setting = "0";
                                     }
 
@@ -257,7 +256,7 @@ public class Config extends Queue {
                                  if (option.equals("default-radius")) {
                                     String setting = i2[1].trim();
                                     setting = setting.replaceAll("[^0-9]", "");
-                                    if (setting.length() == 0) {
+                                    if (setting.isEmpty()) {
                                        setting = "0";
                                     }
 
@@ -267,7 +266,7 @@ public class Config extends Queue {
                                  if (option.equals("max-radius")) {
                                     String setting = i2[1].trim();
                                     setting = setting.replaceAll("[^0-9]", "");
-                                    if (setting.length() == 0) {
+                                    if (setting.isEmpty()) {
                                        setting = "0";
                                     }
 
@@ -562,7 +561,7 @@ public class Config extends Queue {
                         }
                      }
 
-                     if (key.length() == 0) {
+                     if (key.isEmpty()) {
                         if (config_length < 1L) {
                            configfile.write(confighead.getBytes());
                         }

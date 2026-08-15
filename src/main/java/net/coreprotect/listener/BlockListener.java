@@ -61,8 +61,7 @@ public class BlockListener extends Queue implements Listener {
             m = 6;
          }
 
-         Block block = bl;
-         Material type = bl.getType();
+          Material type = bl.getType();
 
          for(int data = Functions.getData(bl); l < m; ++l) {
             Location lc = l1;
@@ -82,7 +81,7 @@ public class BlockListener extends Queue implements Listener {
                lc = l5;
             }
 
-            Block b = block;
+            Block b = bl;
             boolean check_down = false;
             Material bt = type;
             int bd = data;
@@ -171,11 +170,10 @@ public class BlockListener extends Queue implements Listener {
             BlockState b1 = b.getState();
             Material bt1 = bt;
             int bd1 = bd;
-            int bn = l;
-            if (log == 1 && (bt.equals(Material.SKULL) || bt.equals(Material.WALL_BANNER) || bt.equals(Material.STANDING_BANNER))) {
+             if (log == 1 && (bt.equals(Material.SKULL) || bt.equals(Material.WALL_BANNER) || bt.equals(Material.STANDING_BANNER))) {
                try {
                   if (b1 instanceof Banner || b1 instanceof Skull) {
-                     Queue.queueAdvancedBreak(player, b1, bt1, bd1, type, bn);
+                     Queue.queueAdvancedBreak(player, b1, bt1, bd1, type, l);
                   }
 
                   log = 0;
@@ -198,7 +196,7 @@ public class BlockListener extends Queue implements Listener {
             }
 
             if (log == 1) {
-               Database.containerBreakCheck(player, block.getType(), block, block.getLocation());
+               Database.containerBreakCheck(player, bl.getType(), bl, bl.getLocation());
                Functions.iceBreakCheck(b1, player, bt);
                Queue.queueBlockBreak(player, b1, bt, bd, type, l);
             }
@@ -250,7 +248,7 @@ public class BlockListener extends Queue implements Listener {
                int wid = Functions.getWorldId(block.getWorld().getName());
                if (Functions.checkConfig(world, "liquid-tracking") == 1) {
                   String p = Lookup.who_placed_cache(block);
-                  if (p.length() > 0) {
+                  if (!p.isEmpty()) {
                      f = p;
                   }
                }
@@ -297,8 +295,8 @@ public class BlockListener extends Queue implements Listener {
 
       World world = event.getBlock().getWorld();
       if (Functions.checkConfig(world, "pistons") == 1 && !event.isCancelled()) {
-         List<Block> nblocks = new ArrayList();
-         List<BlockState> blocks = new ArrayList();
+         List<Block> nblocks = new ArrayList<>();
+         List<BlockState> blocks = new ArrayList<>();
 
          for(Block block : event_blocks) {
             Block block_relative = block.getRelative(event.getDirection());

@@ -100,7 +100,7 @@ public class EntityListener extends Queue implements Listener {
             e = "#snowman";
          }
 
-         if (e.length() > 0) {
+         if (!e.isEmpty()) {
             Queue.queueBlockPlace(e, (BlockState)block.getState(), (Material)newState.getType(), Functions.getData(newState));
          }
       }
@@ -129,7 +129,7 @@ public class EntityListener extends Queue implements Listener {
             e = "#silverfish";
          }
 
-         if (e.length() > 0) {
+         if (!e.isEmpty()) {
             if (newtype.equals(Material.AIR)) {
                Queue.queueBlockBreak(e, block.getState(), type, data);
             } else {
@@ -218,12 +218,9 @@ public class EntityListener extends Queue implements Listener {
             EntityDamageEvent damage = entity.getLastDamageCause();
             if (damage != null) {
                String e = "";
-               boolean skip = true;
-               if (Functions.checkConfig(entity.getWorld(), "skip-generic-data") == 0 || !(entity instanceof Zombie) && !(entity instanceof Skeleton)) {
-                  skip = false;
-               }
+               boolean skip = Functions.checkConfig(entity.getWorld(), "skip-generic-data") != 0 && (entity instanceof Zombie || entity instanceof Skeleton);
 
-               if (damage instanceof EntityDamageByEntityEvent) {
+                if (damage instanceof EntityDamageByEntityEvent) {
                   EntityDamageByEntityEvent attack = (EntityDamageByEntityEvent)damage;
                   Entity attacker = attack.getDamager();
                   if (attacker instanceof Player) {
@@ -274,7 +271,7 @@ public class EntityListener extends Queue implements Listener {
                }
 
                EntityType entity_type = entity.getType();
-               if (e.length() == 0 && !skip) {
+               if (e.isEmpty() && !skip) {
                   if (!(entity instanceof Player) && entity_type.name() != null) {
                      e = "#" + entity_type.name().toLowerCase();
                   } else if (entity instanceof Player) {
@@ -298,12 +295,12 @@ public class EntityListener extends Queue implements Listener {
                   e = "#lightning";
                }
 
-               if (e.length() > 0) {
-                  List<Object> data = new ArrayList();
-                  List<Object> age = new ArrayList();
-                  List<Object> tame = new ArrayList();
-                  List<Object> attributes = new ArrayList();
-                  List<Object> info = new ArrayList();
+               if (!e.isEmpty()) {
+                  List<Object> data = new ArrayList<>();
+                  List<Object> age = new ArrayList<>();
+                  List<Object> tame = new ArrayList<>();
+                  List<Object> attributes = new ArrayList<>();
+                  List<Object> info = new ArrayList<>();
                   if (entity instanceof Ageable) {
                      Ageable ageable = (Ageable)entity;
                      age.add(ageable.getAge());
@@ -420,7 +417,7 @@ public class EntityListener extends Queue implements Listener {
 
       if (!event.isCancelled() && log == 1) {
          List<Block> b = event.blockList();
-         List<Block> nb = new ArrayList();
+         List<Block> nb = new ArrayList<>();
          if (Functions.checkConfig(world, "natural-break") == 1) {
             for(Block block : b) {
                int x = block.getX();

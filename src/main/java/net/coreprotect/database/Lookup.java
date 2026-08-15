@@ -76,13 +76,10 @@ public class Lookup extends Queue {
       }
 
       try {
-         ObjectInputStream ins = new ObjectInputStream(new ByteArrayInputStream(meta));
 
-         try {
-            return (List)ins.readObject();
-         } finally {
-            ins.close();
-         }
+          try (ObjectInputStream ins = new ObjectInputStream(new ByteArrayInputStream(meta))) {
+              return (List) ins.readObject();
+          }
       } catch (Exception e) {
          return null;
       }
@@ -173,7 +170,7 @@ public class Lookup extends Queue {
                dname = "minecraft:" + dname.toLowerCase();
             }
 
-            if (dname.length() > 0) {
+            if (!dname.isEmpty()) {
                dname = "" + dname + "";
             }
 
@@ -213,7 +210,7 @@ public class Lookup extends Queue {
    }
 
    public static List<String[]> block_lookup_api(Block block, int offset) {
-      List<String[]> result = new ArrayList();
+      List<String[]> result = new ArrayList<>();
 
       try {
          if (block == null) {
@@ -336,7 +333,7 @@ public class Lookup extends Queue {
 
             dname = Functions.getTypeName(result_type).toLowerCase();
             dname = Functions.nameFilter(dname, result_data);
-            if (dname.length() > 0) {
+            if (!dname.isEmpty()) {
                dname = "minecraft:" + dname.toLowerCase() + "";
             }
 
@@ -373,7 +370,7 @@ public class Lookup extends Queue {
    }
 
    private static List<String[]> convertRawLookup(Statement statement, List<Object[]> list) {
-      List<String[]> new_list = new ArrayList();
+      List<String[]> new_list = new ArrayList<>();
       if (list == null) {
          return null;
       } else {
@@ -446,26 +443,26 @@ public class Lookup extends Queue {
          }
 
          user.sendMessage("-----");
-         String users = "";
+         StringBuilder users = new StringBuilder();
 
          for(String value : check_users) {
             if (users.length() == 0) {
-               users = "" + value + "";
+               users = new StringBuilder("" + value + "");
             } else {
-               users = users + ", " + value;
+               users.append(", ").append(value);
             }
          }
 
-         if (users.equals("#global") && restrict_world) {
-            users = "#" + location.getWorld().getName();
+         if (users.toString().equals("#global") && restrict_world) {
+            users = new StringBuilder("#" + location.getWorld().getName());
          }
 
          if (preview > 0) {
-            user.sendMessage(Language.get("preview-completed-for", users));
+            user.sendMessage(Language.get("preview-completed-for", users.toString()));
          } else if (rollback_type == 1) {
-            user.sendMessage(Language.get("restore-completed-for", users));
+            user.sendMessage(Language.get("restore-completed-for", users.toString()));
          } else if (rollback_type == 0) {
-            user.sendMessage(Language.get("rollback-completed-for", users));
+            user.sendMessage(Language.get("rollback-completed-for", users.toString()));
          }
 
          if (preview == 1) {
@@ -506,8 +503,8 @@ public class Lookup extends Queue {
             user.sendMessage(Language.get("limited-to-action-entity-kill"));
          }
 
-         if (restrict_list.size() > 0) {
-            String r = "";
+         if (!restrict_list.isEmpty()) {
+            StringBuilder r = new StringBuilder();
             int rc = 0;
 
             for(Object rt : restrict_list) {
@@ -519,19 +516,19 @@ public class Lookup extends Queue {
                }
 
                if (rc == 0) {
-                  r = "" + value_name + "";
+                  r = new StringBuilder("" + value_name + "");
                } else {
-                  r = r + ", " + value_name;
+                  r.append(", ").append(value_name);
                }
 
                ++rc;
             }
 
-            user.sendMessage(Language.get("limited-to-block-type-s", r));
+            user.sendMessage(Language.get("limited-to-block-type-s", r.toString()));
          }
 
-         if (exclude_list.size() > 0) {
-            String e = "";
+         if (!exclude_list.isEmpty()) {
+            StringBuilder e = new StringBuilder();
             int ec = 0;
 
             for(Object et : exclude_list) {
@@ -543,32 +540,32 @@ public class Lookup extends Queue {
                }
 
                if (ec == 0) {
-                  e = "" + value_name + "";
+                  e = new StringBuilder("" + value_name + "");
                } else {
-                  e = e + ", " + value_name;
+                  e.append(", ").append(value_name);
                }
 
                ++ec;
             }
 
-            user.sendMessage(Language.get("excluded-block-type-s", e));
+            user.sendMessage(Language.get("excluded-block-type-s", e.toString()));
          }
 
-         if (exclude_user_list.size() > 0) {
-            String e = "";
+         if (!exclude_user_list.isEmpty()) {
+            StringBuilder e = new StringBuilder();
             int ec = 0;
 
             for(String et : exclude_user_list) {
                if (ec == 0) {
-                  e = "" + et + "";
+                  e = new StringBuilder("" + et + "");
                } else {
-                  e = e + ", " + et;
+                  e.append(", ").append(et);
                }
 
                ++ec;
             }
 
-            user.sendMessage(Language.get("excluded-user-s", e));
+            user.sendMessage(Language.get("excluded-user-s", e.toString()));
          }
 
          if (action_list.contains(5)) {
@@ -681,7 +678,7 @@ public class Lookup extends Queue {
 
             dname = Functions.getTypeName(result_type).toLowerCase();
             dname = Functions.nameFilter(dname, result_data);
-            if (dname.length() > 0) {
+            if (!dname.isEmpty()) {
                dname = "minecraft:" + dname.toLowerCase() + "";
             }
 
@@ -775,66 +772,64 @@ public class Lookup extends Queue {
          Queue.queueContainerRollbackUpdate(user_string, location, lookup_list, rollback_type);
          final String final_user_string = user_string;
          Config.rollback_hash.put(user_string, new int[]{0, 0, 0, 0});
-         CoreProtect.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(CoreProtect.getInstance(), new Runnable() {
-            public void run() {
-               try {
-                  int[] rollback_hash_data = (int[])Config.rollback_hash.get(final_user_string);
-                  int item_count = rollback_hash_data[0];
-                  int entity_count = rollback_hash_data[2];
-                  Block block = location.getBlock();
-                  if (!block.getWorld().isChunkLoaded(block.getChunk())) {
-                     block.getWorld().loadChunk(block.getChunk());
-                  }
-
-                  Object container = null;
-                  Material type = block.getType();
-                  if (BlockInfo.containers.contains(type)) {
-                     container = Functions.getContainerInventory(block.getState(), false);
-                  } else {
-                     for(Entity entity : block.getChunk().getEntities()) {
-                        if (entity instanceof ArmorStand && entity.getLocation().getBlockX() == location.getBlockX() && entity.getLocation().getBlockY() == location.getBlockY() && entity.getLocation().getBlockZ() == location.getBlockZ()) {
-                           type = Material.ARMOR_STAND;
-                           container = Functions.getEntityEquipment((LivingEntity)entity);
-                        }
-                     }
-                  }
-
-                  int modify_count = 0;
-                  if (container != null) {
-                     for(Object[] row : lookup_list) {
-                        int row_type_raw = (Integer)row[6];
-                        int row_data = (Integer)row[7];
-                        int row_action = (Integer)row[8];
-                        int row_rolled_back = (Integer)row[9];
-                        int row_amount = (Integer)row[11];
-                        byte[] row_metadata = (byte[])row[12];
-                        Material row_type = Functions.getType(row_type_raw);
-                        if (rollback_type == 0 && row_rolled_back == 0 || rollback_type == 1 && row_rolled_back == 1) {
-                           modify_count += row_amount;
-                           int action = 0;
-                           if (rollback_type == 0 && row_action == 0) {
-                              action = 1;
-                           }
-
-                           if (rollback_type == 1 && row_action == 1) {
-                              action = 1;
-                           }
-
-                           ItemStack itemstack = new ItemStack(row_type, row_amount, (short)row_data);
-                           Object[] populatedStack = Lookup.populateItemStack(itemstack, row_metadata);
-                           int slot = (Integer)populatedStack[0];
-                           itemstack = (ItemStack)populatedStack[1];
-                           Lookup.modifyContainerItems(type, container, slot, itemstack, action);
-                        }
-                     }
-                  }
-
-                  Config.rollback_hash.put(final_user_string, new int[]{item_count, modify_count, entity_count, 1});
-               } catch (Exception e) {
-                  e.printStackTrace();
+         CoreProtect.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(CoreProtect.getInstance(), () -> {
+            try {
+               int[] rollback_hash_data = (int[])Config.rollback_hash.get(final_user_string);
+               int item_count = rollback_hash_data[0];
+               int entity_count = rollback_hash_data[2];
+               Block block = location.getBlock();
+               if (!block.getWorld().isChunkLoaded(block.getChunk())) {
+                  block.getWorld().loadChunk(block.getChunk());
                }
 
+               Object container = null;
+               Material type = block.getType();
+               if (BlockInfo.containers.contains(type)) {
+                  container = Functions.getContainerInventory(block.getState(), false);
+               } else {
+                  for(Entity entity : block.getChunk().getEntities()) {
+                     if (entity instanceof ArmorStand && entity.getLocation().getBlockX() == location.getBlockX() && entity.getLocation().getBlockY() == location.getBlockY() && entity.getLocation().getBlockZ() == location.getBlockZ()) {
+                        type = Material.ARMOR_STAND;
+                        container = Functions.getEntityEquipment((LivingEntity)entity);
+                     }
+                  }
+               }
+
+               int modify_count = 0;
+               if (container != null) {
+                  for(Object[] row : lookup_list) {
+                     int row_type_raw = (Integer)row[6];
+                     int row_data = (Integer)row[7];
+                     int row_action = (Integer)row[8];
+                     int row_rolled_back = (Integer)row[9];
+                     int row_amount = (Integer)row[11];
+                     byte[] row_metadata = (byte[])row[12];
+                     Material row_type = Functions.getType(row_type_raw);
+                     if (rollback_type == 0 && row_rolled_back == 0 || rollback_type == 1 && row_rolled_back == 1) {
+                        modify_count += row_amount;
+                        int action = 0;
+                        if (rollback_type == 0 && row_action == 0) {
+                           action = 1;
+                        }
+
+                        if (rollback_type == 1 && row_action == 1) {
+                           action = 1;
+                        }
+
+                        ItemStack itemstack = new ItemStack(row_type, row_amount, (short)row_data);
+                        Object[] populatedStack = Lookup.populateItemStack(itemstack, row_metadata);
+                        int slot = (Integer)populatedStack[0];
+                        itemstack = (ItemStack)populatedStack[1];
+                        Lookup.modifyContainerItems(type, container, slot, itemstack, action);
+                     }
+                  }
+               }
+
+               Config.rollback_hash.put(final_user_string, new int[]{item_count, modify_count, entity_count, 1});
+            } catch (Exception e) {
+               e.printStackTrace();
             }
+
          }, 0L);
          int[] rollback_hash_data = (int[])Config.rollback_hash.get(user_string);
          int next = rollback_hash_data[3];
@@ -872,7 +867,7 @@ public class Lookup extends Queue {
    }
 
    public static List<String[]> performLookup(Statement statement, CommandSender user, List<String> check_uuids, List<String> check_users, List<Object> restrict_list, List<Object> exclude_list, List<String> exclude_user_list, List<Integer> action_list, Location location, Integer[] radius, int check_time, boolean restrict_world, boolean lookup) {
-      List<String[]> new_list = new ArrayList();
+      List<String[]> new_list = new ArrayList<>();
 
       try {
          List<Object[]> lookup_list = performLookupRaw(statement, user, check_uuids, check_users, restrict_list, exclude_list, exclude_user_list, action_list, location, radius, check_time, -1, -1, restrict_world, lookup);
@@ -885,8 +880,8 @@ public class Lookup extends Queue {
    }
 
    public static List<Object[]> performLookupRaw(Statement statement, CommandSender user, List<String> check_uuids, List<String> check_users, List<Object> restrict_list, List<Object> exclude_list, List<String> exclude_user_list, List<Integer> action_list, Location location, Integer[] radius, int check_time, int limit_offset, int limit_count, boolean restrict_world, boolean lookup) {
-      List<Object[]> list = new ArrayList();
-      List<Integer> invalid_rollback_actions = new ArrayList();
+      List<Object[]> list = new ArrayList<>();
+      List<Integer> invalid_rollback_actions = new ArrayList<>();
       invalid_rollback_actions.add(2);
       if ((Integer)Config.config.get("rollback-entities") == 0 && !action_list.contains(3)) {
          invalid_rollback_actions.add(3);
@@ -941,19 +936,16 @@ public class Lookup extends Queue {
                      result_meta = rs.getBytes("metadata");
                   }
 
-                  boolean valid = true;
-                  if (!lookup && invalid_rollback_actions.contains(result_action)) {
-                     valid = false;
-                  }
+                  boolean valid = lookup || !invalid_rollback_actions.contains(result_action);
 
-                  if (valid) {
-                     if (!action_list.contains(4) && !action_list.contains(5)) {
-                        Object[] data_array = new Object[]{result_id, result_time, result_userid, result_x, result_y, result_z, result_type, result_data, result_action, result_rolled_back, result_wid, result_meta};
-                        list.add(data_array);
-                     } else {
-                        Object[] data_array = new Object[]{result_id, result_time, result_userid, result_x, result_y, result_z, result_type, result_data, result_action, result_rolled_back, result_wid, result_amount, result_meta};
-                        list.add(data_array);
-                     }
+                   if (valid) {
+                      Object[] data_array;
+                      if (!action_list.contains(4) && !action_list.contains(5)) {
+                          data_array = new Object[]{result_id, result_time, result_userid, result_x, result_y, result_z, result_type, result_data, result_action, result_rolled_back, result_wid, result_meta};
+                      } else {
+                          data_array = new Object[]{result_id, result_time, result_userid, result_x, result_y, result_z, result_type, result_data, result_action, result_rolled_back, result_wid, result_amount, result_meta};
+                      }
+                      list.add(data_array);
                   }
                }
             } else {
@@ -976,7 +968,7 @@ public class Lookup extends Queue {
    }
 
    public static List<String[]> performPartialLookup(Statement statement, CommandSender user, List<String> check_uuids, List<String> check_users, List<Object> restrict_list, List<Object> exclude_list, List<String> exclude_user_list, List<Integer> action_list, Location location, Integer[] radius, int check_time, int limit_offset, int limit_count, boolean restrict_world, boolean lookup) {
-      List<String[]> new_list = new ArrayList();
+      List<String[]> new_list = new ArrayList<>();
 
       try {
          List<Object[]> lookup_list = performLookupRaw(statement, user, check_uuids, check_users, restrict_list, exclude_list, exclude_user_list, action_list, location, radius, check_time, limit_offset, limit_count, restrict_world, lookup);
@@ -993,7 +985,7 @@ public class Lookup extends Queue {
 
       try {
          long time1 = System.currentTimeMillis();
-         List<Object[]> lookup_list = new ArrayList();
+         List<Object[]> lookup_list = new ArrayList<>();
          if (!action_list.contains(4) && !action_list.contains(5) && !check_users.contains("#container")) {
             lookup_list = performLookupRaw(statement, user, check_uuids, check_users, restrict_list, exclude_list, exclude_user_list, action_list, location, radius, check_time, -1, -1, restrict_world, lookup);
          }
@@ -1002,8 +994,8 @@ public class Lookup extends Queue {
             return null;
          } else {
             boolean rollbackItems = false;
-            List<Object> itemRestrictList = new ArrayList(restrict_list);
-            List<Object> itemExcludeList = new ArrayList(exclude_list);
+            List<Object> itemRestrictList = new ArrayList<>(restrict_list);
+            List<Object> itemExcludeList = new ArrayList<>(exclude_list);
             if (action_list.contains(1)) {
                for(Object value : restrict_list) {
                   if (value instanceof Material && !exclude_list.contains(value) && BlockInfo.containers.contains(value)) {
@@ -1015,10 +1007,9 @@ public class Lookup extends Queue {
                }
             }
 
-            List<Object[]> item_list = new ArrayList();
-            if ((Integer)Config.config.get("rollback-items") == 1 && !check_users.contains("#container") && (action_list.size() == 0 || action_list.contains(4) || rollbackItems) && preview == 0) {
-               List<Integer> item_action_list = new ArrayList();
-               item_action_list.addAll(action_list);
+            List<Object[]> item_list = new ArrayList<>();
+            if ((Integer)Config.config.get("rollback-items") == 1 && !check_users.contains("#container") && (action_list.isEmpty() || action_list.contains(4) || rollbackItems) && preview == 0) {
+                List<Integer> item_action_list = new ArrayList<>(action_list);
                if (!item_action_list.contains(4)) {
                   item_action_list.add(4);
                }
@@ -1026,9 +1017,9 @@ public class Lookup extends Queue {
                item_list = performLookupRaw(statement, user, check_uuids, check_users, itemRestrictList, itemExcludeList, exclude_user_list, item_action_list, location, radius, check_time, -1, -1, restrict_world, lookup);
             }
 
-            TreeMap<String, Integer> chunk_list = new TreeMap();
-            final HashMap<String, ArrayList<Object[]>> data_list = new HashMap();
-            final HashMap<String, ArrayList<Object[]>> item_data_list = new HashMap();
+            TreeMap<String, Integer> chunk_list = new TreeMap<>();
+            final HashMap<String, ArrayList<Object[]>> data_list = new HashMap<>();
+            final HashMap<String, ArrayList<Object[]>> item_data_list = new HashMap<>();
 
             for(int list_c = 0; list_c < 2; ++list_c) {
                List<Object[]> scan_list = lookup_list;
@@ -1070,8 +1061,8 @@ public class Lookup extends Queue {
                   }
 
                   if (modify_list.get(chunk_x + "." + chunk_z) == null) {
-                     data_list.put(chunk_x + "." + chunk_z, new ArrayList());
-                     item_data_list.put(chunk_x + "." + chunk_z, new ArrayList());
+                     data_list.put(chunk_x + "." + chunk_z, new ArrayList<>());
+                     item_data_list.put(chunk_x + "." + chunk_z, new ArrayList<>());
                   }
 
                   ((ArrayList)modify_list.get(chunk_x + "." + chunk_z)).add(result);
@@ -1122,552 +1113,547 @@ public class Lookup extends Queue {
                final int final_chunk_x = Integer.parseInt(chunk_cords[0]);
                final int final_chunk_z = Integer.parseInt(chunk_cords[1]);
                Config.rollback_hash.put(final_user_string, new int[]{item_count, block_count, entity_count, 0});
-               CoreProtect.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(CoreProtect.getInstance(), new Runnable() {
-                  public void run() {
-                     long chunk_start_ns = System.nanoTime();
-                     // Counters live for the whole chunk instead of being read back
-                     // out of a synchronizedMap and rewritten into a fresh int[] on
-                     // every single row. Nothing else mutates this entry while the
-                     // chunk task is running -- the rollback thread only touches it
-                     // between chunks, gated on the completion flag.
-                     int[] chunk_counts = (int[])Config.rollback_hash.get(final_user_string);
-                     int item_count = chunk_counts[0];
-                     int block_count = chunk_counts[1];
-                     int entity_count = chunk_counts[2];
+               CoreProtect.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(CoreProtect.getInstance(), () -> {
+                  long chunk_start_ns = System.nanoTime();
+                  // Counters live for the whole chunk instead of being read back
+                  // out of a synchronizedMap and rewritten into a fresh int[] on
+                  // every single row. Nothing else mutates this entry while the
+                  // chunk task is running -- the rollback thread only touches it
+                  // between chunks, gated on the completion flag.
+                  int[] chunk_counts = (int[])Config.rollback_hash.get(final_user_string);
+                  int item_count1 = chunk_counts[0];
+                  int block_count1 = chunk_counts[1];
+                  int entity_count1 = chunk_counts[2];
 
-                     try {
-                        boolean clearInventories = false;
-                        if ((Integer)Config.config.get("rollback-items") == 1) {
-                           clearInventories = true;
+                  try {
+                     boolean clearInventories = (Integer) Config.config.get("rollback-items") == 1;
+
+                      ArrayList<Object[]> data = (ArrayList)data_list.get(final_chunk_x + "." + final_chunk_z);
+                     ArrayList<Object[]> item_data = (ArrayList)item_data_list.get(final_chunk_x + "." + final_chunk_z);
+                     Map<String, Integer> hanging_delay = new HashMap<>();
+
+                     for(Object[] row : data) {
+                        int unixtimestamp = (int)(System.currentTimeMillis() / 1000L);
+                        int row_time = (Integer)row[1];
+                        int row_userid = (Integer)row[2];
+                        int row_x = (Integer)row[3];
+                        int row_y = (Integer)row[4];
+                        int row_z = (Integer)row[5];
+                        int row_type_raw = (Integer)row[6];
+                        int row_data = (Integer)row[7];
+                        int row_action = (Integer)row[8];
+                        int row_rolled_back = (Integer)row[9];
+                        int row_wid = (Integer)row[10];
+                        // Already deserialised on the rollback thread.
+                        List<Object> meta = (List)row[11];
+                        Material row_type = Functions.getType(row_type_raw);
+                        String row_user = (String)Config.player_id_cache_reversed.get(row_userid);
+                        int old_type_raw = row_type_raw;
+                        Material old_type_material = Functions.getType(row_type_raw);
+                        if (row_action == 1 && rollback_type == 0) {
+                           row_type = Material.AIR;
+                           row_type_raw = 0;
+                        } else if (row_action == 0 && rollback_type == 1) {
+                           row_type = Material.AIR;
+                           row_type_raw = 0;
+                        } else if (row_action == 4 && rollback_type == 0) {
+                           row_type = null;
+                           row_type_raw = 0;
+                        } else if (row_action == 3 && rollback_type == 1) {
+                           row_type = null;
+                           row_type_raw = 0;
                         }
 
-                        ArrayList<Object[]> data = (ArrayList)data_list.get(final_chunk_x + "." + final_chunk_z);
-                        ArrayList<Object[]> item_data = (ArrayList)item_data_list.get(final_chunk_x + "." + final_chunk_z);
-                        Map<String, Integer> hanging_delay = new HashMap();
+                        if (preview > 0) {
+                           if (row_action != 3) {
+                              Player player = (Player)user;
+                              String world = Functions.getWorldName(row_wid);
+                              if (world.isEmpty()) {
+                                 continue;
+                              }
 
-                        for(Object[] row : data) {
-                           int unixtimestamp = (int)(System.currentTimeMillis() / 1000L);
-                           int row_time = (Integer)row[1];
-                           int row_userid = (Integer)row[2];
-                           int row_x = (Integer)row[3];
-                           int row_y = (Integer)row[4];
-                           int row_z = (Integer)row[5];
-                           int row_type_raw = (Integer)row[6];
-                           int row_data = (Integer)row[7];
-                           int row_action = (Integer)row[8];
-                           int row_rolled_back = (Integer)row[9];
-                           int row_wid = (Integer)row[10];
-                           // Already deserialised on the rollback thread.
-                           List<Object> meta = (List)row[11];
-                           Material row_type = Functions.getType(row_type_raw);
-                           String row_user = (String)Config.player_id_cache_reversed.get(row_userid);
-                           int old_type_raw = row_type_raw;
-                           Material old_type_material = Functions.getType(row_type_raw);
-                           if (row_action == 1 && rollback_type == 0) {
-                              row_type = Material.AIR;
-                              row_type_raw = 0;
-                           } else if (row_action == 0 && rollback_type == 1) {
-                              row_type = Material.AIR;
-                              row_type_raw = 0;
-                           } else if (row_action == 4 && rollback_type == 0) {
-                              row_type = null;
-                              row_type_raw = 0;
-                           } else if (row_action == 3 && rollback_type == 1) {
-                              row_type = null;
-                              row_type_raw = 0;
+                              Location location1 = new Location(CoreProtect.getInstance().getServer().getWorld(world), (double)row_x, (double)row_y, (double)row_z);
+                              if (preview == 2) {
+                                 Block block = location1.getBlock();
+                                 Material block_type = block.getType();
+                                 byte block_data = Functions.getData(block);
+                                 if (!block_type.equals(Material.PAINTING) && !block_type.equals(Material.ITEM_FRAME) && !block_type.equals(Material.ARMOR_STAND)) {
+                                    Functions.sendBlockChange(player, location1, block_type, block_data);
+                                    ++block_count1;
+                                 }
+                              } else if (!row_type.equals(Material.PAINTING) && !row_type.equals(Material.ITEM_FRAME) && !row_type.equals(Material.ARMOR_STAND)) {
+                                 Functions.sendBlockChange(player, location1, row_type, (byte)row_data);
+                                 ++block_count1;
+                              }
+                           }
+                        } else if (row_action == 3) {
+                           String world = Functions.getWorldName(row_wid);
+                           if (world.isEmpty()) {
+                              continue;
                            }
 
-                           if (preview > 0) {
-                              if (row_action != 3) {
-                                 Player player = (Player)user;
-                                 String world = Functions.getWorldName(row_wid);
-                                 if (world.length() == 0) {
-                                    continue;
-                                 }
+                           Block block = CoreProtect.getInstance().getServer().getWorld(world).getBlockAt(row_x, row_y, row_z);
+                           if (!CoreProtect.getInstance().getServer().getWorld(world).isChunkLoaded(block.getChunk())) {
+                              CoreProtect.getInstance().getServer().getWorld(world).loadChunk(block.getChunk());
+                           }
 
-                                 Location location = new Location(CoreProtect.getInstance().getServer().getWorld(world), (double)row_x, (double)row_y, (double)row_z);
-                                 if (preview == 2) {
-                                    Block block = location.getBlock();
-                                    Material block_type = block.getType();
-                                    byte block_data = Functions.getData(block);
-                                    if (!block_type.equals(Material.PAINTING) && !block_type.equals(Material.ITEM_FRAME) && !block_type.equals(Material.ARMOR_STAND)) {
-                                       Functions.sendBlockChange(player, location, block_type, block_data);
-                                       ++block_count;
+                           if (row_type_raw > 0) {
+                              if (row_rolled_back == 0) {
+                                 EntityType entity_type = Functions.getEntityType(row_type_raw);
+                                 Lookup.queueEntitySpawn(row_user, block.getState(), entity_type, row_data);
+                                 ++entity_count1;
+                              }
+                           } else if (old_type_raw > 0 && row_rolled_back == 1) {
+                              boolean removed = false;
+                              int entity_id = -1;
+                              String entity_name = Functions.getEntityType(old_type_raw).name();
+                              String token = "" + row_x + "." + row_y + "." + row_z + "." + row_wid + "." + entity_name + "";
+                              Object[] cached_entity = Config.entity_cache.get(token);
+                              if (cached_entity != null) {
+                                 entity_id = (Integer)cached_entity[1];
+                              }
+
+                              int xmin = row_x - 5;
+                              int xmax = row_x + 5;
+                              int ymin = row_y - 1;
+                              int ymax = row_y + 1;
+                              int zmin = row_z - 5;
+                              int zmax = row_z + 5;
+
+                              for(Entity e : block.getChunk().getEntities()) {
+                                 if (entity_id > -1) {
+                                    int id = e.getEntityId();
+                                    if (id == entity_id) {
+                                       ++entity_count1;
+                                       removed = true;
+                                       e.remove();
+                                       break;
                                     }
-                                 } else if (!row_type.equals(Material.PAINTING) && !row_type.equals(Material.ITEM_FRAME) && !row_type.equals(Material.ARMOR_STAND)) {
-                                    Functions.sendBlockChange(player, location, row_type, (byte)row_data);
-                                    ++block_count;
-                                 }
-                              }
-                           } else if (row_action == 3) {
-                              String world = Functions.getWorldName(row_wid);
-                              if (world.length() == 0) {
-                                 continue;
-                              }
-
-                              Block block = CoreProtect.getInstance().getServer().getWorld(world).getBlockAt(row_x, row_y, row_z);
-                              if (!CoreProtect.getInstance().getServer().getWorld(world).isChunkLoaded(block.getChunk())) {
-                                 CoreProtect.getInstance().getServer().getWorld(world).loadChunk(block.getChunk());
-                              }
-
-                              if (row_type_raw > 0) {
-                                 if (row_rolled_back == 0) {
-                                    EntityType entity_type = Functions.getEntityType(row_type_raw);
-                                    Lookup.queueEntitySpawn(row_user, block.getState(), entity_type, row_data);
-                                    ++entity_count;
-                                 }
-                              } else if (old_type_raw > 0 && row_rolled_back == 1) {
-                                 boolean removed = false;
-                                 int entity_id = -1;
-                                 String entity_name = Functions.getEntityType(old_type_raw).name();
-                                 String token = "" + row_x + "." + row_y + "." + row_z + "." + row_wid + "." + entity_name + "";
-                                 Object[] cached_entity = Config.entity_cache.get(token);
-                                 if (cached_entity != null) {
-                                    entity_id = (Integer)cached_entity[1];
-                                 }
-
-                                 int xmin = row_x - 5;
-                                 int xmax = row_x + 5;
-                                 int ymin = row_y - 1;
-                                 int ymax = row_y + 1;
-                                 int zmin = row_z - 5;
-                                 int zmax = row_z + 5;
-
-                                 for(Entity e : block.getChunk().getEntities()) {
-                                    if (entity_id > -1) {
-                                       int id = e.getEntityId();
-                                       if (id == entity_id) {
-                                          ++entity_count;
-                                          removed = true;
-                                          e.remove();
-                                          break;
-                                       }
-                                    } else if (e.getType().equals(Functions.getEntityType(old_type_raw))) {
-                                       Location el = e.getLocation();
-                                       int e_x = el.getBlockX();
-                                       int e_y = el.getBlockY();
-                                       int e_z = el.getBlockZ();
-                                       if (e_x >= xmin && e_x <= xmax && e_y >= ymin && e_y <= ymax && e_z >= zmin && e_z <= zmax) {
-                                          ++entity_count;
-                                          removed = true;
-                                          e.remove();
-                                          break;
-                                       }
-                                    }
-                                 }
-
-                                 if (!removed && entity_id > -1) {
-                                    for(Entity e : block.getWorld().getLivingEntities()) {
-                                       int id = e.getEntityId();
-                                       if (id == entity_id) {
-                                          ++entity_count;
-                                          removed = true;
-                                          e.remove();
-                                          break;
-                                       }
+                                 } else if (e.getType().equals(Functions.getEntityType(old_type_raw))) {
+                                    Location el = e.getLocation();
+                                    int e_x = el.getBlockX();
+                                    int e_y = el.getBlockY();
+                                    int e_z = el.getBlockZ();
+                                    if (e_x >= xmin && e_x <= xmax && e_y >= ymin && e_y <= ymax && e_z >= zmin && e_z <= zmax) {
+                                       ++entity_count1;
+                                       removed = true;
+                                       e.remove();
+                                       break;
                                     }
                                  }
                               }
-                           } else {
-                              List<Material> update_state = Lookup.UPDATE_STATE;
-                              String world = Functions.getWorldName(row_wid);
-                              if (world.length() == 0) {
-                                 continue;
-                              }
 
-                              Block block = CoreProtect.getInstance().getServer().getWorld(world).getBlockAt(row_x, row_y, row_z);
-                              if (!CoreProtect.getInstance().getServer().getWorld(world).isChunkLoaded(block.getChunk())) {
-                                 CoreProtect.getInstance().getServer().getWorld(world).loadChunk(block.getChunk());
-                              }
-
-                              boolean change_block = true;
-                              boolean count_block = true;
-                              Material ctype = block.getType();
-                              int cdata = Functions.getData(block);
-                              if (row_rolled_back == 1 && rollback_type == 0) {
-                                 count_block = false;
-                              }
-
-                              if (row_type.equals(ctype) && !old_type_material.equals(Material.PAINTING) && !old_type_material.equals(Material.ITEM_FRAME) && !old_type_material.equals(Material.ARMOR_STAND) && !BukkitAdapter.ADAPTER.isEndCrystal(old_type_material)) {
-                                 if (row_data == cdata) {
-                                    change_block = false;
-                                 }
-
-                                 count_block = false;
-                              } else if (!ctype.equals(Material.AIR)) {
-                                 count_block = true;
-                              }
-
-                              if (count_block) {
-                                 List<Material> c1 = Arrays.asList(Material.GRASS, Material.WATER, Material.LAVA);
-                                 List<Material> c2 = Arrays.asList(Material.DIRT, Material.STATIONARY_WATER, Material.STATIONARY_LAVA);
-                                 int c = 0;
-
-                                 for(Material cv1 : c1) {
-                                    Material cv2 = (Material)c2.get(c);
-                                    if (row_type.equals(cv1) && ctype.equals(cv2) || row_type.equals(cv2) && ctype.equals(cv1)) {
-                                       count_block = false;
+                              if (!removed && entity_id > -1) {
+                                 for(Entity e : block.getWorld().getLivingEntities()) {
+                                    int id = e.getEntityId();
+                                    if (id == entity_id) {
+                                       ++entity_count1;
+                                       removed = true;
+                                       e.remove();
+                                       break;
                                     }
-
-                                    ++c;
                                  }
                               }
+                           }
+                        } else {
+                           List<Material> update_state = Lookup.UPDATE_STATE;
+                           String world = Functions.getWorldName(row_wid);
+                           if (world.isEmpty()) {
+                              continue;
+                           }
 
-                              try {
-                                 if (change_block) {
-                                    if (!row_type.equals(Material.AIR) || !old_type_material.equals(Material.PAINTING) && !old_type_material.equals(Material.ITEM_FRAME)) {
-                                       if (row_type.equals(Material.DOUBLE_PLANT) || row_type.equals(Material.AIR) && old_type_material.equals(Material.DOUBLE_PLANT)) {
-                                          if (row_data < 8) {
-                                             int top_data = 8;
-                                             if (row_data == 0 || row_data == 4) {
-                                                top_data = 9;
-                                             }
+                           Block block = CoreProtect.getInstance().getServer().getWorld(world).getBlockAt(row_x, row_y, row_z);
+                           if (!CoreProtect.getInstance().getServer().getWorld(world).isChunkLoaded(block.getChunk())) {
+                              CoreProtect.getInstance().getServer().getWorld(world).loadChunk(block.getChunk());
+                           }
 
-                                             Block block_above = CoreProtect.getInstance().getServer().getWorld(world).getBlockAt(row_x, row_y + 1, row_z);
-                                             Functions.setTypeAndData(block, row_type, (byte)row_data, false);
-                                             Functions.setTypeAndData(block_above, row_type, (byte)top_data, false);
+                           boolean change_block = true;
+                           boolean count_block = true;
+                           Material ctype = block.getType();
+                           int cdata = Functions.getData(block);
+                           if (row_rolled_back == 1 && rollback_type == 0) {
+                              count_block = false;
+                           }
+
+                           if (row_type.equals(ctype) && !old_type_material.equals(Material.PAINTING) && !old_type_material.equals(Material.ITEM_FRAME) && !old_type_material.equals(Material.ARMOR_STAND) && !BukkitAdapter.ADAPTER.isEndCrystal(old_type_material)) {
+                              if (row_data == cdata) {
+                                 change_block = false;
+                              }
+
+                              count_block = false;
+                           } else if (!ctype.equals(Material.AIR)) {
+                              count_block = true;
+                           }
+
+                           if (count_block) {
+                              List<Material> c1 = Arrays.asList(Material.GRASS, Material.WATER, Material.LAVA);
+                              List<Material> c2 = Arrays.asList(Material.DIRT, Material.STATIONARY_WATER, Material.STATIONARY_LAVA);
+                              int c = 0;
+
+                              for(Material cv1 : c1) {
+                                 Material cv2 = (Material)c2.get(c);
+                                 if (row_type.equals(cv1) && ctype.equals(cv2) || row_type.equals(cv2) && ctype.equals(cv1)) {
+                                    count_block = false;
+                                 }
+
+                                 ++c;
+                              }
+                           }
+
+                           try {
+                              if (change_block) {
+                                 if (!row_type.equals(Material.AIR) || !old_type_material.equals(Material.PAINTING) && !old_type_material.equals(Material.ITEM_FRAME)) {
+                                    if (row_type.equals(Material.DOUBLE_PLANT) || row_type.equals(Material.AIR) && old_type_material.equals(Material.DOUBLE_PLANT)) {
+                                       if (row_data < 8) {
+                                          int top_data = 8;
+                                          if (row_data == 0 || row_data == 4) {
+                                             top_data = 9;
                                           }
-                                       } else if (!row_type.equals(Material.PAINTING) && !row_type.equals(Material.ITEM_FRAME)) {
-                                          if (row_type.equals(Material.ARMOR_STAND)) {
-                                             Location location = block.getLocation();
-                                             location.setX(location.getX() + (double)0.5F);
-                                             location.setZ(location.getZ() + (double)0.5F);
-                                             location.setYaw((float)row_data);
-                                             boolean exists = false;
 
-                                             for(Entity entity : block.getChunk().getEntities()) {
-                                                if (entity instanceof ArmorStand && entity.getLocation().getBlockX() == location.getBlockX() && entity.getLocation().getBlockY() == location.getBlockY() && entity.getLocation().getBlockZ() == location.getBlockZ()) {
-                                                   exists = true;
-                                                }
-                                             }
+                                          Block block_above = CoreProtect.getInstance().getServer().getWorld(world).getBlockAt(row_x, row_y + 1, row_z);
+                                          Functions.setTypeAndData(block, row_type, (byte)row_data, false);
+                                          Functions.setTypeAndData(block_above, row_type, (byte)top_data, false);
+                                       }
+                                    } else if (!row_type.equals(Material.PAINTING) && !row_type.equals(Material.ITEM_FRAME)) {
+                                       if (row_type.equals(Material.ARMOR_STAND)) {
+                                          Location location1 = block.getLocation();
+                                          location1.setX(location1.getX() + (double)0.5F);
+                                          location1.setZ(location1.getZ() + (double)0.5F);
+                                          location1.setYaw((float)row_data);
+                                          boolean exists = false;
 
-                                             if (!exists) {
-                                                Entity entity = block.getLocation().getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
-                                                entity.teleport(location);
+                                          for(Entity entity : block.getChunk().getEntities()) {
+                                             if (entity instanceof ArmorStand && entity.getLocation().getBlockX() == location1.getBlockX() && entity.getLocation().getBlockY() == location1.getBlockY() && entity.getLocation().getBlockZ() == location1.getBlockZ()) {
+                                                exists = true;
                                              }
-                                          } else if (BukkitAdapter.ADAPTER.isEndCrystal(row_type)) {
-                                             Location location = block.getLocation();
-                                             location.setX(location.getX() + (double)0.5F);
-                                             location.setZ(location.getZ() + (double)0.5F);
-                                             boolean exists = false;
+                                          }
 
-                                             for(Entity entity : block.getChunk().getEntities()) {
-                                                if (entity instanceof EnderCrystal && entity.getLocation().getBlockX() == location.getBlockX() && entity.getLocation().getBlockY() == location.getBlockY() && entity.getLocation().getBlockZ() == location.getBlockZ()) {
-                                                   exists = true;
-                                                }
-                                             }
+                                          if (!exists) {
+                                             Entity entity = block.getLocation().getWorld().spawnEntity(location1, EntityType.ARMOR_STAND);
+                                             entity.teleport(location1);
+                                          }
+                                       } else if (BukkitAdapter.ADAPTER.isEndCrystal(row_type)) {
+                                          Location location1 = block.getLocation();
+                                          location1.setX(location1.getX() + (double)0.5F);
+                                          location1.setZ(location1.getZ() + (double)0.5F);
+                                          boolean exists = false;
 
-                                             if (!exists) {
-                                                BukkitAdapter.ADAPTER.spawnEndCrystal(location, block, row_data);
+                                          for(Entity entity : block.getChunk().getEntities()) {
+                                             if (entity instanceof EnderCrystal && entity.getLocation().getBlockX() == location1.getBlockX() && entity.getLocation().getBlockY() == location1.getBlockY() && entity.getLocation().getBlockZ() == location1.getBlockZ()) {
+                                                exists = true;
                                              }
-                                          } else if (row_type.equals(Material.AIR) && BukkitAdapter.ADAPTER.isEndCrystal(old_type_material)) {
-                                             for(Entity entity : block.getChunk().getEntities()) {
-                                                if (entity instanceof EnderCrystal && entity.getLocation().getBlockX() == row_x && entity.getLocation().getBlockY() == row_y && entity.getLocation().getBlockZ() == row_z) {
-                                                   entity.remove();
-                                                }
+                                          }
+
+                                          if (!exists) {
+                                             BukkitAdapter.ADAPTER.spawnEndCrystal(location1, block, row_data);
+                                          }
+                                       } else if (row_type.equals(Material.AIR) && BukkitAdapter.ADAPTER.isEndCrystal(old_type_material)) {
+                                          for(Entity entity : block.getChunk().getEntities()) {
+                                             if (entity instanceof EnderCrystal && entity.getLocation().getBlockX() == row_x && entity.getLocation().getBlockY() == row_y && entity.getLocation().getBlockZ() == row_z) {
+                                                entity.remove();
                                              }
-                                          } else if (rollback_type != 0 || row_action != 0 || !row_type.equals(Material.AIR)) {
-                                             if (!row_type.equals(Material.AIR) && !row_type.equals(Material.TNT)) {
-                                                if (row_type.equals(Material.MOB_SPAWNER)) {
-                                                   try {
-                                                      Functions.setTypeAndData(block, row_type, (byte)0, false);
-                                                      CreatureSpawner mobSpawner = (CreatureSpawner)block.getState();
-                                                      mobSpawner.setSpawnedType(Functions.getSpawnerType(row_data));
-                                                      if (count_block) {
-                                                         ++block_count;
-                                                      }
-                                                   } catch (Exception var49) {
-                                                   }
-                                                } else if (row_type.equals(Material.SKULL)) {
-                                                   block.setType(row_type, false);
-                                                   Lookup.queueSkullUpdate(row_user, block.getState(), row_data);
+                                          }
+                                       } else if (rollback_type != 0 || row_action != 0 || !row_type.equals(Material.AIR)) {
+                                          if (!row_type.equals(Material.AIR) && !row_type.equals(Material.TNT)) {
+                                             if (row_type.equals(Material.MOB_SPAWNER)) {
+                                                try {
+                                                   Functions.setTypeAndData(block, row_type, (byte)0, false);
+                                                   CreatureSpawner mobSpawner = (CreatureSpawner)block.getState();
+                                                   mobSpawner.setSpawnedType(Functions.getSpawnerType(row_data));
                                                    if (count_block) {
-                                                      ++block_count;
+                                                      ++block_count1;
                                                    }
-                                                } else if (!row_type.equals(Material.SIGN_POST) && !row_type.equals(Material.WALL_SIGN)) {
-                                                   if (BlockInfo.shulker_boxes.contains(row_type)) {
+                                                } catch (Exception ignored) {
+                                                }
+                                             } else if (row_type.equals(Material.SKULL)) {
+                                                block.setType(row_type, false);
+                                                Lookup.queueSkullUpdate(row_user, block.getState(), row_data);
+                                                if (count_block) {
+                                                   ++block_count1;
+                                                }
+                                             } else if (!row_type.equals(Material.SIGN_POST) && !row_type.equals(Material.WALL_SIGN)) {
+                                                if (BlockInfo.shulker_boxes.contains(row_type)) {
+                                                   Functions.setTypeAndData(block, row_type, (byte)row_data, false);
+                                                   if (count_block) {
+                                                      ++block_count1;
+                                                   }
+
+                                                   if (meta != null) {
+                                                      Inventory inventory = Functions.getContainerInventory(block.getState(), false);
+
+                                                      for(Object value : meta) {
+                                                         if (value instanceof Map) {
+                                                            Map<Integer, Object> itemMap = (Map)value;
+                                                            ItemStack item = ItemStack.deserialize((Map)itemMap.get(0));
+                                                            List<List<Map<String, Object>>> metadata = (List)itemMap.get(1);
+                                                            Object[] populatedStack = Lookup.populateItemStack(item, metadata);
+                                                            item = (ItemStack)populatedStack[1];
+                                                            Lookup.modifyContainerItems(item.getType(), inventory, 0, item, 1);
+                                                         }
+                                                      }
+                                                   }
+                                                } else if (row_type.equals(Material.COMMAND)) {
+                                                   Functions.setTypeAndData(block, row_type, (byte)row_data, false);
+                                                   if (count_block) {
+                                                      ++block_count1;
+                                                   }
+
+                                                   if (meta != null) {
+                                                      CommandBlock command_block = (CommandBlock)block.getState();
+
+                                                      for(Object value : meta) {
+                                                         if (value instanceof String) {
+                                                            String string = (String)value;
+                                                            command_block.setCommand(string);
+                                                            command_block.update();
+                                                         }
+                                                      }
+                                                   }
+                                                } else if (!row_type.equals(Material.WALL_BANNER) && !row_type.equals(Material.STANDING_BANNER)) {
+                                                   if (update_state.contains(row_type)) {
+                                                      Functions.setTypeAndData(block, row_type, (byte)row_data, true);
+                                                      if (count_block) {
+                                                         ++block_count1;
+                                                      }
+                                                   } else if (row_type != ctype && BlockInfo.containers.contains(row_type) && BlockInfo.containers.contains(ctype)) {
+                                                      block.setType(Material.AIR);
                                                       Functions.setTypeAndData(block, row_type, (byte)row_data, false);
                                                       if (count_block) {
-                                                         ++block_count;
-                                                      }
-
-                                                      if (meta != null) {
-                                                         Inventory inventory = Functions.getContainerInventory(block.getState(), false);
-
-                                                         for(Object value : meta) {
-                                                            if (value instanceof Map) {
-                                                               Map<Integer, Object> itemMap = (Map)value;
-                                                               ItemStack item = ItemStack.deserialize((Map)itemMap.get(0));
-                                                               List<List<Map<String, Object>>> metadata = (List)itemMap.get(1);
-                                                               Object[] populatedStack = Lookup.populateItemStack(item, metadata);
-                                                               item = (ItemStack)populatedStack[1];
-                                                               Lookup.modifyContainerItems(item.getType(), inventory, 0, item, 1);
-                                                            }
-                                                         }
-                                                      }
-                                                   } else if (row_type.equals(Material.COMMAND)) {
-                                                      Functions.setTypeAndData(block, row_type, (byte)row_data, false);
-                                                      if (count_block) {
-                                                         ++block_count;
-                                                      }
-
-                                                      if (meta != null) {
-                                                         CommandBlock command_block = (CommandBlock)block.getState();
-
-                                                         for(Object value : meta) {
-                                                            if (value instanceof String) {
-                                                               String string = (String)value;
-                                                               command_block.setCommand(string);
-                                                               command_block.update();
-                                                            }
-                                                         }
-                                                      }
-                                                   } else if (!row_type.equals(Material.WALL_BANNER) && !row_type.equals(Material.STANDING_BANNER)) {
-                                                      if (update_state.contains(row_type)) {
-                                                         Functions.setTypeAndData(block, row_type, (byte)row_data, true);
-                                                         if (count_block) {
-                                                            ++block_count;
-                                                         }
-                                                      } else if (row_type != ctype && BlockInfo.containers.contains(row_type) && BlockInfo.containers.contains(ctype)) {
-                                                         block.setType(Material.AIR);
-                                                         Functions.setTypeAndData(block, row_type, (byte)row_data, false);
-                                                         if (count_block) {
-                                                            ++block_count;
-                                                         }
-                                                      } else {
-                                                         if (BlockInfo.containers.contains(row_type)) {
-                                                            block.setType(row_type);
-                                                            Functions.setData(block, (byte)row_data);
-                                                         } else {
-                                                            Functions.setTypeAndData(block, row_type, (byte)row_data, false);
-                                                         }
-
-                                                         if (count_block) {
-                                                            ++block_count;
-                                                         }
+                                                         ++block_count1;
                                                       }
                                                    } else {
-                                                      Functions.setTypeAndData(block, row_type, (byte)row_data, false);
-                                                      if (count_block) {
-                                                         ++block_count;
+                                                      if (BlockInfo.containers.contains(row_type)) {
+                                                         block.setType(row_type);
+                                                         Functions.setData(block, (byte)row_data);
+                                                      } else {
+                                                         Functions.setTypeAndData(block, row_type, (byte)row_data, false);
                                                       }
 
-                                                      if (meta != null) {
-                                                         Banner banner = (Banner)block.getState();
-
-                                                         for(Object value : meta) {
-                                                            if (value instanceof DyeColor) {
-                                                               banner.setBaseColor((DyeColor)value);
-                                                            } else if (value instanceof Map) {
-                                                               Pattern pattern = new Pattern((Map)value);
-                                                               banner.addPattern(pattern);
-                                                            }
-                                                         }
-
-                                                         banner.update();
+                                                      if (count_block) {
+                                                         ++block_count1;
                                                       }
                                                    }
                                                 } else {
                                                    Functions.setTypeAndData(block, row_type, (byte)row_data, false);
-                                                   Lookup.queueSignUpdate(row_user, block.getState(), rollback_type, row_time);
                                                    if (count_block) {
-                                                      ++block_count;
+                                                      ++block_count1;
+                                                   }
+
+                                                   if (meta != null) {
+                                                      Banner banner = (Banner)block.getState();
+
+                                                      for(Object value : meta) {
+                                                         if (value instanceof DyeColor) {
+                                                            banner.setBaseColor((DyeColor)value);
+                                                         } else if (value instanceof Map) {
+                                                            Pattern pattern = new Pattern((Map)value);
+                                                            banner.addPattern(pattern);
+                                                         }
+                                                      }
+
+                                                      banner.update();
                                                    }
                                                 }
                                              } else {
-                                                if (clearInventories) {
-                                                   if (BlockInfo.containers.contains(ctype)) {
-                                                      Inventory inventory = Functions.getContainerInventory(block.getState(), false);
-                                                      if (inventory != null) {
-                                                         inventory.clear();
-                                                      }
-                                                   } else if (BlockInfo.containers.contains(Material.ARMOR_STAND) && old_type_material.equals(Material.ARMOR_STAND)) {
-                                                      for(Entity entity : block.getChunk().getEntities()) {
-                                                         if (entity instanceof ArmorStand && entity.getLocation().getBlockX() == row_x && entity.getLocation().getBlockY() == row_y && entity.getLocation().getBlockZ() == row_z) {
-                                                            EntityEquipment equipment = Functions.getEntityEquipment((LivingEntity)entity);
-                                                            if (equipment != null) {
-                                                               equipment.clear();
-                                                            }
-
-                                                            Location location = entity.getLocation();
-                                                            location.setY(location.getY() - (double)1.0F);
-                                                            entity.teleport(location);
-                                                            entity.remove();
+                                                Functions.setTypeAndData(block, row_type, (byte)row_data, false);
+                                                Lookup.queueSignUpdate(row_user, block.getState(), rollback_type, row_time);
+                                                if (count_block) {
+                                                   ++block_count1;
+                                                }
+                                             }
+                                          } else {
+                                             if (clearInventories) {
+                                                if (BlockInfo.containers.contains(ctype)) {
+                                                   Inventory inventory = Functions.getContainerInventory(block.getState(), false);
+                                                   if (inventory != null) {
+                                                      inventory.clear();
+                                                   }
+                                                } else if (BlockInfo.containers.contains(Material.ARMOR_STAND) && old_type_material.equals(Material.ARMOR_STAND)) {
+                                                   for(Entity entity : block.getChunk().getEntities()) {
+                                                      if (entity instanceof ArmorStand && entity.getLocation().getBlockX() == row_x && entity.getLocation().getBlockY() == row_y && entity.getLocation().getBlockZ() == row_z) {
+                                                         EntityEquipment equipment = Functions.getEntityEquipment((LivingEntity)entity);
+                                                         if (equipment != null) {
+                                                            equipment.clear();
                                                          }
+
+                                                         Location location1 = entity.getLocation();
+                                                         location1.setY(location1.getY() - (double)1.0F);
+                                                         entity.teleport(location1);
+                                                         entity.remove();
                                                       }
                                                    }
                                                 }
+                                             }
 
-                                                Functions.setTypeAndData(block, row_type, (byte)row_data, false);
-                                                if (count_block) {
-                                                   ++block_count;
-                                                }
+                                             Functions.setTypeAndData(block, row_type, (byte)row_data, false);
+                                             if (count_block) {
+                                                ++block_count1;
                                              }
                                           }
-                                       } else {
-                                          int delay = Functions.getHangingDelay(hanging_delay, row_wid, row_x, row_y, row_z);
-                                          Lookup.queueHangingSpawn(row_user, block.getState(), row_type, row_data, delay);
                                        }
                                     } else {
                                        int delay = Functions.getHangingDelay(hanging_delay, row_wid, row_x, row_y, row_z);
-                                       Lookup.queueHangingRemove(row_user, block.getState(), delay);
+                                       Lookup.queueHangingSpawn(row_user, block.getState(), row_type, row_data, delay);
                                     }
+                                 } else {
+                                    int delay = Functions.getHangingDelay(hanging_delay, row_wid, row_x, row_y, row_z);
+                                    Lookup.queueHangingRemove(row_user, block.getState(), delay);
                                  }
-                              } catch (Exception e) {
-                                 e.printStackTrace();
                               }
-
-                              if (!row_type.equals(Material.AIR) && change_block && row_user.length() > 0) {
-                                 Config.lookup_cache.put("" + row_x + "." + row_y + "." + row_z + "." + row_wid + "", new Object[]{unixtimestamp, row_user, row_type});
-                              }
+                           } catch (Exception e) {
+                              e.printStackTrace();
                            }
-                        }
 
-                        hanging_delay.clear();
-                        Object container = null;
-                        Material container_type = null;
-                        boolean container_init = false;
-                        int last_x = 0;
-                        int last_y = 0;
-                        int last_z = 0;
-                        int last_wid = 0;
-
-                        for(Object[] row : item_data) {
-                           int row_x = (Integer)row[3];
-                           int row_y = (Integer)row[4];
-                           int row_z = (Integer)row[5];
-                           int row_type_raw = (Integer)row[6];
-                           int row_data = (Integer)row[7];
-                           int row_action = (Integer)row[8];
-                           int row_rolled_back = (Integer)row[9];
-                           int row_wid = (Integer)row[10];
-                           int row_amount = (Integer)row[11];
-                           byte[] row_metadata = (byte[])row[12];
-                           Material row_type = Functions.getType(row_type_raw);
-                           if (rollback_type == 0 && row_rolled_back == 0 || rollback_type == 1 && row_rolled_back == 1) {
-                              if (!container_init || row_x != last_x || row_y != last_y || row_z != last_z || row_wid != last_wid) {
-                                 container = null;
-                                 String world = Functions.getWorldName(row_wid);
-                                 Block block = CoreProtect.getInstance().getServer().getWorld(world).getBlockAt(row_x, row_y, row_z);
-                                 if (!CoreProtect.getInstance().getServer().getWorld(world).isChunkLoaded(block.getChunk())) {
-                                    CoreProtect.getInstance().getServer().getWorld(world).loadChunk(block.getChunk());
-                                 }
-
-                                 if (BlockInfo.containers.contains(block.getType())) {
-                                    container = Functions.getContainerInventory(block.getState(), false);
-                                    container_type = block.getType();
-                                 } else if (BlockInfo.containers.contains(Material.ARMOR_STAND)) {
-                                    for(Entity entity : block.getChunk().getEntities()) {
-                                       if (entity instanceof ArmorStand && entity.getLocation().getBlockX() == row_x && entity.getLocation().getBlockY() == row_y && entity.getLocation().getBlockZ() == row_z) {
-                                          container = Functions.getEntityEquipment((LivingEntity)entity);
-                                          container_type = Material.ARMOR_STAND;
-                                       }
-                                    }
-                                 }
-
-                                 last_x = row_x;
-                                 last_y = row_y;
-                                 last_z = row_z;
-                                 last_wid = row_wid;
-                              }
-
-                              if (container != null) {
-                                 int action = 0;
-                                 if (rollback_type == 0 && row_action == 0) {
-                                    action = 1;
-                                 }
-
-                                 if (rollback_type == 1 && row_action == 1) {
-                                    action = 1;
-                                 }
-
-                                 ItemStack itemstack = new ItemStack(row_type, row_amount, (short)row_data);
-                                 Object[] populatedStack = Lookup.populateItemStack(itemstack, row_metadata);
-                                 int slot = (Integer)populatedStack[0];
-                                 itemstack = (ItemStack)populatedStack[1];
-                                 Lookup.modifyContainerItems(container_type, container, slot, itemstack, action);
-                                 item_count += row_amount;
-                              }
-
-                              container_init = true;
+                           if (!row_type.equals(Material.AIR) && change_block && !row_user.isEmpty()) {
+                              Config.lookup_cache.put("" + row_x + "." + row_y + "." + row_z + "." + row_wid + "", new Object[]{unixtimestamp, row_user, row_type});
                            }
-                        }
-
-                        Config.rollback_hash.put(final_user_string, new int[]{item_count, block_count, entity_count, 1});
-                        if (user instanceof Player && preview == 0) {
-                           Player player = (Player)user;
-                           Location location = player.getLocation();
-                           Chunk chunk = location.getChunk();
-                           if (chunk.getX() == final_chunk_x && chunk.getZ() == final_chunk_z) {
-                              List<Material> unsafe_blocks = Lookup.UNSAFE_BLOCKS;
-                              int player_x = location.getBlockX();
-                              int player_y = location.getBlockY();
-                              int player_z = location.getBlockZ();
-                              int check_y = player_y - 1;
-                              boolean safe_block = false;
-
-                              for(boolean place_safe = false; !safe_block; ++check_y) {
-                                 int above = check_y + 1;
-                                 if (above > 256) {
-                                    above = 256;
-                                 }
-
-                                 Block block_type1 = location.getWorld().getBlockAt(player_x, check_y, player_z);
-                                 Block block_type2 = location.getWorld().getBlockAt(player_x, above, player_z);
-                                 Material type1 = block_type1.getType();
-                                 Material type2 = block_type2.getType();
-                                 if (!Functions.solidBlock(type1) && !Functions.solidBlock(type2)) {
-                                    if (unsafe_blocks.contains(type1)) {
-                                       place_safe = true;
-                                    } else {
-                                       safe_block = true;
-                                       if (place_safe) {
-                                          int below = check_y - 1;
-                                          Block block_below = location.getWorld().getBlockAt(player_x, below, player_z);
-                                          if (unsafe_blocks.contains(block_below.getType())) {
-                                             block_type1.setType(Material.DIRT);
-                                             ++check_y;
-                                          }
-                                       }
-                                    }
-                                 }
-
-                                 if (check_y >= 256) {
-                                    safe_block = true;
-                                 }
-
-                                 if (safe_block && check_y > player_y) {
-                                    if (check_y > 256) {
-                                       check_y = 256;
-                                    }
-
-                                    location.setY((double)check_y);
-                                    player.teleport(location);
-                                    player.sendMessage(Language.get("teleported-you-to-safety"));
-                                    if (place_safe) {
-                                       player.sendMessage(Language.get("placed-a-dirt-block-under-you"));
-                                    }
-                                 }
-                              }
-                           }
-                        }
-                     } catch (Exception e) {
-                        e.printStackTrace();
-                        Config.rollback_hash.put(final_user_string, new int[]{item_count, block_count, entity_count, 2});
-                     } finally {
-                        // This whole body runs on the main thread inside a single
-                        // tick, so anything past one tick (50ms) is stall the server
-                        // has to absorb. Report it, otherwise a watchdog kill leaves
-                        // nothing behind to say which chunk was responsible.
-                        long chunk_ms = (System.nanoTime() - chunk_start_ns) / 1000000L;
-                        if (chunk_ms >= 50L) {
-                           ArrayList<Object[]> d = (ArrayList)data_list.get(final_chunk_x + "." + final_chunk_z);
-                           ArrayList<Object[]> i = (ArrayList)item_data_list.get(final_chunk_x + "." + final_chunk_z);
-                           System.out.println("[CoreProtect] Slow rollback chunk " + final_chunk_x + "," + final_chunk_z + ": " + chunk_ms + "ms for " + (d == null ? 0 : d.size()) + " block row(s), " + (i == null ? 0 : i.size()) + " container row(s).");
                         }
                      }
 
+                     hanging_delay.clear();
+                     Object container = null;
+                     Material container_type = null;
+                     boolean container_init = false;
+                     int last_x = 0;
+                     int last_y = 0;
+                     int last_z = 0;
+                     int last_wid = 0;
+
+                     for(Object[] row : item_data) {
+                        int row_x = (Integer)row[3];
+                        int row_y = (Integer)row[4];
+                        int row_z = (Integer)row[5];
+                        int row_type_raw = (Integer)row[6];
+                        int row_data = (Integer)row[7];
+                        int row_action = (Integer)row[8];
+                        int row_rolled_back = (Integer)row[9];
+                        int row_wid = (Integer)row[10];
+                        int row_amount = (Integer)row[11];
+                        byte[] row_metadata = (byte[])row[12];
+                        Material row_type = Functions.getType(row_type_raw);
+                        if (rollback_type == 0 && row_rolled_back == 0 || rollback_type == 1 && row_rolled_back == 1) {
+                           if (!container_init || row_x != last_x || row_y != last_y || row_z != last_z || row_wid != last_wid) {
+                              container = null;
+                              String world = Functions.getWorldName(row_wid);
+                              Block block = CoreProtect.getInstance().getServer().getWorld(world).getBlockAt(row_x, row_y, row_z);
+                              if (!CoreProtect.getInstance().getServer().getWorld(world).isChunkLoaded(block.getChunk())) {
+                                 CoreProtect.getInstance().getServer().getWorld(world).loadChunk(block.getChunk());
+                              }
+
+                              if (BlockInfo.containers.contains(block.getType())) {
+                                 container = Functions.getContainerInventory(block.getState(), false);
+                                 container_type = block.getType();
+                              } else if (BlockInfo.containers.contains(Material.ARMOR_STAND)) {
+                                 for(Entity entity : block.getChunk().getEntities()) {
+                                    if (entity instanceof ArmorStand && entity.getLocation().getBlockX() == row_x && entity.getLocation().getBlockY() == row_y && entity.getLocation().getBlockZ() == row_z) {
+                                       container = Functions.getEntityEquipment((LivingEntity)entity);
+                                       container_type = Material.ARMOR_STAND;
+                                    }
+                                 }
+                              }
+
+                              last_x = row_x;
+                              last_y = row_y;
+                              last_z = row_z;
+                              last_wid = row_wid;
+                           }
+
+                           if (container != null) {
+                              int action = 0;
+                              if (rollback_type == 0 && row_action == 0) {
+                                 action = 1;
+                              }
+
+                              if (rollback_type == 1 && row_action == 1) {
+                                 action = 1;
+                              }
+
+                              ItemStack itemstack = new ItemStack(row_type, row_amount, (short)row_data);
+                              Object[] populatedStack = Lookup.populateItemStack(itemstack, row_metadata);
+                              int slot = (Integer)populatedStack[0];
+                              itemstack = (ItemStack)populatedStack[1];
+                              Lookup.modifyContainerItems(container_type, container, slot, itemstack, action);
+                              item_count1 += row_amount;
+                           }
+
+                           container_init = true;
+                        }
+                     }
+
+                     Config.rollback_hash.put(final_user_string, new int[]{item_count1, block_count1, entity_count1, 1});
+                     if (user instanceof Player && preview == 0) {
+                        Player player = (Player)user;
+                        Location location1 = player.getLocation();
+                        Chunk chunk = location1.getChunk();
+                        if (chunk.getX() == final_chunk_x && chunk.getZ() == final_chunk_z) {
+                           List<Material> unsafe_blocks = Lookup.UNSAFE_BLOCKS;
+                           int player_x = location1.getBlockX();
+                           int player_y = location1.getBlockY();
+                           int player_z = location1.getBlockZ();
+                           int check_y = player_y - 1;
+                           boolean safe_block = false;
+
+                           for(boolean place_safe = false; !safe_block; ++check_y) {
+                              int above = check_y + 1;
+                              if (above > 256) {
+                                 above = 256;
+                              }
+
+                              Block block_type1 = location1.getWorld().getBlockAt(player_x, check_y, player_z);
+                              Block block_type2 = location1.getWorld().getBlockAt(player_x, above, player_z);
+                              Material type1 = block_type1.getType();
+                              Material type2 = block_type2.getType();
+                              if (!Functions.solidBlock(type1) && !Functions.solidBlock(type2)) {
+                                 if (unsafe_blocks.contains(type1)) {
+                                    place_safe = true;
+                                 } else {
+                                    safe_block = true;
+                                    if (place_safe) {
+                                       int below = check_y - 1;
+                                       Block block_below = location1.getWorld().getBlockAt(player_x, below, player_z);
+                                       if (unsafe_blocks.contains(block_below.getType())) {
+                                          block_type1.setType(Material.DIRT);
+                                          ++check_y;
+                                       }
+                                    }
+                                 }
+                              }
+
+                              if (check_y >= 256) {
+                                 safe_block = true;
+                              }
+
+                              if (safe_block && check_y > player_y) {
+                                 if (check_y > 256) {
+                                    check_y = 256;
+                                 }
+
+                                 location1.setY((double)check_y);
+                                 player.teleport(location1);
+                                 player.sendMessage(Language.get("teleported-you-to-safety"));
+                                 if (place_safe) {
+                                    player.sendMessage(Language.get("placed-a-dirt-block-under-you"));
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  } catch (Exception e) {
+                     e.printStackTrace();
+                     Config.rollback_hash.put(final_user_string, new int[]{item_count1, block_count1, entity_count1, 2});
+                  } finally {
+                     // This whole body runs on the main thread inside a single
+                     // tick, so anything past one tick (50ms) is stall the server
+                     // has to absorb. Report it, otherwise a watchdog kill leaves
+                     // nothing behind to say which chunk was responsible.
+                     long chunk_ms = (System.nanoTime() - chunk_start_ns) / 1000000L;
+                     if (chunk_ms >= 50L) {
+                        ArrayList<Object[]> d = (ArrayList)data_list.get(final_chunk_x + "." + final_chunk_z);
+                        ArrayList<Object[]> i = (ArrayList)item_data_list.get(final_chunk_x + "." + final_chunk_z);
+                        System.out.println("[CoreProtect] Slow rollback chunk " + final_chunk_x + "," + final_chunk_z + ": " + chunk_ms + "ms for " + (d == null ? 0 : d.size()) + " block row(s), " + (i == null ? 0 : i.size()) + " container row(s).");
+                     }
                   }
+
                }, 0L);
                rollback_hash_data = (int[])Config.rollback_hash.get(final_user_string);
                int next = rollback_hash_data[3];
@@ -1716,8 +1702,7 @@ public class Lookup extends Queue {
                finishRollbackRestore(user, location, check_users, restrict_list, exclude_list, exclude_user_list, action_list, time_string, file, seconds, item_count, block_count, entity_count, rollback_type, radius, verbose, restrict_world, preview);
             }
 
-            List<String[]> list = convertRawLookup(statement, lookup_list);
-            return list;
+             return convertRawLookup(statement, lookup_list);
          }
       } catch (Exception e) {
          e.printStackTrace();
@@ -1876,22 +1861,22 @@ public class Lookup extends Queue {
          String uuids = "";
          String exclude_users = "";
          String index = "";
-         if (check_uuids.size() > 0) {
-            String list = "";
+         if (!check_uuids.isEmpty()) {
+            StringBuilder list = new StringBuilder();
 
             for(String value : check_uuids) {
                if (list.length() == 0) {
-                  list = "'" + value + "'";
+                  list = new StringBuilder("'" + value + "'");
                } else {
-                  list = list + ",'" + value + "'";
+                  list.append(",'").append(value).append("'");
                }
             }
 
-            uuids = list;
+            uuids = list.toString();
          }
 
          if (!check_users.contains("#global")) {
-            String list = "";
+            StringBuilder list = new StringBuilder();
 
             for(String value : check_users) {
                if (!value.equals("#container")) {
@@ -1901,68 +1886,68 @@ public class Lookup extends Queue {
 
                   int userid = (Integer)Config.player_id_cache.get(value.toLowerCase());
                   if (list.length() == 0) {
-                     list = "" + userid + "";
+                     list = new StringBuilder("" + userid + "");
                   } else {
-                     list = list + "," + userid;
+                     list.append(",").append(userid);
                   }
                }
             }
 
-            users = list;
+            users = list.toString();
          }
 
-         if (restrict_list.size() > 0) {
-            String list = "";
+         if (!restrict_list.isEmpty()) {
+            StringBuilder list = new StringBuilder();
 
             for(Object value : restrict_list) {
                String value_name = "";
                if (value instanceof Material) {
                   value_name = ((Material)value).name();
                   if (list.length() == 0) {
-                     list = "" + Functions.block_id(value_name, false) + "";
+                     list = new StringBuilder("" + Functions.block_id(value_name, false) + "");
                   } else {
-                     list = list + "," + Functions.block_id(value_name, false);
+                     list.append(",").append(Functions.block_id(value_name, false));
                   }
                } else if (value instanceof EntityType) {
                   value_name = ((EntityType)value).name();
                   if (list.length() == 0) {
-                     list = "" + Functions.getEntityId(value_name, false) + "";
+                     list = new StringBuilder("" + Functions.getEntityId(value_name, false) + "");
                   } else {
-                     list = list + "," + Functions.getEntityId(value_name, false);
+                     list.append(",").append(Functions.getEntityId(value_name, false));
                   }
                }
             }
 
-            restrict = list;
+            restrict = list.toString();
          }
 
-         if (exclude_list.size() > 0) {
-            String list = "";
+         if (!exclude_list.isEmpty()) {
+            StringBuilder list = new StringBuilder();
 
             for(Object value : exclude_list) {
                String value_name = "";
                if (value instanceof Material) {
                   value_name = ((Material)value).name();
                   if (list.length() == 0) {
-                     list = "" + Functions.block_id(value_name, false) + "";
+                     list = new StringBuilder("" + Functions.block_id(value_name, false) + "");
                   } else {
-                     list = list + "," + Functions.block_id(value_name, false);
+                     list.append(",").append(Functions.block_id(value_name, false));
                   }
                } else if (value instanceof EntityType) {
                   value_name = ((EntityType)value).name();
                   if (list.length() == 0) {
-                     list = "" + Functions.getEntityId(value_name, false) + "";
+                     list = new StringBuilder("" + Functions.getEntityId(value_name, false) + "");
                   } else {
-                     list = list + "," + Functions.getEntityId(value_name, false);
+                     list.append(",").append(Functions.getEntityId(value_name, false));
                   }
                }
             }
 
-            exclude = list;
+            exclude = list.toString();
          }
 
-         if (exclude_user_list.size() > 0) {
-            String list = "";
+         if (!exclude_user_list.isEmpty()) {
+            StringBuilder list = new StringBuilder();
 
             for(String value : exclude_user_list) {
                if (Config.player_id_cache.get(value.toLowerCase()) == null) {
@@ -1971,29 +1956,29 @@ public class Lookup extends Queue {
 
                int userid = (Integer)Config.player_id_cache.get(value.toLowerCase());
                if (list.length() == 0) {
-                  list = "" + userid + "";
+                  list = new StringBuilder("" + userid + "");
                } else {
-                  list = list + "," + userid;
+                  list.append(",").append(userid);
                }
             }
 
-            exclude_users = list;
+            exclude_users = list.toString();
          }
 
-         if (action_list.size() > 0) {
-            String list = "";
+         if (!action_list.isEmpty()) {
+            StringBuilder list = new StringBuilder();
 
             for(Integer value : action_list) {
                if (valid_actions.contains(value)) {
                   if (list.length() == 0) {
-                     list = "" + value + "";
+                     list = new StringBuilder("" + value + "");
                   } else {
-                     list = list + "," + value;
+                     list.append(",").append(value);
                   }
                }
             }
 
-            action = list;
+            action = list.toString();
          }
 
          for(Integer value : action_list) {
@@ -2033,23 +2018,23 @@ public class Lookup extends Queue {
             query_extra = query_extra + " action IN(" + action + ") AND";
          }
 
-         if (restrict.length() > 0) {
+         if (!restrict.isEmpty()) {
             query_extra = query_extra + " type IN(" + restrict + ") AND";
          }
 
-         if (exclude.length() > 0) {
+         if (!exclude.isEmpty()) {
             query_extra = query_extra + " type NOT IN(" + exclude + ") AND";
          }
 
-         if (uuids.length() > 0) {
+         if (!uuids.isEmpty()) {
             query_extra = query_extra + " uuid IN(" + uuids + ") AND";
          }
 
-         if (users.length() > 0) {
+         if (!users.isEmpty()) {
             query_extra = query_extra + " user IN(" + users + ") AND";
          }
 
-         if (exclude_users.length() > 0) {
+         if (!exclude_users.isEmpty()) {
             query_extra = query_extra + " user NOT IN(" + exclude_users + ") AND";
          }
 
@@ -2057,11 +2042,11 @@ public class Lookup extends Queue {
             query_extra = query_extra + " time > '" + check_time + "' AND";
          }
 
-         if (query_extra.length() > 0) {
+         if (!query_extra.isEmpty()) {
             query_extra = query_extra.substring(0, query_extra.length() - 4);
          }
 
-         if (query_extra.length() == 0) {
+         if (query_extra.isEmpty()) {
             query_extra = " 1";
          }
 
@@ -2103,18 +2088,18 @@ public class Lookup extends Queue {
          }
 
          if ((Integer)Config.config.get("use-mysql") == 1) {
-            if ((radius == null || users.length() > 0 || restrict.length() > 0) && users.length() > 0) {
+            if ((radius == null || !users.isEmpty() || !restrict.isEmpty()) && !users.isEmpty()) {
             }
          } else if (query_table.equals("block")) {
-            if (restrict.length() > 0 || exclude.length() > 0) {
+            if (!restrict.isEmpty() || !exclude.isEmpty()) {
                index = "INDEXED BY block_type_index ";
             }
 
-            if (users.length() > 0 || exclude_users.length() > 0) {
+            if (!users.isEmpty() || !exclude_users.isEmpty()) {
                index = "INDEXED BY block_user_index ";
             }
 
-            if (radius != null || action_list.contains(5) || index.equals("") && restrict_world) {
+            if (radius != null || action_list.contains(5) || index.isEmpty() && restrict_world) {
                index = "INDEXED BY block_index ";
             }
          }
@@ -2152,7 +2137,7 @@ public class Lookup extends Queue {
             }
 
             result = (String)Config.player_id_cache_reversed.get(result_userid);
-            if (result.length() > 0) {
+            if (!result.isEmpty()) {
                Material result_material = Functions.getType(result_type);
                Config.lookup_cache.put("" + x + "." + y + "." + z + "." + wid + "", new Object[]{time, result, result_material});
             }

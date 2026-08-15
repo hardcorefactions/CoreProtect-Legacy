@@ -19,7 +19,7 @@ import org.bukkit.entity.Player;
 
 public class CoreProtectAPI extends Queue {
    private static List<Object> parseList(List<Object> list) {
-      List<Object> result = new ArrayList();
+      List<Object> result = new ArrayList<>();
       if (list != null) {
          for(Object value : list) {
             if (!(value instanceof Material) && !(value instanceof EntityType)) {
@@ -85,7 +85,7 @@ public class CoreProtectAPI extends Queue {
    }
 
    public boolean logChat(Player player, String message) {
-      if ((Integer)Config.config.get("api-enabled") == 1 && Functions.checkConfig(player.getWorld(), "player-messages") == 1 && player != null && message != null && message.length() > 0 && !message.startsWith("/")) {
+      if ((Integer)Config.config.get("api-enabled") == 1 && Functions.checkConfig(player.getWorld(), "player-messages") == 1 && player != null && message != null && !message.isEmpty() && !message.startsWith("/")) {
          int time = (int)(System.currentTimeMillis() / 1000L);
          Queue.queuePlayerChat(player, message, time);
          return true;
@@ -95,7 +95,7 @@ public class CoreProtectAPI extends Queue {
    }
 
    public boolean logCommand(Player player, String command) {
-      if ((Integer)Config.config.get("api-enabled") == 1 && Functions.checkConfig(player.getWorld(), "player-commands") == 1 && player != null && command != null && command.length() > 0 && command.startsWith("/")) {
+      if ((Integer)Config.config.get("api-enabled") == 1 && Functions.checkConfig(player.getWorld(), "player-commands") == 1 && player != null && command != null && !command.isEmpty() && command.startsWith("/")) {
          int time = (int)(System.currentTimeMillis() / 1000L);
          Queue.queuePlayerCommand(player, command, time);
          return true;
@@ -105,7 +105,7 @@ public class CoreProtectAPI extends Queue {
    }
 
    public boolean logInteraction(String user, Location location) {
-      if ((Integer)Config.config.get("api-enabled") == 1 && user != null && location != null && user.length() > 0) {
+      if ((Integer)Config.config.get("api-enabled") == 1 && user != null && location != null && !user.isEmpty()) {
          Queue.queuePlayerInteraction(user, location.getBlock().getState());
          return true;
       } else {
@@ -116,7 +116,7 @@ public class CoreProtectAPI extends Queue {
    /** @deprecated */
    @Deprecated
    public boolean logPlacement(String user, Location location, int type, byte data) {
-      if ((Integer)Config.config.get("api-enabled") == 1 && user != null && location != null && user.length() > 0) {
+      if ((Integer)Config.config.get("api-enabled") == 1 && user != null && location != null && !user.isEmpty()) {
          Material material = Material.getMaterial(type);
          Queue.queueBlockPlace(user, (BlockState)location.getBlock().getState(), (Material)material, data);
          return true;
@@ -126,7 +126,7 @@ public class CoreProtectAPI extends Queue {
    }
 
    public boolean logPlacement(String user, Location location, Material type, byte data) {
-      if ((Integer)Config.config.get("api-enabled") == 1 && user != null && location != null && user.length() > 0) {
+      if ((Integer)Config.config.get("api-enabled") == 1 && user != null && location != null && !user.isEmpty()) {
          Queue.queueBlockPlace(user, (BlockState)location.getBlock().getState(), (Material)type, data);
          return true;
       } else {
@@ -137,7 +137,7 @@ public class CoreProtectAPI extends Queue {
    /** @deprecated */
    @Deprecated
    public boolean logRemoval(String user, Location location, int type, byte data) {
-      if ((Integer)Config.config.get("api-enabled") == 1 && user != null && location != null && user.length() > 0) {
+      if ((Integer)Config.config.get("api-enabled") == 1 && user != null && location != null && !user.isEmpty()) {
          Material material = Material.getMaterial(type);
          Queue.queueBlockBreak(user, location.getBlock().getState(), material, data);
          return true;
@@ -147,7 +147,7 @@ public class CoreProtectAPI extends Queue {
    }
 
    public boolean logRemoval(String user, Location location, Material type, byte data) {
-      if ((Integer)Config.config.get("api-enabled") == 1 && user != null && location != null && user.length() > 0) {
+      if ((Integer)Config.config.get("api-enabled") == 1 && user != null && location != null && !user.isEmpty()) {
          Queue.queueBlockBreak(user, location.getBlock().getState(), type, data);
          return true;
       } else {
@@ -205,21 +205,21 @@ public class CoreProtectAPI extends Queue {
    }
 
    private List<String[]> processData(int time, int radius, Location location, List<Object> restrict_blocks, List<Object> exclude_blocks, List<String> restrict_users, List<String> exclude_users, List<Integer> action_list, int action, int lookup, int offset, int row_count, boolean use_limit) {
-      List<String[]> result = new ArrayList();
-      List<String> uuids = new ArrayList();
+      List<String[]> result = new ArrayList<>();
+      List<String> uuids = new ArrayList<>();
       if (restrict_users == null) {
-         restrict_users = new ArrayList();
+         restrict_users = new ArrayList<>();
       }
 
       if (exclude_users == null) {
-         exclude_users = new ArrayList();
+         exclude_users = new ArrayList<>();
       }
 
       if (action_list == null) {
-         action_list = new ArrayList();
+         action_list = new ArrayList<>();
       }
 
-      if (action_list.size() == 0 && restrict_blocks.size() > 0) {
+      if (action_list.isEmpty() && !restrict_blocks.isEmpty()) {
          for(Object arg_block : restrict_blocks) {
             if (arg_block instanceof Material) {
                action_list.add(0);
@@ -230,19 +230,19 @@ public class CoreProtectAPI extends Queue {
          }
       }
 
-      if (action_list.size() == 0) {
+      if (action_list.isEmpty()) {
          action_list.add(0);
          action_list.add(1);
       }
 
       for(int i = 0; i < action_list.size(); ++i) {
-         int actionListItem = (Integer)action_list.get(i);
+         int actionListItem = action_list.get(i);
          if (actionListItem > 3) {
             action_list.remove(i);
          }
       }
 
-      if (restrict_users.size() == 0) {
+      if (restrict_users.isEmpty()) {
          restrict_users.add("#global");
       }
 
@@ -261,12 +261,9 @@ public class CoreProtectAPI extends Queue {
             Connection connection = Database.getConnection(false);
             if (connection != null) {
                Statement statement = connection.createStatement();
-               boolean restrict_world = false;
-               if (radius > 0) {
-                  restrict_world = true;
-               }
+               boolean restrict_world = radius > 0;
 
-               if (location == null) {
+                if (location == null) {
                   restrict_world = false;
                }
 
@@ -308,7 +305,7 @@ public class CoreProtectAPI extends Queue {
    /** @deprecated */
    @Deprecated
    private List<String[]> processData(String user, int time, int radius, Location location, List<Object> restrict_blocks, List<Object> exclude_blocks, int action, int lookup, int offset, int row_count, boolean use_limit) {
-      ArrayList<String> restrict_users = new ArrayList();
+      ArrayList<String> restrict_users = new ArrayList<>();
       if (user != null) {
          restrict_users.add(user);
       }
@@ -320,7 +317,7 @@ public class CoreProtectAPI extends Queue {
       System.out.println("[CoreProtect] API Test Successful.");
    }
 
-   public class ParseResult {
+   public static class ParseResult {
       String[] parse = null;
 
       public ParseResult(String[] data) {

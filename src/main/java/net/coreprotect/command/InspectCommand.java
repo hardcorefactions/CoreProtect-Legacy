@@ -8,9 +8,7 @@ public class InspectCommand {
    protected static void runCommand(CommandSender player, boolean permission, String[] args) {
       if (permission) {
          int command = -1;
-         if (Config.inspecting.get(player.getName()) == null) {
-            Config.inspecting.put(player.getName(), false);
-         }
+          Config.inspecting.putIfAbsent(player.getName(), false);
 
          if (args.length > 1) {
             String action = args[1];

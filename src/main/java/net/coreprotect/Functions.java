@@ -66,7 +66,7 @@ import org.bukkit.material.MaterialData;
 import org.bukkit.plugin.Plugin;
 
 public class Functions extends Queue {
-   private static Pattern csvSplitter = Pattern.compile(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
+   private static final Pattern csvSplitter = Pattern.compile(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
 
    public static String getPluginVersion() {
       String version = CoreProtect.getInstance().getDescription().getVersion();
@@ -166,7 +166,7 @@ public class Functions extends Queue {
    }
 
    public static Integer[] convertArray(String[] array) {
-      List<Integer> list = new ArrayList();
+      List<Integer> list = new ArrayList<>();
 
       for(String item : array) {
          list.add(Integer.parseInt(item));
@@ -244,8 +244,8 @@ public class Functions extends Queue {
          try {
             Connection connection = Database.getConnection(true);
             Statement statement = connection.createStatement();
-            List<String> tableData = new ArrayList();
-            List<String> indexData = new ArrayList();
+            List<String> tableData = new ArrayList<>();
+            List<String> indexData = new ArrayList<>();
             String query = "SELECT type,name FROM sqlite_master WHERE type='table' OR type='index';";
             ResultSet rs = statement.executeQuery(query);
 
@@ -419,11 +419,9 @@ public class Functions extends Queue {
    }
 
    public static <K, V extends Comparable<? super V>> SortedSet<Map.Entry<K, V>> entriesSortedByValues(Map<K, V> map) {
-      SortedSet<Map.Entry<K, V>> sortedEntries = new TreeSet(new Comparator<Map.Entry<K, V>>() {
-         public int compare(Map.Entry<K, V> e1, Map.Entry<K, V> e2) {
-            int res = ((Comparable)e1.getValue()).compareTo(e2.getValue());
-            return res != 0 ? res : 1;
-         }
+      SortedSet<Map.Entry<K, V>> sortedEntries = new TreeSet<>((e1, e2) -> {
+         int res = ((Comparable)e1.getValue()).compareTo(e2.getValue());
+         return res != 0 ? res : 1;
       });
       sortedEntries.addAll(map.entrySet());
       return sortedEntries;
@@ -984,7 +982,7 @@ public class Functions extends Queue {
             }
          }
 
-         if (result.length() > 0) {
+         if (!result.isEmpty()) {
             id = getWorldId(result);
          }
       } catch (Exception e) {
@@ -1116,7 +1114,7 @@ public class Functions extends Queue {
 
    public static String[] parseCSVString(String string) {
       String[] result = null;
-      if (string.indexOf("\"") > -1) {
+      if (string.contains("\"")) {
          result = csvSplitter.split(string, -1);
       } else {
          result = string.split(",", -1);
@@ -1124,11 +1122,11 @@ public class Functions extends Queue {
 
       for(int i = 0; i < result.length; ++i) {
          String value = result[i];
-         if (value.length() == 0) {
+         if (value.isEmpty()) {
             value = null;
-         } else if (string.indexOf("\"") > -1) {
+         } else if (string.contains("\"")) {
             value = value.replaceAll("^\"|\"$", "");
-            value = value.replaceAll("\"\"", "\"");
+            value = value.replace("\"\"", "\"");
          }
 
          result[i] = value;
@@ -1138,13 +1136,13 @@ public class Functions extends Queue {
    }
 
    public static List<Object> processMeta(BlockState block) {
-      List<Object> meta = new ArrayList();
+      List<Object> meta = new ArrayList<>();
 
       try {
          if (block instanceof CommandBlock) {
             CommandBlock command_block = (CommandBlock)block;
             String command = command_block.getCommand();
-            if (command.length() > 0) {
+            if (!command.isEmpty()) {
                meta.add(command);
             }
          } else if (block instanceof Banner) {
@@ -1161,7 +1159,7 @@ public class Functions extends Queue {
          e.printStackTrace();
       }
 
-      if (meta.size() == 0) {
+      if (meta.isEmpty()) {
          meta = null;
       }
 
@@ -1169,22 +1167,20 @@ public class Functions extends Queue {
    }
 
    public static void removeHanging(final BlockState block, int delay) {
-      CoreProtect.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(CoreProtect.getInstance(), new Runnable() {
-         public void run() {
-            try {
-               for(Entity e : block.getChunk().getEntities()) {
-                  if (e instanceof ItemFrame || e instanceof Painting) {
-                     Location el = e.getLocation();
-                     if (el.getBlockX() == block.getX() && el.getBlockY() == block.getY() && el.getBlockZ() == block.getZ()) {
-                        e.remove();
-                     }
+      CoreProtect.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(CoreProtect.getInstance(), () -> {
+         try {
+            for(Entity e : block.getChunk().getEntities()) {
+               if (e instanceof ItemFrame || e instanceof Painting) {
+                  Location el = e.getLocation();
+                  if (el.getBlockX() == block.getX() && el.getBlockY() == block.getY() && el.getBlockZ() == block.getZ()) {
+                     e.remove();
                   }
                }
-            } catch (Exception e) {
-               e.printStackTrace();
             }
-
+         } catch (Exception e) {
+            e.printStackTrace();
          }
+
       }, (long)delay);
    }
 
@@ -1222,296 +1218,292 @@ public class Functions extends Queue {
    }
 
    public static void spawnEntity(final BlockState block, final EntityType type, final List<Object> list) {
-      CoreProtect.getInstance().getServer().getScheduler().runTask(CoreProtect.getInstance(), new Runnable() {
-         public void run() {
-            try {
-               Location location = block.getLocation();
-               location.setX(location.getX() + (double)0.5F);
-               location.setZ(location.getZ() + (double)0.5F);
-               Entity entity = block.getLocation().getWorld().spawnEntity(location, type);
-               if (list.size() == 0) {
-                  return;
-               }
+      CoreProtect.getInstance().getServer().getScheduler().runTask(CoreProtect.getInstance(), () -> {
+         try {
+            Location location = block.getLocation();
+            location.setX(location.getX() + (double)0.5F);
+            location.setZ(location.getZ() + (double)0.5F);
+            Entity entity = block.getLocation().getWorld().spawnEntity(location, type);
+            if (list.isEmpty()) {
+               return;
+            }
 
-               List<Object> age = (List)list.get(0);
-               List<Object> tame = (List)list.get(1);
-               List<Object> data = (List)list.get(2);
-               if (list.size() >= 5) {
-                  entity.setCustomNameVisible((Boolean)list.get(3));
-                  entity.setCustomName((String)list.get(4));
-               }
+            List<Object> age = (List)list.get(0);
+            List<Object> tame = (List)list.get(1);
+            List<Object> data = (List)list.get(2);
+            if (list.size() >= 5) {
+               entity.setCustomNameVisible((Boolean)list.get(3));
+               entity.setCustomName((String)list.get(4));
+            }
 
-               int unixtimestamp = (int)(System.currentTimeMillis() / 1000L);
-               int wid = Functions.getWorldId(block.getWorld().getName());
-               String token = "" + block.getX() + "." + block.getY() + "." + block.getZ() + "." + wid + "." + type.name() + "";
-               Config.entity_cache.put(token, new Object[]{unixtimestamp, entity.getEntityId()});
-               if (entity instanceof Ageable) {
-                  int count = 0;
-                  Ageable ageable = (Ageable)entity;
-
-                  for(Object value : age) {
-                     if (count == 0) {
-                        int set = (Integer)value;
-                        ageable.setAge(set);
-                     } else if (count == 1) {
-                        boolean set = (Boolean)value;
-                        ageable.setAgeLock(set);
-                     } else if (count == 2) {
-                        boolean set = (Boolean)value;
-                        if (set) {
-                           ageable.setAdult();
-                        } else {
-                           ageable.setBaby();
-                        }
-                     } else if (count == 3) {
-                        boolean set = (Boolean)value;
-                        ageable.setBreed(set);
-                     } else if (count == 4 && value != null) {
-                        double set = (Double)value;
-                        ageable.setMaxHealth(set);
-                     }
-
-                     ++count;
-                  }
-               }
-
-               if (entity instanceof Tameable) {
-                  int count = 0;
-                  Tameable tameable = (Tameable)entity;
-
-                  for(Object value : tame) {
-                     if (count == 0) {
-                        boolean set = (Boolean)value;
-                        tameable.setTamed(set);
-                     } else if (count == 1) {
-                        String set = (String)value;
-                        if (set.length() > 0) {
-                           Player owner = CoreProtect.getInstance().getServer().getPlayer(set);
-                           if (owner == null) {
-                              OfflinePlayer offline_player = CoreProtect.getInstance().getServer().getOfflinePlayer(set);
-                              if (offline_player != null) {
-                                 tameable.setOwner(offline_player);
-                              }
-                           } else {
-                              tameable.setOwner(owner);
-                           }
-                        }
-                     }
-
-                     ++count;
-                  }
-               }
-
-               BukkitAdapter.ADAPTER.setEntityAttributes(entity, list);
+            int unixtimestamp = (int)(System.currentTimeMillis() / 1000L);
+            int wid = Functions.getWorldId(block.getWorld().getName());
+            String token = "" + block.getX() + "." + block.getY() + "." + block.getZ() + "." + wid + "." + type.name() + "";
+            Config.entity_cache.put(token, new Object[]{unixtimestamp, entity.getEntityId()});
+            if (entity instanceof Ageable) {
                int count = 0;
+               Ageable ageable = (Ageable)entity;
 
-               for(Object value : data) {
-                  if (entity instanceof Creeper) {
-                     Creeper creeper = (Creeper)entity;
-                     if (count == 0) {
-                        boolean set = (Boolean)value;
-                        creeper.setPowered(set);
+               for(Object value : age) {
+                  if (count == 0) {
+                     int set = (Integer)value;
+                     ageable.setAge(set);
+                  } else if (count == 1) {
+                     boolean set = (Boolean)value;
+                     ageable.setAgeLock(set);
+                  } else if (count == 2) {
+                     boolean set = (Boolean)value;
+                     if (set) {
+                        ageable.setAdult();
+                     } else {
+                        ageable.setBaby();
                      }
-                  } else if (entity instanceof Enderman) {
-                     Enderman enderman = (Enderman)entity;
-                     if (count == 0) {
-                        Map<String, Object> set = (Map)value;
-                        MaterialData materialdata = ItemStack.deserialize(set).getData();
-                        enderman.setCarriedMaterial(materialdata);
-                     }
-                  } else if (entity instanceof IronGolem) {
-                     IronGolem irongolem = (IronGolem)entity;
-                     if (count == 0) {
-                        boolean set = (Boolean)value;
-                        irongolem.setPlayerCreated(set);
-                     }
-                  } else if (entity instanceof Ocelot) {
-                     Ocelot ocelot = (Ocelot)entity;
-                     if (count == 0) {
-                        Ocelot.Type set = (Ocelot.Type)value;
-                        ocelot.setCatType(set);
-                     } else if (count == 1) {
-                        boolean set = (Boolean)value;
-                        ocelot.setSitting(set);
-                     }
-                  } else if (entity instanceof Pig) {
-                     Pig pig = (Pig)entity;
-                     if (count == 0) {
-                        boolean set = (Boolean)value;
-                        pig.setSaddle(set);
-                     }
-                  } else if (entity instanceof Sheep) {
-                     Sheep sheep = (Sheep)entity;
-                     if (count == 0) {
-                        boolean set = (Boolean)value;
-                        sheep.setSheared(set);
-                     } else if (count == 1) {
-                        DyeColor set = (DyeColor)value;
-                        sheep.setColor(set);
-                     }
-                  } else if (entity instanceof Slime) {
-                     Slime slime = (Slime)entity;
-                     if (count == 0) {
-                        int set = (Integer)value;
-                        slime.setSize(set);
-                     }
-                  } else if (entity instanceof Villager) {
-                     Villager villager = (Villager)entity;
-                     if (count == 0) {
-                        Villager.Profession set = (Villager.Profession)value;
-                        villager.setProfession(set);
-                     } else if (count == 1) {
-                        BukkitAdapter.ADAPTER.setVillagerRiches(villager, value);
-                     } else if (count == 2) {
-                        BukkitAdapter.ADAPTER.setVillagerRecipes(villager, value);
-                     }
-                  } else if (entity instanceof Wolf) {
-                     Wolf wolf = (Wolf)entity;
-                     if (count == 0) {
-                        boolean set = (Boolean)value;
-                        wolf.setSitting(set);
-                     } else if (count == 1) {
-                        DyeColor set = (DyeColor)value;
-                        wolf.setCollarColor(set);
-                     }
-                  } else if (!BukkitAdapter.ADAPTER.setEntityMeta(entity, value, count) && entity instanceof Zombie) {
-                     Zombie zombie = (Zombie)entity;
-                     if (count == 0) {
-                        boolean set = (Boolean)value;
-                        zombie.setBaby(set);
+                  } else if (count == 3) {
+                     boolean set = (Boolean)value;
+                     ageable.setBreed(set);
+                  } else if (count == 4 && value != null) {
+                     double set = (Double)value;
+                     ageable.setMaxHealth(set);
+                  }
+
+                  ++count;
+               }
+            }
+
+            if (entity instanceof Tameable) {
+               int count = 0;
+               Tameable tameable = (Tameable)entity;
+
+               for(Object value : tame) {
+                  if (count == 0) {
+                     boolean set = (Boolean)value;
+                     tameable.setTamed(set);
+                  } else if (count == 1) {
+                     String set = (String)value;
+                     if (!set.isEmpty()) {
+                        Player owner = CoreProtect.getInstance().getServer().getPlayer(set);
+                        if (owner == null) {
+                           OfflinePlayer offline_player = CoreProtect.getInstance().getServer().getOfflinePlayer(set);
+                           if (offline_player != null) {
+                              tameable.setOwner(offline_player);
+                           }
+                        } else {
+                           tameable.setOwner(owner);
+                        }
                      }
                   }
 
                   ++count;
                }
-            } catch (Exception e) {
-               e.printStackTrace();
             }
 
+            BukkitAdapter.ADAPTER.setEntityAttributes(entity, list);
+            int count = 0;
+
+            for(Object value : data) {
+               if (entity instanceof Creeper) {
+                  Creeper creeper = (Creeper)entity;
+                  if (count == 0) {
+                     boolean set = (Boolean)value;
+                     creeper.setPowered(set);
+                  }
+               } else if (entity instanceof Enderman) {
+                  Enderman enderman = (Enderman)entity;
+                  if (count == 0) {
+                     Map<String, Object> set = (Map)value;
+                     MaterialData materialdata = ItemStack.deserialize(set).getData();
+                     enderman.setCarriedMaterial(materialdata);
+                  }
+               } else if (entity instanceof IronGolem) {
+                  IronGolem irongolem = (IronGolem)entity;
+                  if (count == 0) {
+                     boolean set = (Boolean)value;
+                     irongolem.setPlayerCreated(set);
+                  }
+               } else if (entity instanceof Ocelot) {
+                  Ocelot ocelot = (Ocelot)entity;
+                  if (count == 0) {
+                     Ocelot.Type set = (Ocelot.Type)value;
+                     ocelot.setCatType(set);
+                  } else if (count == 1) {
+                     boolean set = (Boolean)value;
+                     ocelot.setSitting(set);
+                  }
+               } else if (entity instanceof Pig) {
+                  Pig pig = (Pig)entity;
+                  if (count == 0) {
+                     boolean set = (Boolean)value;
+                     pig.setSaddle(set);
+                  }
+               } else if (entity instanceof Sheep) {
+                  Sheep sheep = (Sheep)entity;
+                  if (count == 0) {
+                     boolean set = (Boolean)value;
+                     sheep.setSheared(set);
+                  } else if (count == 1) {
+                     DyeColor set = (DyeColor)value;
+                     sheep.setColor(set);
+                  }
+               } else if (entity instanceof Slime) {
+                  Slime slime = (Slime)entity;
+                  if (count == 0) {
+                     int set = (Integer)value;
+                     slime.setSize(set);
+                  }
+               } else if (entity instanceof Villager) {
+                  Villager villager = (Villager)entity;
+                  if (count == 0) {
+                     Villager.Profession set = (Villager.Profession)value;
+                     villager.setProfession(set);
+                  } else if (count == 1) {
+                     BukkitAdapter.ADAPTER.setVillagerRiches(villager, value);
+                  } else if (count == 2) {
+                     BukkitAdapter.ADAPTER.setVillagerRecipes(villager, value);
+                  }
+               } else if (entity instanceof Wolf) {
+                  Wolf wolf = (Wolf)entity;
+                  if (count == 0) {
+                     boolean set = (Boolean)value;
+                     wolf.setSitting(set);
+                  } else if (count == 1) {
+                     DyeColor set = (DyeColor)value;
+                     wolf.setCollarColor(set);
+                  }
+               } else if (!BukkitAdapter.ADAPTER.setEntityMeta(entity, value, count) && entity instanceof Zombie) {
+                  Zombie zombie = (Zombie)entity;
+                  if (count == 0) {
+                     boolean set = (Boolean)value;
+                     zombie.setBaby(set);
+                  }
+               }
+
+               ++count;
+            }
+         } catch (Exception e) {
+            e.printStackTrace();
          }
+
       });
    }
 
    public static void spawnHanging(final BlockState blockstate, final Material row_type, final int row_data, int delay) {
-      CoreProtect.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(CoreProtect.getInstance(), new Runnable() {
-         public void run() {
-            try {
-               Block block = blockstate.getBlock();
-               int row_x = block.getX();
-               int row_y = block.getY();
-               int row_z = block.getZ();
+      CoreProtect.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(CoreProtect.getInstance(), () -> {
+         try {
+            Block block = blockstate.getBlock();
+            int row_x = block.getX();
+            int row_y = block.getY();
+            int row_z = block.getZ();
 
-               for(Entity e : block.getChunk().getEntities()) {
-                  if (row_type.equals(Material.ITEM_FRAME) && e instanceof ItemFrame || row_type.equals(Material.PAINTING) && e instanceof Painting) {
-                     Location el = e.getLocation();
-                     if (el.getBlockX() == row_x && el.getBlockY() == row_y && el.getBlockZ() == row_z) {
-                        e.remove();
-                        break;
-                     }
+            for(Entity e : block.getChunk().getEntities()) {
+               if (row_type.equals(Material.ITEM_FRAME) && e instanceof ItemFrame || row_type.equals(Material.PAINTING) && e instanceof Painting) {
+                  Location el = e.getLocation();
+                  if (el.getBlockX() == row_x && el.getBlockY() == row_y && el.getBlockZ() == row_z) {
+                     e.remove();
+                     break;
                   }
                }
+            }
 
-               int dx1 = row_x + 1;
-               int dx2 = row_x - 1;
-               int dz1 = row_z + 1;
-               int dz2 = row_z - 1;
-               Block c1 = block.getWorld().getBlockAt(dx1, row_y, row_z);
-               Block c2 = block.getWorld().getBlockAt(dx2, row_y, row_z);
-               Block c3 = block.getWorld().getBlockAt(row_x, row_y, dz1);
-               Block c4 = block.getWorld().getBlockAt(row_x, row_y, dz2);
-               BlockFace face_set = null;
-               if (!BlockInfo.non_attachable.contains(c1.getType())) {
-                  face_set = BlockFace.WEST;
-                  block = c1;
-               } else if (!BlockInfo.non_attachable.contains(c2.getType())) {
-                  face_set = BlockFace.EAST;
-                  block = c2;
-               } else if (!BlockInfo.non_attachable.contains(c3.getType())) {
-                  face_set = BlockFace.NORTH;
-                  block = c3;
-               } else if (!BlockInfo.non_attachable.contains(c4.getType())) {
-                  face_set = BlockFace.SOUTH;
-                  block = c4;
-               }
+            int dx1 = row_x + 1;
+            int dx2 = row_x - 1;
+            int dz1 = row_z + 1;
+            int dz2 = row_z - 1;
+            Block c1 = block.getWorld().getBlockAt(dx1, row_y, row_z);
+            Block c2 = block.getWorld().getBlockAt(dx2, row_y, row_z);
+            Block c3 = block.getWorld().getBlockAt(row_x, row_y, dz1);
+            Block c4 = block.getWorld().getBlockAt(row_x, row_y, dz2);
+            BlockFace face_set = null;
+            if (!BlockInfo.non_attachable.contains(c1.getType())) {
+               face_set = BlockFace.WEST;
+               block = c1;
+            } else if (!BlockInfo.non_attachable.contains(c2.getType())) {
+               face_set = BlockFace.EAST;
+               block = c2;
+            } else if (!BlockInfo.non_attachable.contains(c3.getType())) {
+               face_set = BlockFace.NORTH;
+               block = c3;
+            } else if (!BlockInfo.non_attachable.contains(c4.getType())) {
+               face_set = BlockFace.SOUTH;
+               block = c4;
+            }
 
-               BlockFace face = null;
-               if (!Functions.solidBlock(Functions.getType(block.getRelative(BlockFace.EAST)))) {
-                  face = BlockFace.EAST;
-               } else if (!Functions.solidBlock(Functions.getType(block.getRelative(BlockFace.NORTH)))) {
-                  face = BlockFace.NORTH;
-               } else if (!Functions.solidBlock(Functions.getType(block.getRelative(BlockFace.WEST)))) {
-                  face = BlockFace.WEST;
-               } else if (!Functions.solidBlock(Functions.getType(block.getRelative(BlockFace.SOUTH)))) {
-                  face = BlockFace.SOUTH;
-               }
+            BlockFace face = null;
+            if (!Functions.solidBlock(Functions.getType(block.getRelative(BlockFace.EAST)))) {
+               face = BlockFace.EAST;
+            } else if (!Functions.solidBlock(Functions.getType(block.getRelative(BlockFace.NORTH)))) {
+               face = BlockFace.NORTH;
+            } else if (!Functions.solidBlock(Functions.getType(block.getRelative(BlockFace.WEST)))) {
+               face = BlockFace.WEST;
+            } else if (!Functions.solidBlock(Functions.getType(block.getRelative(BlockFace.SOUTH)))) {
+               face = BlockFace.SOUTH;
+            }
 
-               if (face_set != null && face != null) {
-                  if (row_type.equals(Material.PAINTING)) {
-                     String art_name = Functions.getArtName(row_data);
-                     Art painting = Art.getByName(art_name.toUpperCase());
-                     int height = painting.getBlockHeight();
-                     int width = painting.getBlockWidth();
-                     int painting_x = row_x;
-                     int painting_y = row_y;
-                     int painting_z = row_z;
-                     if (height != 1 || width != 1) {
-                        if (height > 1 && height != 3) {
-                           painting_y = row_y - 1;
-                        }
-
-                        if (width > 1) {
-                           if (face_set.equals(BlockFace.WEST)) {
-                              painting_z = row_z - 1;
-                           } else if (face_set.equals(BlockFace.SOUTH)) {
-                              painting_x = row_x - 1;
-                           }
-                        }
+            if (face_set != null && face != null) {
+               if (row_type.equals(Material.PAINTING)) {
+                  String art_name = Functions.getArtName(row_data);
+                  Art painting = Art.getByName(art_name.toUpperCase());
+                  int height = painting.getBlockHeight();
+                  int width = painting.getBlockWidth();
+                  int painting_x = row_x;
+                  int painting_y = row_y;
+                  int painting_z = row_z;
+                  if (height != 1 || width != 1) {
+                     if (height > 1 && height != 3) {
+                        painting_y = row_y - 1;
                      }
 
+                     if (width > 1) {
+                        if (face_set.equals(BlockFace.WEST)) {
+                           painting_z = row_z - 1;
+                        } else if (face_set.equals(BlockFace.SOUTH)) {
+                           painting_x = row_x - 1;
+                        }
+                     }
+                  }
+
+                  Block spawn_block = block.getRelative(face);
+                  Material current_type = spawn_block.getType();
+                  int current_data = Functions.getData(spawn_block);
+                  Functions.setTypeAndData(spawn_block, Material.AIR, (byte)0, true);
+                  Painting hanging = null;
+
+                  try {
+                     hanging = (Painting)block.getWorld().spawn(spawn_block.getLocation(), Painting.class);
+                  } catch (Exception ignored) {
+                  }
+
+                  if (hanging != null) {
+                     Functions.setTypeAndData(spawn_block, current_type, (byte)current_data, true);
+                     hanging.teleport(block.getWorld().getBlockAt(painting_x, painting_y, painting_z).getLocation());
+                     hanging.setFacingDirection(face_set, true);
+                     hanging.setArt(painting, true);
+                  }
+               } else if (row_type.equals(Material.ITEM_FRAME)) {
+                  try {
                      Block spawn_block = block.getRelative(face);
                      Material current_type = spawn_block.getType();
                      int current_data = Functions.getData(spawn_block);
                      Functions.setTypeAndData(spawn_block, Material.AIR, (byte)0, true);
-                     Painting hanging = null;
-
-                     try {
-                        hanging = (Painting)block.getWorld().spawn(spawn_block.getLocation(), Painting.class);
-                     } catch (Exception var28) {
-                     }
-
+                     ItemFrame hanging = null;
+                     hanging = (ItemFrame)block.getWorld().spawn(spawn_block.getLocation(), ItemFrame.class);
                      if (hanging != null) {
                         Functions.setTypeAndData(spawn_block, current_type, (byte)current_data, true);
-                        hanging.teleport(block.getWorld().getBlockAt(painting_x, painting_y, painting_z).getLocation());
+                        hanging.teleport(block.getWorld().getBlockAt(row_x, row_y, row_z).getLocation());
                         hanging.setFacingDirection(face_set, true);
-                        hanging.setArt(painting, true);
-                     }
-                  } else if (row_type.equals(Material.ITEM_FRAME)) {
-                     try {
-                        Block spawn_block = block.getRelative(face);
-                        Material current_type = spawn_block.getType();
-                        int current_data = Functions.getData(spawn_block);
-                        Functions.setTypeAndData(spawn_block, Material.AIR, (byte)0, true);
-                        ItemFrame hanging = null;
-                        hanging = (ItemFrame)block.getWorld().spawn(spawn_block.getLocation(), ItemFrame.class);
-                        if (hanging != null) {
-                           Functions.setTypeAndData(spawn_block, current_type, (byte)current_data, true);
-                           hanging.teleport(block.getWorld().getBlockAt(row_x, row_y, row_z).getLocation());
-                           hanging.setFacingDirection(face_set, true);
-                           Material row_data_material = Functions.getType(row_data);
-                           if (row_data_material != null) {
-                              ItemStack istack = new ItemStack(row_data_material, 1);
-                              hanging.setItem(istack);
-                           }
+                        Material row_data_material = Functions.getType(row_data);
+                        if (row_data_material != null) {
+                           ItemStack istack = new ItemStack(row_data_material, 1);
+                           hanging.setItem(istack);
                         }
-                     } catch (Exception var27) {
                      }
+                  } catch (Exception ignored) {
                   }
                }
-            } catch (Exception e) {
-               e.printStackTrace();
             }
-
+         } catch (Exception e) {
+            e.printStackTrace();
          }
+
       }, (long)delay);
    }
 
@@ -1557,15 +1549,13 @@ public class Functions extends Queue {
    }
 
    public static void updateBlock(final BlockState block) {
-      CoreProtect.getInstance().getServer().getScheduler().runTask(CoreProtect.getInstance(), new Runnable() {
-         public void run() {
-            try {
-               block.update();
-            } catch (Exception e) {
-               e.printStackTrace();
-            }
-
+      CoreProtect.getInstance().getServer().getScheduler().runTask(CoreProtect.getInstance(), () -> {
+         try {
+            block.update();
+         } catch (Exception e) {
+            e.printStackTrace();
          }
+
       });
    }
 

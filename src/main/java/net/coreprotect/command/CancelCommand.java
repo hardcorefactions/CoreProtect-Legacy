@@ -17,7 +17,7 @@ public class CancelCommand {
             for(int i = 0; i < args.length; ++i) {
                if (args[i].equals("#preview")) {
                   valid = true;
-                  args[i] = args[i].replaceAll("#preview", "#preview_cancel");
+                  args[i] = args[i].replace("#preview", "#preview_cancel");
                }
             }
 

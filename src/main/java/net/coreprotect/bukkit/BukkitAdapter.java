@@ -2,6 +2,8 @@ package net.coreprotect.bukkit;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
 import net.coreprotect.model.Config;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -68,12 +70,10 @@ public class BukkitAdapter implements BukkitInterface {
    }
 
    public Material getEntityMaterial(EntityType type) {
-      switch (type) {
-         case ARMOR_STAND:
-            return Material.ARMOR_STAND;
-         default:
-            return null;
-      }
+       if (Objects.requireNonNull(type) == EntityType.ARMOR_STAND) {
+           return Material.ARMOR_STAND;
+       }
+       return null;
    }
 
    public SkullType getSkullType(int type) {

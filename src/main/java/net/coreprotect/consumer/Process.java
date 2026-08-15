@@ -238,11 +238,7 @@ public class Process {
          List<Object> meta = Functions.processMeta(block);
          if (block_type.equals(Material.SKULL)) {
             Logger.log_skull_place(preparedStmt, preparedStmt_skulls, user, block, Functions.block_id(replace_type), replace_data);
-         } else if (force_data == 1) {
-            Logger.log_place(preparedStmt, user, block, Functions.block_id(replace_type), replace_data, block_type, block_data, true, meta);
-         } else {
-            Logger.log_place(preparedStmt, user, block, Functions.block_id(replace_type), replace_data, block_type, block_data, false, meta);
-         }
+         } else Logger.log_place(preparedStmt, user, block, Functions.block_id(replace_type), replace_data, block_type, block_data, force_data == 1, meta);
       }
 
    }
@@ -281,7 +277,7 @@ public class Process {
                if (current_chest == force_data || force_size > 0) {
                   Logger.log_container(preparedStmt, user, block.getType(), inventory, block.getLocation());
                   List<ItemStack[]> old = (List)Config.old_container.get(logging_chest_id);
-                  if (old.size() == 0) {
+                  if (old.isEmpty()) {
                      Config.old_container.remove(logging_chest_id);
                      Config.logging_chest.remove(logging_chest_id);
                   }
@@ -347,7 +343,7 @@ public class Process {
          if (block_lists.get(id) != null) {
             for(BlockState list_block : block_lists.get(id)) {
                String removed = Lookup.who_removed_cache(list_block);
-               if (removed.length() > 0) {
+               if (!removed.isEmpty()) {
                   user = removed;
                }
             }
@@ -487,7 +483,7 @@ public class Process {
          if (block_lists.get(id) != null) {
             List<BlockState> block_list = (List)block_lists.get(id);
             String result_data = Lookup.who_placed(statement, block);
-            if (result_data.length() > 0) {
+            if (!result_data.isEmpty()) {
                user = result_data;
             }
 

@@ -19,17 +19,17 @@ public class Consumer implements Runnable, Thread.UncaughtExceptionHandler {
    public static volatile boolean is_paused = false;
    private static volatile boolean running = false;
    protected static volatile boolean pause_success = false;
-   static Map<Integer, ArrayList<Object[]>> consumer = Collections.synchronizedMap(new HashMap());
-   static Map<Integer, Integer> consumer_id = Collections.synchronizedMap(new HashMap());
-   static Map<Integer, Map<Integer, String[]>> consumer_users = Collections.synchronizedMap(new HashMap());
-   static Map<Integer, Map<Integer, String>> consumer_strings = Collections.synchronizedMap(new HashMap());
-   static Map<Integer, Map<Integer, Object>> consumer_object = Collections.synchronizedMap(new HashMap());
-   static Map<Integer, Map<Integer, String[]>> consumer_signs = Collections.synchronizedMap(new HashMap());
-   static Map<Integer, Map<Integer, ItemStack[]>> consumer_containers = Collections.synchronizedMap(new HashMap());
-   static Map<Integer, Map<Integer, Object>> consumer_inventories = Collections.synchronizedMap(new HashMap());
-   static Map<Integer, Map<Integer, List<BlockState>>> consumer_block_list = Collections.synchronizedMap(new HashMap());
-   static Map<Integer, Map<Integer, List<Object[]>>> consumer_object_array_list = Collections.synchronizedMap(new HashMap());
-   static Map<Integer, Map<Integer, List<Object>>> consumer_object_list = Collections.synchronizedMap(new HashMap());
+   static final Map<Integer, ArrayList<Object[]>> consumer = Collections.synchronizedMap(new HashMap<>());
+   static final Map<Integer, Integer> consumer_id = Collections.synchronizedMap(new HashMap<>());
+   static final Map<Integer, Map<Integer, String[]>> consumer_users = Collections.synchronizedMap(new HashMap<>());
+   static final Map<Integer, Map<Integer, String>> consumer_strings = Collections.synchronizedMap(new HashMap<>());
+   static final Map<Integer, Map<Integer, Object>> consumer_object = Collections.synchronizedMap(new HashMap<>());
+   static final Map<Integer, Map<Integer, String[]>> consumer_signs = Collections.synchronizedMap(new HashMap<>());
+   static final Map<Integer, Map<Integer, ItemStack[]>> consumer_containers = Collections.synchronizedMap(new HashMap<>());
+   static final Map<Integer, Map<Integer, Object>> consumer_inventories = Collections.synchronizedMap(new HashMap<>());
+   static final Map<Integer, Map<Integer, List<BlockState>>> consumer_block_list = Collections.synchronizedMap(new HashMap<>());
+   static final Map<Integer, Map<Integer, List<Object[]>>> consumer_object_array_list = Collections.synchronizedMap(new HashMap<>());
+   static final Map<Integer, Map<Integer, List<Object>>> consumer_object_list = Collections.synchronizedMap(new HashMap<>());
 
    private static void errorDelay() {
       try {
@@ -45,26 +45,26 @@ public class Consumer implements Runnable, Thread.UncaughtExceptionHandler {
    }
 
    public static void initialize() {
-      consumer.put(0, new ArrayList());
-      consumer.put(1, new ArrayList());
-      consumer_users.put(0, new HashMap());
-      consumer_users.put(1, new HashMap());
-      consumer_strings.put(0, new HashMap());
-      consumer_strings.put(1, new HashMap());
-      consumer_object.put(0, new HashMap());
-      consumer_object.put(1, new HashMap());
-      consumer_signs.put(0, new HashMap());
-      consumer_signs.put(1, new HashMap());
-      consumer_inventories.put(0, new HashMap());
-      consumer_inventories.put(1, new HashMap());
-      consumer_block_list.put(0, new HashMap());
-      consumer_block_list.put(1, new HashMap());
-      consumer_object_array_list.put(0, new HashMap());
-      consumer_object_array_list.put(1, new HashMap());
-      consumer_object_list.put(0, new HashMap());
-      consumer_object_list.put(1, new HashMap());
-      consumer_containers.put(0, new HashMap());
-      consumer_containers.put(1, new HashMap());
+      consumer.put(0, new ArrayList<>());
+      consumer.put(1, new ArrayList<>());
+      consumer_users.put(0, new HashMap<>());
+      consumer_users.put(1, new HashMap<>());
+      consumer_strings.put(0, new HashMap<>());
+      consumer_strings.put(1, new HashMap<>());
+      consumer_object.put(0, new HashMap<>());
+      consumer_object.put(1, new HashMap<>());
+      consumer_signs.put(0, new HashMap<>());
+      consumer_signs.put(1, new HashMap<>());
+      consumer_inventories.put(0, new HashMap<>());
+      consumer_inventories.put(1, new HashMap<>());
+      consumer_block_list.put(0, new HashMap<>());
+      consumer_block_list.put(1, new HashMap<>());
+      consumer_object_array_list.put(0, new HashMap<>());
+      consumer_object_array_list.put(1, new HashMap<>());
+      consumer_object_list.put(0, new HashMap<>());
+      consumer_object_list.put(1, new HashMap<>());
+      consumer_containers.put(0, new HashMap<>());
+      consumer_containers.put(1, new HashMap<>());
       consumer_id.put(0, 0);
       consumer_id.put(1, 0);
    }

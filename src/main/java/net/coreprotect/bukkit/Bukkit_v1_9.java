@@ -79,13 +79,12 @@ public class Bukkit_v1_9 extends BukkitAdapter implements BukkitInterface {
 
    public void getEntityAttributes(LivingEntity entity, List<Object> attributes) {
       if (entity instanceof Attributable) {
-         Attributable attributable = entity;
 
-         for(Attribute attribute : Attribute.values()) {
-            AttributeInstance attributeInstance = attributable.getAttribute(attribute);
+          for(Attribute attribute : Attribute.values()) {
+            AttributeInstance attributeInstance = entity.getAttribute(attribute);
             if (attributeInstance != null) {
-               List<Object> attributeData = new ArrayList();
-               List<Object> attributeModifiers = new ArrayList();
+               List<Object> attributeData = new ArrayList<>();
+               List<Object> attributeModifiers = new ArrayList<>();
                attributeData.add(attributeInstance.getAttribute());
                attributeData.add(attributeInstance.getBaseValue());
 
@@ -138,12 +137,12 @@ public class Bukkit_v1_9 extends BukkitAdapter implements BukkitInterface {
    }
 
    public void getVillagerRecipes(Villager villager, List<Object> info) {
-      List<Object> recipes = new ArrayList();
+      List<Object> recipes = new ArrayList<>();
 
       for(MerchantRecipe merchantRecipe : villager.getRecipes()) {
-         List<Object> recipe = new ArrayList();
-         List<Object> ingredients = new ArrayList();
-         List<Object> itemMap = new ArrayList();
+         List<Object> recipe = new ArrayList<>();
+         List<Object> ingredients = new ArrayList<>();
+         List<Object> itemMap = new ArrayList<>();
          ItemStack item = merchantRecipe.getResult().clone();
          List<List<Map<String, Object>>> metadata = Logger.getItemMeta(item, item.getType(), 0);
          item.setItemMeta((ItemMeta)null);
@@ -155,7 +154,7 @@ public class Bukkit_v1_9 extends BukkitAdapter implements BukkitInterface {
          recipe.add(merchantRecipe.hasExperienceReward());
 
          for(ItemStack ingredient : merchantRecipe.getIngredients()) {
-            List<Object> var13 = new ArrayList();
+            List<Object> var13 = new ArrayList<>();
             item = ingredient.clone();
             metadata = Logger.getItemMeta(item, item.getType(), 0);
             item.setItemMeta((ItemMeta)null);
@@ -172,7 +171,7 @@ public class Bukkit_v1_9 extends BukkitAdapter implements BukkitInterface {
    }
 
    public void setVillagerRecipes(Villager villager, Object value) {
-      List<MerchantRecipe> merchantRecipes = new ArrayList();
+      List<MerchantRecipe> merchantRecipes = new ArrayList<>();
 
       for(Object recipes : (List)value) {
          List<Object> recipe = (List)recipes;
@@ -184,7 +183,7 @@ public class Bukkit_v1_9 extends BukkitAdapter implements BukkitInterface {
          int uses = (Integer)recipe.get(1);
          int maxUses = (Integer)recipe.get(2);
          boolean experienceReward = (Boolean)recipe.get(3);
-         List<ItemStack> merchantIngredients = new ArrayList();
+         List<ItemStack> merchantIngredients = new ArrayList<>();
 
          for(Object ingredient : (List)recipe.get(4)) {
             List<Object> ingredientMap = (List)ingredient;
@@ -200,7 +199,7 @@ public class Bukkit_v1_9 extends BukkitAdapter implements BukkitInterface {
          merchantRecipes.add(merchantRecipe);
       }
 
-      if (merchantRecipes.size() > 0) {
+      if (!merchantRecipes.isEmpty()) {
          villager.setRecipes(merchantRecipes);
       }
 

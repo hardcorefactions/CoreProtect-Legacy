@@ -51,7 +51,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
 public class PlayerListener extends Queue implements Listener {
-   public static ConcurrentHashMap<String, Object[]> lastInspectorEvent = new ConcurrentHashMap();
+   public static final ConcurrentHashMap<String, Object[]> lastInspectorEvent = new ConcurrentHashMap<>();
 
    private void onInventoryInteract(HumanEntity entity, Inventory inventory, Location location) {
       World world = location.getWorld();
@@ -83,9 +83,7 @@ public class PlayerListener extends Queue implements Listener {
                         String logging_chest_id = viewer.getName().toLowerCase() + "." + x + "." + y + "." + z;
                         if (Config.old_container.get(logging_chest_id) != null) {
                            int size_old = ((List)Config.old_container.get(logging_chest_id)).size();
-                           if (Config.force_containers.get(logging_chest_id) == null) {
-                              Config.force_containers.put(logging_chest_id, new ArrayList());
-                           }
+                            Config.force_containers.computeIfAbsent(logging_chest_id, k -> new ArrayList<>());
 
                            List<ItemStack[]> list = (List)Config.force_containers.get(logging_chest_id);
                            if (list.size() < size_old) {
@@ -113,7 +111,7 @@ public class PlayerListener extends Queue implements Listener {
 
                      chest_id = (Integer)Config.logging_chest.get(logging_chest_id) + 1;
                   } else {
-                     List<ItemStack[]> list = new ArrayList();
+                     List<ItemStack[]> list = new ArrayList<>();
                      list.add(Functions.get_container_state(inventory.getContents()));
                      Config.old_container.put(logging_chest_id, list);
                   }
@@ -226,7 +224,7 @@ public class PlayerListener extends Queue implements Listener {
 
                   chest_id = (Integer)Config.logging_chest.get(logging_chest_id) + 1;
                } else {
-                  List<ItemStack[]> list = new ArrayList();
+                  List<ItemStack[]> list = new ArrayList<>();
                   list.add(Functions.get_container_state(contents));
                   Config.old_container.put(logging_chest_id, list);
                }
@@ -350,7 +348,7 @@ public class PlayerListener extends Queue implements Listener {
                            for(String b : result_data.split("\n")) {
                               player.sendMessage(b);
                            }
-                        } else if (result_data.length() > 0) {
+                        } else if (!result_data.isEmpty()) {
                            player.sendMessage(result_data);
                         }
 
@@ -534,7 +532,7 @@ public class PlayerListener extends Queue implements Listener {
                                     for(String b : blockdata.split("\n")) {
                                        player.sendMessage(b);
                                     }
-                                 } else if (blockdata.length() > 0) {
+                                 } else if (!blockdata.isEmpty()) {
                                     player.sendMessage(blockdata);
                                  }
                               } else {
@@ -543,7 +541,7 @@ public class PlayerListener extends Queue implements Listener {
                                     for(String b : blockdata.split("\n")) {
                                        player.sendMessage(b);
                                     }
-                                 } else if (blockdata.length() > 0) {
+                                 } else if (!blockdata.isEmpty()) {
                                     player.sendMessage(blockdata);
                                  }
                               }
@@ -576,12 +574,9 @@ public class PlayerListener extends Queue implements Listener {
       if (block != null) {
          Material type = block.getType();
          if (BlockInfo.interact_blocks.contains(type)) {
-            boolean valid_click = true;
-            if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
-               valid_click = false;
-            }
+            boolean valid_click = event.getAction().equals(Action.RIGHT_CLICK_BLOCK);
 
-            if (!inspecting_or_something && valid_click && BukkitAdapter.ADAPTER.isHand(event) && !event.isCancelled() && Functions.checkConfig(world, "player-interactions") == 1) {
+             if (!inspecting_or_something && valid_click && BukkitAdapter.ADAPTER.isHand(event) && !event.isCancelled() && Functions.checkConfig(world, "player-interactions") == 1) {
                Block interact_block = event.getClickedBlock();
                if (type.equals(Material.WOODEN_DOOR) || type.equals(Material.SPRUCE_DOOR) || type.equals(Material.BIRCH_DOOR) || type.equals(Material.JUNGLE_DOOR) || type.equals(Material.ACACIA_DOOR) || type.equals(Material.DARK_OAK_DOOR)) {
                   int y = interact_block.getY() - 1;
@@ -636,29 +631,27 @@ public class PlayerListener extends Queue implements Listener {
                   }
 
                   if (!exists) {
-                     CoreProtect.getInstance().getServer().getScheduler().runTask(CoreProtect.getInstance(), new Runnable() {
-                        public void run() {
-                           try {
-                              boolean exists = false;
-                              int showingBottom = 0;
+                     CoreProtect.getInstance().getServer().getScheduler().runTask(CoreProtect.getInstance(), () -> {
+                        try {
+                           boolean exists1 = false;
+                           int showingBottom = 0;
 
-                              for(Entity entity : crystalLocation.getChunk().getEntities()) {
-                                 if (entity instanceof EnderCrystal && entity.getLocation().getBlockX() == crystalLocation.getBlockX() && entity.getLocation().getBlockY() == crystalLocation.getBlockY() && entity.getLocation().getBlockZ() == crystalLocation.getBlockZ()) {
-                                    EnderCrystal enderCrystal = (EnderCrystal)entity;
-                                    showingBottom = BukkitAdapter.ADAPTER.isEndCrystalShowingBottom(enderCrystal) ? 1 : 0;
-                                    exists = true;
-                                    break;
-                                 }
+                           for(Entity entity : crystalLocation.getChunk().getEntities()) {
+                              if (entity instanceof EnderCrystal && entity.getLocation().getBlockX() == crystalLocation.getBlockX() && entity.getLocation().getBlockY() == crystalLocation.getBlockY() && entity.getLocation().getBlockZ() == crystalLocation.getBlockZ()) {
+                                 EnderCrystal enderCrystal = (EnderCrystal)entity;
+                                 showingBottom = BukkitAdapter.ADAPTER.isEndCrystalShowingBottom(enderCrystal) ? 1 : 0;
+                                 exists1 = true;
+                                 break;
                               }
-
-                              if (exists) {
-                                 BukkitAdapter.ADAPTER.queueEndCrystalPlace(player.getName(), crystalLocation.getBlock(), showingBottom);
-                              }
-                           } catch (Exception e) {
-                              e.printStackTrace();
                            }
 
+                           if (exists1) {
+                              BukkitAdapter.ADAPTER.queueEndCrystalPlace(player.getName(), crystalLocation.getBlock(), showingBottom);
+                           }
+                        } catch (Exception e) {
+                           e.printStackTrace();
                         }
+
                      });
                   }
                }

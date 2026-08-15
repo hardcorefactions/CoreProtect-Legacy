@@ -35,7 +35,7 @@ public class CacheCleanUp implements Runnable {
                      if (time < timestamp) {
                         try {
                            it.remove();
-                        } catch (Exception var10) {
+                        } catch (Exception ignored) {
                         }
                      }
                   } catch (Exception var11) {

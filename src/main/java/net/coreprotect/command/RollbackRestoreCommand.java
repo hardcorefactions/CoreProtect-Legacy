@@ -23,7 +23,7 @@ import org.bukkit.entity.Player;
 public class RollbackRestoreCommand {
    protected static void runCommand(final CommandSender player, boolean permission, final String[] args, int force_seconds) {
       Location lo0 = CommandHandler.parseLocation(player, args);
-      final List<String> arg_uuids = new ArrayList();
+      final List<String> arg_uuids = new ArrayList<>();
       List<String> arg_users = CommandHandler.parseUsers(args);
       Integer[] arg_radius = CommandHandler.parseRadius(args, player, lo0);
       final int arg_noisy = CommandHandler.parseNoisy(args);
@@ -40,7 +40,7 @@ public class RollbackRestoreCommand {
       int preview0 = CommandHandler.parsePreview(args);
       String corecommand = args[0].toLowerCase();
       if (arg_blocks != null && arg_exclude != null && arg_exclude_users != null) {
-         if (arg_action.size() == 0 && arg_blocks.size() > 0) {
+         if (arg_action.isEmpty() && !arg_blocks.isEmpty()) {
             for(Object arg_block : arg_blocks) {
                if (arg_block instanceof Material) {
                   arg_action.add(0);
@@ -98,7 +98,7 @@ public class RollbackRestoreCommand {
                   g = 0;
                }
 
-               if (arg_users.size() == 0 && arg_wid0 > 0) {
+               if (arg_users.isEmpty() && arg_wid0 > 0) {
                   if (a == 0) {
                      player.sendMessage(Language.get("you-did-not-specify-a-rollback"));
                   } else {
@@ -108,7 +108,7 @@ public class RollbackRestoreCommand {
                   return;
                }
 
-               if (g == 1 && (arg_users.size() > 0 || arg_users.size() == 0 && arg_radius != null)) {
+               if (g == 1 && (!arg_users.isEmpty() || arg_users.isEmpty() && arg_radius != null)) {
                   int max_radius = (Integer)Config.config.get("max-radius");
                   if (arg_radius != null) {
                      int radius_value = arg_radius[0];
@@ -119,9 +119,9 @@ public class RollbackRestoreCommand {
                      }
                   }
 
-                  if (arg_action.size() > 0) {
+                  if (!arg_action.isEmpty()) {
                      if (arg_action.contains(4)) {
-                        if (arg_users.contains("#global") || arg_users.size() == 0) {
+                        if (arg_users.contains("#global") || arg_users.isEmpty()) {
                            player.sendMessage(Language.get("to-use-that-action-please-specify"));
                            return;
                         }
@@ -141,17 +141,16 @@ public class RollbackRestoreCommand {
                      }
                   }
 
-                  if (arg_users.size() == 0) {
+                  if (arg_users.isEmpty()) {
                      arg_users.add("#global");
                   }
 
-                  List<String> rollbackusers = arg_users;
-                  int c = 0;
+                   int c = 0;
 
                   for(String ruser : arg_users) {
                      for(Player p : CoreProtect.getInstance().getServer().matchPlayer(ruser)) {
                         if (p.getName().equalsIgnoreCase(ruser)) {
-                           rollbackusers.set(c, p.getName());
+                           arg_users.set(c, p.getName());
                         }
                      }
 
@@ -162,7 +161,7 @@ public class RollbackRestoreCommand {
                   int x = 0;
                   int y = 0;
                   int z = 0;
-                  if (rollbackusers.contains("#container")) {
+                  if (arg_users.contains("#container")) {
                      boolean valid = false;
                      if (Config.lookup_type.get(player.getName()) != null) {
                         int lookup_type = (Integer)Config.lookup_type.get(player.getName());
@@ -215,7 +214,7 @@ public class RollbackRestoreCommand {
                   final Location lo = lo0;
                   final int arg_wid = arg_wid0;
                   final int preview = preview0;
-                  final List<String> rollbackusers2 = rollbackusers;
+                  final List<String> rollbackusers2 = arg_users;
                   if (rbseconds > 0) {
                      int unixtimestamp = (int)(System.currentTimeMillis() / 1000L);
                      int seconds = unixtimestamp - rbseconds;
@@ -232,8 +231,7 @@ public class RollbackRestoreCommand {
                         class BasicThread2 implements Runnable {
                            public void run() {
                               try {
-                                 int action = final_action;
-                                 Location location = lo;
+                                  Location location = lo;
                                  Connection connection = Database.getConnection(false);
                                  if (connection != null) {
                                     Statement statement = connection.createStatement();
@@ -270,12 +268,9 @@ public class RollbackRestoreCommand {
                                     if (!exists) {
                                        player.sendMessage(Language.get("user-not-found", baduser));
                                     } else {
-                                       boolean restrict_world = false;
-                                       if (radius != null) {
-                                          restrict_world = true;
-                                       }
+                                       boolean restrict_world = radius != null;
 
-                                       if (location == null) {
+                                        if (location == null) {
                                           restrict_world = false;
                                        }
 
@@ -284,41 +279,38 @@ public class RollbackRestoreCommand {
                                           location = new Location(CoreProtect.getInstance().getServer().getWorld(Functions.getWorldName(arg_wid)), (double)0.0F, (double)0.0F, (double)0.0F);
                                        }
 
-                                       boolean verbose = false;
-                                       if (arg_noisy == 1) {
-                                          verbose = true;
-                                       }
+                                       boolean verbose = arg_noisy == 1;
 
-                                       String users = "";
+                                        StringBuilder users = new StringBuilder();
 
                                        for(String value : rollbackusers2) {
                                           if (users.length() == 0) {
-                                             users = "" + value + "";
+                                             users = new StringBuilder("" + value + "");
                                           } else {
-                                             users = users + ", " + value;
+                                             users.append(", ").append(value);
                                           }
                                        }
 
-                                       if (users.equals("#global") && restrict_world) {
-                                          users = "#" + location.getWorld().getName();
+                                       if (users.toString().equals("#global") && restrict_world) {
+                                          users = new StringBuilder("#" + location.getWorld().getName());
                                        }
 
                                        if (preview == 2) {
                                           player.sendMessage(Language.get("cancelling-preview"));
                                        } else if (preview == 1) {
-                                          player.sendMessage(Language.get("preview-started-on", users));
-                                       } else if (action == 0) {
-                                          player.sendMessage(Language.get("rollback-started-on", users));
+                                          player.sendMessage(Language.get("preview-started-on", users.toString()));
+                                       } else if (final_action == 0) {
+                                          player.sendMessage(Language.get("rollback-started-on", users.toString()));
                                        } else {
-                                          player.sendMessage(Language.get("restore-started-on", users));
+                                          player.sendMessage(Language.get("restore-started-on", users.toString()));
                                        }
 
                                        if (arg_action.contains(5)) {
-                                          Lookup.performContainerRollbackRestore(statement, player, arg_uuids, rollbackusers2, ts, arg_blocks, arg_exclude, arg_exclude_users, arg_action, location, radius, stime, restrict_world, false, verbose, action);
+                                          Lookup.performContainerRollbackRestore(statement, player, arg_uuids, rollbackusers2, ts, arg_blocks, arg_exclude, arg_exclude_users, arg_action, location, radius, stime, restrict_world, false, verbose, final_action);
                                        } else {
-                                          Lookup.performRollbackRestore(statement, player, arg_uuids, rollbackusers2, ts, arg_blocks, arg_exclude, arg_exclude_users, arg_action, location, radius, stime, restrict_world, false, verbose, action, preview);
+                                          Lookup.performRollbackRestore(statement, player, arg_uuids, rollbackusers2, ts, arg_blocks, arg_exclude, arg_exclude_users, arg_action, location, radius, stime, restrict_world, false, verbose, final_action, preview);
                                           if (preview < 2) {
-                                             List<Object[]> list = new ArrayList();
+                                             List<Object[]> list = new ArrayList<>();
                                              list.add(new Object[]{stime});
                                              list.add(args);
                                              Config.last_rollback.put(player.getName(), list);

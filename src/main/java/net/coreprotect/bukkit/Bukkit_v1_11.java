@@ -38,7 +38,7 @@ public class Bukkit_v1_11 extends Bukkit_v1_9 implements BukkitInterface {
          list.add(meta.serialize());
          metadata.add(list);
          if (sub_meta.hasColor()) {
-            list = new ArrayList();
+            list = new ArrayList<>();
             list.add(sub_meta.getColor().serialize());
             metadata.add(list);
          }
@@ -212,7 +212,7 @@ public class Bukkit_v1_11 extends Bukkit_v1_9 implements BukkitInterface {
 
          for(ItemStack itemStack : inventory) {
             if (itemStack != null && !itemStack.getType().equals(Material.AIR)) {
-               Map<Integer, Object> itemMap = new HashMap();
+               Map<Integer, Object> itemMap = new HashMap<>();
                ItemStack item = itemStack.clone();
                List<List<Map<String, Object>>> metadata = Logger.getItemMeta(item, item.getType(), slot);
                item.setItemMeta((ItemMeta)null);

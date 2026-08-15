@@ -16,16 +16,14 @@ public class CoreProtectEditSessionEvent {
 
    public static void register() {
       try {
-         CoreProtect.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(CoreProtect.getInstance(), new Runnable() {
-            public void run() {
-               try {
-                  com.sk89q.worldedit.WorldEdit.getInstance().getEventBus().register(new CoreProtectEditSessionEvent());
-                  CoreProtectEditSessionEvent.initialized = true;
-               } catch (Exception var2) {
-                  System.out.println("[CoreProtect] Unable to initialize WorldEdit logging.");
-               }
-
+         CoreProtect.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(CoreProtect.getInstance(), () -> {
+            try {
+               com.sk89q.worldedit.WorldEdit.getInstance().getEventBus().register(new CoreProtectEditSessionEvent());
+               CoreProtectEditSessionEvent.initialized = true;
+            } catch (Exception var2) {
+               System.out.println("[CoreProtect] Unable to initialize WorldEdit logging.");
             }
+
          }, 0L);
       } catch (Exception e) {
          e.printStackTrace();

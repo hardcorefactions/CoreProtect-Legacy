@@ -30,7 +30,7 @@ import org.bukkit.plugin.ServicePriority;
 public class MetricsLite {
    public static final int B_STATS_VERSION = 1;
    private static final String URL = "https://bStats.org/submitData/bukkit";
-   private boolean enabled;
+   private final boolean enabled;
    private static boolean logFailedRequests;
    private static boolean logSentData;
    private static boolean logResponseStatusText;
@@ -57,7 +57,7 @@ public class MetricsLite {
 
             try {
                config.save(configFile);
-            } catch (IOException var10) {
+            } catch (IOException ignored) {
             }
          }
 
@@ -74,7 +74,7 @@ public class MetricsLite {
                   service.getField("B_STATS_VERSION");
                   found = true;
                   break;
-               } catch (NoSuchFieldException var11) {
+               } catch (NoSuchFieldException ignored) {
                }
             }
 
@@ -98,7 +98,7 @@ public class MetricsLite {
             if (!MetricsLite.this.plugin.isEnabled()) {
                timer.cancel();
             } else {
-               Bukkit.getScheduler().runTask(MetricsLite.this.plugin, () -> MetricsLite.this.submitData());
+               Bukkit.getScheduler().runTask(MetricsLite.this.plugin, MetricsLite.this::submitData);
             }
          }
       }, 300000L, 1800000L);
@@ -175,10 +175,10 @@ public class MetricsLite {
                         }
                      }
                   }
-               } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | NullPointerException var13) {
+               } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | NullPointerException ignored) {
                }
             }
-         } catch (NoSuchFieldException var14) {
+         } catch (NoSuchFieldException ignored) {
          }
       }
 

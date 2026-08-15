@@ -25,7 +25,7 @@ public class Bukkit_v1_12 extends Bukkit_v1_11 implements BukkitInterface {
          metadata.add(list);
          if (sub_meta.hasCustomEffects()) {
             for(PotionEffect effect : sub_meta.getCustomEffects()) {
-               list = new ArrayList();
+               list = new ArrayList<>();
                list.add(effect.serialize());
                metadata.add(list);
             }

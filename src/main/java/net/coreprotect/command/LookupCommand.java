@@ -41,7 +41,7 @@ public class LookupCommand {
       if (arg_blocks0 != null && arg_exclude0 != null && arg_exclude_users0 != null) {
          int arg_excluded0 = arg_exclude0.size();
          int arg_restricted0 = arg_blocks0.size();
-         if (arg_action0.size() == 0 && arg_blocks0.size() > 0) {
+         if (arg_action0.isEmpty() && !arg_blocks0.isEmpty()) {
             for(Object arg_block : arg_blocks0) {
                if (arg_block instanceof Material) {
                   arg_action0.add(0);
@@ -76,13 +76,13 @@ public class LookupCommand {
                      check2 = split[1].replaceAll("[^a-zA-Z_]", "");
                   }
 
-                  if (check1.length() > 0 || check2.length() > 0) {
+                  if (!check1.isEmpty() || !check2.isEmpty()) {
                      type0 = 4;
                      page_lookup = false;
                   }
                } else {
                   String check1 = dat.replaceAll("[^a-zA-Z_]", "");
-                  if (check1.length() > 0) {
+                  if (!check1.isEmpty()) {
                      type0 = 4;
                      page_lookup = false;
                   }
@@ -107,13 +107,10 @@ public class LookupCommand {
                } else if (arg_radius != null && arg_radius[0] == -1) {
                   player.sendMessage(Language.get("please-enter-a-valid-radius"));
                } else {
-                  boolean allPermission = false;
-                  if (player.isOp()) {
-                     allPermission = true;
-                  }
+                  boolean allPermission = player.isOp();
 
-                  if (!allPermission) {
-                     if (!page_lookup && (arg_action0.size() == 0 || arg_action0.contains(0) || arg_action0.contains(1)) && !player.hasPermission("coreprotect.lookup.block")) {
+                   if (!allPermission) {
+                     if (!page_lookup && (arg_action0.isEmpty() || arg_action0.contains(0) || arg_action0.contains(1)) && !player.hasPermission("coreprotect.lookup.block")) {
                         player.sendMessage(Language.get("you-do-not-have-permission-to"));
                         return;
                      }
@@ -160,12 +157,12 @@ public class LookupCommand {
                         return;
                      }
 
-                     if (arg_blocks0.size() > 0) {
+                     if (!arg_blocks0.isEmpty()) {
                         player.sendMessage(Language.get("b-can-t-be-used-with"));
                         return;
                      }
 
-                     if (arg_exclude0.size() > 0) {
+                     if (!arg_exclude0.isEmpty()) {
                         player.sendMessage(Language.get("e-can-t-be-used-with"));
                         return;
                      }
@@ -196,7 +193,7 @@ public class LookupCommand {
                               }
 
                               results = results.replaceAll("[^0-9]", "");
-                              if (results.length() > 0) {
+                              if (!results.isEmpty()) {
                                  int r = Integer.parseInt(results);
                                  if (r > 0) {
                                     re0 = r;
@@ -206,7 +203,7 @@ public class LookupCommand {
                            }
 
                            pages = pages.replaceAll("[^0-9]", "");
-                           if (pages.length() > 0) {
+                           if (!pages.isEmpty()) {
                               int pa = Integer.parseInt(pages);
                               if (pa > 0) {
                                  p0 = pa;
@@ -277,11 +274,11 @@ public class LookupCommand {
                            if (type == 6) {
                               String bid = args[2];
                               bid = bid.replaceAll("[^0-9]", "");
-                              if (bid.length() > 0) {
+                              if (!bid.isEmpty()) {
                                  int b = Integer.parseInt(bid);
                                  if (b > 0) {
                                     String bname = Functions.block_name_lookup(b);
-                                    if (bname.length() > 0) {
+                                    if (!bname.isEmpty()) {
                                        player.sendMessage(Language.get("the-name-of-block-id-is", b, bname));
                                     } else {
                                        player.sendMessage(Language.get("no-data-found-for-block-id", b));
@@ -314,7 +311,7 @@ public class LookupCommand {
                                  }
 
                                  results = results.replaceAll("[^0-9]", "");
-                                 if (results.length() > 0) {
+                                 if (!results.isEmpty()) {
                                     int r = Integer.parseInt(results);
                                     if (r > 0) {
                                        re0 = r;
@@ -324,7 +321,7 @@ public class LookupCommand {
                               }
 
                               pages = pages.replaceAll("[^0-9]", "");
-                              if (pages.length() > 0) {
+                              if (!pages.isEmpty()) {
                                  int p = Integer.parseInt(pages);
                                  if (p > 0) {
                                     pa0 = p;
@@ -337,7 +334,7 @@ public class LookupCommand {
                               g = 0;
                            }
 
-                           if (g == 1 && (page_lookup || arg_blocks0.size() > 0 || arg_users.size() > 0 || arg_users.size() == 0 && arg_radius != null)) {
+                           if (g == 1 && (page_lookup || !arg_blocks0.isEmpty() || !arg_users.isEmpty() || arg_users.isEmpty() && arg_radius != null)) {
                               int max_radius = (Integer)Config.config.get("max-radius");
                               if (arg_radius != null) {
                                  int radius_value = arg_radius[0];
@@ -348,7 +345,7 @@ public class LookupCommand {
                                  }
                               }
 
-                              if (arg_users.size() == 0) {
+                              if (arg_users.isEmpty()) {
                                  arg_users.add("#global");
                               }
 
@@ -479,7 +476,7 @@ public class LookupCommand {
                                  class BasicThread2 implements Runnable {
                                     public void run() {
                                        try {
-                                          List<String> uuid_list = new ArrayList();
+                                          List<String> uuid_list = new ArrayList<>();
                                           Location location = lo;
                                           boolean exists = false;
                                           String bc = x + "." + y + "." + z + "." + wid + "." + stime + "." + arg_noisy + "." + arg_excluded + "." + arg_restricted + "." + arg_wid + "." + re;
@@ -533,18 +530,15 @@ public class LookupCommand {
                                              if (!exists) {
                                                 player.sendMessage(Language.get("user-not-found", baduser));
                                              } else {
-                                                List<String> user_list = new ArrayList();
+                                                List<String> user_list = new ArrayList<>();
                                                 if (!arg_action.contains(9)) {
                                                    user_list = rollbackusers2;
                                                 }
 
                                                 int unixtimestamp = (int)(System.currentTimeMillis() / 1000L);
-                                                boolean restrict_world = false;
-                                                if (radius != null) {
-                                                   restrict_world = true;
-                                                }
+                                                boolean restrict_world = radius != null;
 
-                                                if (location == null) {
+                                                 if (location == null) {
                                                    restrict_world = false;
                                                 }
 
@@ -697,7 +691,7 @@ public class LookupCommand {
                                                                dname = Functions.nameFilter(dname, ddata);
                                                             }
 
-                                                            if (dname.length() > 0 && !isPlayer) {
+                                                            if (!dname.isEmpty() && !isPlayer) {
                                                                dname = "minecraft:" + dname.toLowerCase() + "";
                                                             }
 
@@ -771,7 +765,7 @@ public class LookupCommand {
                               }
 
                               results = results.replaceAll("[^0-9]", "");
-                              if (results.length() > 0) {
+                              if (!results.isEmpty()) {
                                  int r = Integer.parseInt(results);
                                  if (r > 0) {
                                     re0 = r;
@@ -781,7 +775,7 @@ public class LookupCommand {
                            }
 
                            pages = pages.replaceAll("[^0-9]", "");
-                           if (pages.length() > 0) {
+                           if (!pages.isEmpty()) {
                               int p = Integer.parseInt(pages);
                               if (p > 0) {
                                  page0 = p;
@@ -826,7 +820,7 @@ public class LookupCommand {
                                        for(String b : blockdata.split("\n")) {
                                           player.sendMessage(b);
                                        }
-                                    } else if (blockdata.length() > 0) {
+                                    } else if (!blockdata.isEmpty()) {
                                        player.sendMessage(blockdata);
                                     }
 
