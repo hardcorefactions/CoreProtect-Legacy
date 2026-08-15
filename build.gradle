@@ -63,6 +63,11 @@ dependencies {
 
 test {
     useJUnitPlatform()
+    // ./gradlew test -Pcompat.db=/path/to/a/copy runs the upgrade-compatibility
+    // test against a real database. Skipped when absent.
+    if (findProperty('compat.db')) {
+        systemProperty 'compat.db', findProperty('compat.db')
+    }
     testLogging {
         events 'passed', 'failed', 'skipped'
         showStandardStreams = true
@@ -81,6 +86,17 @@ tasks.register('benchmark', JavaExec) {
     // through explicitly or the benchmark silently uses its defaults.
     systemProperty 'bench.rows', findProperty('bench.rows') ?: System.getProperty('bench.rows') ?: '300000'
     systemProperty 'bench.seconds', findProperty('bench.seconds') ?: System.getProperty('bench.seconds') ?: '6'
+    jvmArgs '--enable-native-access=ALL-UNNAMED'
+}
+
+// ./gradlew dbreport -Pdb=/path/to/database.db -- where a real database's bytes
+// have gone, per table and per index. Reads every page, so use a copy.
+tasks.register('dbreport', JavaExec) {
+    group = 'verification'
+    description = 'Reports per-table and per-index storage usage of a CoreProtect SQLite database.'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'net.coreprotect.bench.StorageReport'
+    systemProperty 'db.path', findProperty('db') ?: ''
     jvmArgs '--enable-native-access=ALL-UNNAMED'
 }
 
@@ -110,4 +126,8 @@ jar {
             'Built-By': 'Intelli'
         )
     }
+}
+
+tasks.register('printTestCp') {
+    doLast { println sourceSets.test.runtimeClasspath.asPath }
 }

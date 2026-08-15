@@ -1880,6 +1880,12 @@ public class Lookup extends Queue {
    }
 
    private static Object[] populateItemStack(ItemStack itemstack, byte[] metadata) {
+      // Items with no metadata now store NULL rather than a serialised empty
+      // list, so this is the ordinary case rather than an error.
+      if (metadata == null || metadata.length == 0) {
+         return new Object[]{0, itemstack};
+      }
+
       try {
          ByteArrayInputStream bais = new ByteArrayInputStream(metadata);
          ObjectInputStream ins = new ObjectInputStream(bais);

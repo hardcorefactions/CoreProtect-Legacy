@@ -263,6 +263,9 @@ public class PurgeCommand extends Consumer {
                   if (abort) {
                      if ((Integer)Config.config.get("use-mysql") == 0) {
                         (new File(Config.sqlite + ".tmp")).delete();
+                        (new File(Config.sqlite + ".tmp-wal")).delete();
+                        (new File(Config.sqlite + ".tmp-shm")).delete();
+                        (new File(Config.sqlite + ".tmp-journal")).delete();
                      }
 
                      Config.loadDatabase();
@@ -274,6 +277,13 @@ public class PurgeCommand extends Consumer {
 
                   if ((Integer)Config.config.get("use-mysql") == 0) {
                      (new File(Config.sqlite)).delete();
+                     // In WAL mode the database has -wal and -shm sidecars. They
+                     // belong to the file being replaced, and leaving them next
+                     // to the purged database would have SQLite replay the old
+                     // write-ahead log over it on the next open.
+                     (new File(Config.sqlite + "-wal")).delete();
+                     (new File(Config.sqlite + "-shm")).delete();
+                     (new File(Config.sqlite + "-journal")).delete();
                      (new File(Config.sqlite + ".tmp")).renameTo(new File(Config.sqlite));
                      Functions.messageOwnerAndUser(player, Language.get("indexing-database-please-wait"));
                   }

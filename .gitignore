@@ -6,3 +6,12 @@ build/
 .classpath
 .project
 .settings/
+
+# Never commit a CoreProtect database. This is a public repository and these
+# files contain player names, UUIDs, chat logs and command history.
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
+*.db.tmp
+plugins/
