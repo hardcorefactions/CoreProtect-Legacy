@@ -377,6 +377,24 @@ public class PlayerListener extends Queue implements Listener {
             if (BlockInfo.interact_blocks.contains(type)) {
                final Block cblock = event.getClickedBlock();
                if (BlockInfo.containers.contains(type) && Functions.checkConfig(world, "item-transactions") == 1) {
+                  Location container_location = null;
+                  if (type.equals(Material.CHEST) || type.equals(Material.TRAPPED_CHEST)) {
+                     Chest chest = (Chest)cblock.getState();
+                     InventoryHolder i = chest.getInventory().getHolder();
+                     if (i instanceof DoubleChest) {
+                        DoubleChest c = (DoubleChest)i;
+                        container_location = c.getLocation();
+                     } else {
+                        container_location = chest.getLocation();
+                     }
+                  }
+
+                  if (container_location == null) {
+                     container_location = cblock.getLocation();
+                  }
+
+                  final Location l = container_location;
+
                   class BasicThread implements Runnable {
                      public void run() {
                         try {
@@ -393,22 +411,6 @@ public class PlayerListener extends Queue implements Listener {
                            Connection connection = Database.getConnection(false);
                            if (connection != null) {
                               Statement statement = connection.createStatement();
-                              Location l = null;
-                              if (type.equals(Material.CHEST) || type.equals(Material.TRAPPED_CHEST)) {
-                                 Chest chest = (Chest)cblock.getState();
-                                 InventoryHolder i = chest.getInventory().getHolder();
-                                 if (i instanceof DoubleChest) {
-                                    DoubleChest c = (DoubleChest)i;
-                                    l = c.getLocation();
-                                 } else {
-                                    l = chest.getLocation();
-                                 }
-                              }
-
-                              if (l == null) {
-                                 l = cblock.getLocation();
-                              }
-
                               String blockdata = Lookup.chest_transactions(statement, l, player.getName(), 1, 7);
                               if (blockdata.contains("\n")) {
                                  for(String b : blockdata.split("\n")) {
