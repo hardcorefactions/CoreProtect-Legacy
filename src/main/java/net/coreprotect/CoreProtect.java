@@ -137,7 +137,15 @@ public class CoreProtect extends JavaPlugin {
          }
 
          if (processConsumer) {
-            Process.processConsumer(Consumer.current_consumer);
+            // Both buffers can hold unwritten rows here. The consumer thread's
+            // last pass ran with server_running already false, so the batch it
+            // was about to write was dropped along with everything the main
+            // thread has queued since. Flush the buffer it was handed first, so
+            // rows reach the database in the order they happened.
+            int current_consumer = Consumer.current_consumer;
+            Process.processConsumer(current_consumer == 1 ? 0 : 1, true);
+            Process.processConsumer(current_consumer, true);
+            Process.closeConnection();
          }
 
          System.out.println("[CoreProtect] Success! Disabled CoreProtect v" + getInstance().getDescription().getVersion());

@@ -838,19 +838,30 @@ public class Functions extends Queue {
       return block.getType();
    }
 
+   /**
+    * Never returns null. Every caller does getTypeName(id).toLowerCase(), so a
+    * null throws mid-lookup and takes the whole result with it: one block row
+    * whose co_material_map entry went missing would hide every other row at that
+    * location, which reads as "the data is gone" rather than as an error.
+    */
    public static String getTypeName(int id) {
-      String result = null;
-      if (Config.materials_reversed.get(id) != null && id > 0) {
-         String name = Config.materials_reversed.get(id);
-         if (name.contains("minecraft:")) {
-            String[] block_name_split = name.split(":");
-            name = block_name_split[1];
+      String name = null;
+      if (id > 0) {
+         name = Config.materials_reversed.get(id);
+         if (name == null) {
+            name = BlockInfo.legacy_block_names.get(id);
          }
-
-         result = name;
       }
 
-      return result;
+      if (name == null || name.length() == 0) {
+         return "unknown";
+      }
+
+      if (name.contains(":")) {
+         name = name.split(":")[1];
+      }
+
+      return name;
    }
 
    public static Material getType(int id) {

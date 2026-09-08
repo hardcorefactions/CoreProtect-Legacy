@@ -23,19 +23,47 @@ public class Process {
    private static int lastConnection = 0;
 
    private static void validateConnection() {
+      validateConnection(false);
+   }
+
+   /**
+    * `shutdown` marks the final flush from CoreProtect.safeShutdown, which runs
+    * after Config.server_running has already been set to false. Without it this
+    * method drops the connection and then declines to open another, so that
+    * flush found connection == null and returned having written nothing -- every
+    * row still buffered at restart was discarded, the queued co_world and
+    * co_material_map rows among them.
+    */
+   private static void validateConnection(boolean shutdown) {
       try {
          if (connection != null) {
             int timeSinceLastConnection = (int)(System.currentTimeMillis() / 1000L) - lastConnection;
-            if (timeSinceLastConnection > 900 || connection.isClosed() || !Config.server_running || Consumer.resetConnection) {
+            if (timeSinceLastConnection > 900 || connection.isClosed() || (!Config.server_running && !shutdown) || Consumer.resetConnection) {
                connection.close();
                connection = null;
                Consumer.resetConnection = false;
             }
          }
 
-         if (connection == null && Config.server_running) {
+         if (connection == null && (Config.server_running || shutdown)) {
             connection = Database.getConnection(false);
             lastConnection = (int)(System.currentTimeMillis() / 1000L);
+         }
+      } catch (Exception e) {
+         e.printStackTrace();
+      }
+
+   }
+
+   /**
+    * Releases the connection the shutdown flushes were deliberately holding open
+    * across their calls to validateConnection(true).
+    */
+   public static void closeConnection() {
+      try {
+         if (connection != null) {
+            connection.close();
+            connection = null;
          }
       } catch (Exception e) {
          e.printStackTrace();
@@ -49,8 +77,13 @@ public class Process {
     * else is writing to it by the time this runs.
     */
    public static void processConsumer(int process_id) {
+      processConsumer(process_id, false);
+   }
+
+   /** As above; `shutdown` keeps the connection available past server_running. */
+   public static void processConsumer(int process_id, boolean shutdown) {
       try {
-         validateConnection();
+         validateConnection(shutdown);
          if (connection == null) {
             return;
          }
@@ -215,7 +248,7 @@ public class Process {
          e.printStackTrace();
       } finally {
          Consumer.flushing = false;
-         validateConnection();
+         validateConnection(shutdown);
       }
    }
 
