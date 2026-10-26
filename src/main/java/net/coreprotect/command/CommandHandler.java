@@ -1046,6 +1046,10 @@ public class CommandHandler implements CommandExecutor {
                           case "reload":
                               ReloadCommand.runCommand(user, permission, args);
                               break;
+                          case "copyitem":
+                              // Checks op/coreprotect.copyitem and the config toggle itself.
+                              CopyItemCommand.runCommand(user, permission, args);
+                              break;
                           default:
                               user.sendMessage(Language.get("command-co-not-found", corecommand));
                               break;

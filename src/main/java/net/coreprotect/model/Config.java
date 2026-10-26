@@ -139,6 +139,8 @@ public class Config extends Queue {
          String sqlitebusytimeout = "\n# How long, in milliseconds, a SQLite query waits for the database to become\n# available before giving up. Set to \"0\" to fail immediately.\nsqlite-busy-timeout: 5000\n";
          String rollbackitems = "\n# If enabled, items taken from containers (etc) will be included in rollbacks.\nrollback-items: true\n";
          String rollbackentities = "\n# If enabled, entities, such as killed animals, will be included in rollbacks.\nrollback-entities: true\n";
+         String itemhover = "\n# If enabled, hovering an item name in a container lookup shows the logged\n# item's tooltip: display name, enchantments, lore and so on.\nitem-hover: true\n";
+         String itemcopy = "\n# If enabled, clicking an item name in a container lookup gives you an exact\n# copy of the logged item. Requires op or the \"coreprotect.copyitem\" permission.\nitem-copy: true\n";
          String skipgenericdata = "\n# If enabled, generic data, like zombies burning in daylight, won't be logged.\nskip-generic-data: true\n";
          String blockplace = "\n# Logs blocks placed by players.\nblock-place: true\n";
          String blockbreak = "\n# Logs blocks broken by players.\nblock-break: true\n";
@@ -329,6 +331,15 @@ public class Config extends Queue {
                                        config.put("rollback-entities", 1);
                                     } else if (setting.startsWith("f")) {
                                        config.put("rollback-entities", 0);
+                                    }
+                                 }
+
+                                 if (option.equals("item-hover") || option.equals("item-copy")) {
+                                    String setting = i2[1].trim().toLowerCase();
+                                    if (setting.startsWith("t")) {
+                                       config.put(option, 1);
+                                    } else if (setting.startsWith("f")) {
+                                       config.put(option, 0);
                                     }
                                  }
                               }
@@ -663,6 +674,18 @@ public class Config extends Queue {
                            config.put("rollback-entities", 1);
                            configfile.seek(configfile.length());
                            configfile.write(rollbackentities.getBytes());
+                        }
+
+                        if (config.get("item-hover") == null) {
+                           config.put("item-hover", 1);
+                           configfile.seek(configfile.length());
+                           configfile.write(itemhover.getBytes());
+                        }
+
+                        if (config.get("item-copy") == null) {
+                           config.put("item-copy", 1);
+                           configfile.seek(configfile.length());
+                           configfile.write(itemcopy.getBytes());
                         }
 
                         if (config.get("skip-generic-data") == null) {

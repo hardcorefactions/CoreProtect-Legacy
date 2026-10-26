@@ -35,6 +35,7 @@ permissions:
             coreprotect.lookup.container: true
             coreprotect.lookup.kill: true
             coreprotect.reload: true
+            coreprotect.copyitem: true
     coreprotect.lookup:
         description: Has permission to use the lookup command
         default: false
@@ -88,4 +89,7 @@ permissions:
         default: false
     coreprotect.reload:
         description: Has permission to use the reload command
+        default: false
+    coreprotect.copyitem:
+        description: Can click an item in a container lookup to get an exact copy of it
         default: false

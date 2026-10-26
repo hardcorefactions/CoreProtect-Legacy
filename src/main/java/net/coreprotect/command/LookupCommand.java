@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.coreprotect.CoreProtect;
 import net.coreprotect.Functions;
+import net.coreprotect.ItemLink;
 import net.coreprotect.database.Database;
 import net.coreprotect.database.Lookup;
 import net.coreprotect.model.Config;
@@ -20,6 +21,7 @@ import org.bukkit.block.BlockState;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public class LookupCommand {
    protected static void runCommand(final CommandSender player, boolean permission, String[] args) {
@@ -245,14 +247,7 @@ public class LookupCommand {
                                  Connection connection = Database.getConnection(false);
                                  if (connection != null) {
                                     Statement statement = connection.createStatement();
-                                    String blockdata = Lookup.chest_transactions(statement, location, player.getName(), p, re);
-                                    if (blockdata.contains("\n")) {
-                                       for (String b : blockdata.split("\n")) {
-                                          player.sendMessage(b);
-                                       }
-                                    } else {
-                                       player.sendMessage(blockdata);
-                                    }
+                                    ItemLink.send(player, Lookup.chest_transactions(statement, location, player, p, re));
 
                                     statement.close();
                                     connection.close();
@@ -590,7 +585,11 @@ public class LookupCommand {
                                                    // was overwritten with "" before the header was
                                                    // sent. The header takes the empty value now.
                                                    String arrows = "";
-                                                   List<String[]> lookup_list = Lookup.performPartialLookup(statement, player, uuid_list, user_list, arg_blocks, arg_exclude, arg_exclude_users, arg_action, location, radius, stime, page_start, re, restrict_world, true);
+                                                   // Kept raw alongside the converted rows: the String form
+                                                   // drops the row id and item metadata, which container rows
+                                                   // need for their item hover and click-to-copy.
+                                                   List<Object[]> raw_list = Lookup.performLookupRaw(statement, player, uuid_list, user_list, arg_blocks, arg_exclude, arg_exclude_users, arg_action, location, radius, stime, page_start, re, restrict_world, true);
+                                                   List<String[]> lookup_list = Lookup.convertRawLookup(statement, raw_list);
                                                    if (lookup_list == null) {
                                                       player.sendMessage(Language.get("database-query-failed"));
                                                       statement.close();
@@ -637,7 +636,13 @@ public class LookupCommand {
                                                             player.sendMessage(Language.get("h-ago-logged-in-as", timeago, user, username));
                                                          }
                                                       } else {
+                                                         boolean container_rows = arg_action.contains(4) || arg_action.contains(5);
+                                                         boolean build_items = container_rows && ItemLink.wanted(player);
+                                                         boolean copy = ItemLink.canCopy(player);
+                                                         int row_index = -1;
+
                                                          for (String[] data : lookup_list) {
+                                                            ++row_index;
                                                             String string_amount = "";
                                                             int drb = Integer.parseInt(data[8]);
                                                             String rbd = "";
@@ -707,7 +712,15 @@ public class LookupCommand {
                                                                dname = block_name_split[1];
                                                             }
 
-                                                            player.sendMessage(Language.get("h-ago", timeago, tag, rbd, dplayer, rbd, a, string_amount, rbd, dname));
+                                                            if (container_rows) {
+                                                               Object[] raw = raw_list.get(row_index);
+                                                               ItemStack item = build_items ? ItemLink.buildItem(Integer.parseInt(dtype), ddata, amount, (byte[])raw[12]) : null;
+                                                               String line = Language.get("h-ago", timeago, tag, rbd, dplayer, rbd, a, string_amount, rbd, ItemLink.MARKER);
+                                                               ItemLink.send(player, ItemLink.lines(line, dname, item, ((Number)raw[0]).longValue(), copy));
+                                                            } else {
+                                                               player.sendMessage(Language.get("h-ago", timeago, tag, rbd, dplayer, rbd, a, string_amount, rbd, dname));
+                                                            }
+
                                                             player.sendMessage(Language.get("x-y-z", left_padding, x, y, z, world));
                                                          }
                                                       }

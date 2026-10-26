@@ -76,6 +76,14 @@ messages:
   lookup-page-footer: "{SECONDARY}Page {0}/{1}. View older data by typing \"{PRIMARY}/co l <page>{SECONDARY}\".\n"
   lookup-entry-tag: "{SECONDARY}{SEPARATOR}"
 
+  # --- Container item hover / click-to-copy (item-hover, item-copy in config.yml)
+  item-copy-hint: "{TERTIARY}Click to get a copy of this item."
+  item-copy-given: "{PREFIX}Gave you a copy of {PRIMARY}x{0} {1}{SECONDARY}."
+  item-copy-not-found: "{PREFIX}{ERROR}That item is no longer in the database."
+  item-copy-disabled: "{PREFIX}Item copying is disabled."
+  item-copy-players-only: "{PREFIX}Only players can copy items."
+  item-copy-usage: "{PREFIX}Usage: {PRIMARY}/co copyitem <row>{SECONDARY}. Click an item in a container lookup instead."
+
   # --- Rollback and restore
   no-pending-rollback-restore-found: "{PREFIX}No pending rollback/restore found."
   a-action-restrict-the-rollback-to: "{PRIMARY}| {TERTIARY}a:<action> {SECONDARY}- Restrict the rollback to a certain action."
