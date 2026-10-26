@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import net.coreprotect.CoreProtect;
 import net.coreprotect.Functions;
+import net.coreprotect.ItemLink;
 import net.coreprotect.bukkit.BukkitAdapter;
 import net.coreprotect.consumer.Queue;
 import net.coreprotect.database.Database;
@@ -171,14 +172,7 @@ public class PlayerListener extends Queue implements Listener {
                         if (connection != null) {
                            Statement statement = connection.createStatement();
                            Location l = armorStand.getLocation();
-                           String blockdata = Lookup.chest_transactions(statement, l, player.getName(), 1, 7);
-                           if (blockdata.contains("\n")) {
-                              for(String b : blockdata.split("\n")) {
-                                 player.sendMessage(b);
-                              }
-                           } else {
-                              player.sendMessage(blockdata);
-                           }
+                           ItemLink.send(player, Lookup.chest_transactions(statement, l, player, 1, 7));
 
                            statement.close();
                            connection.close();
@@ -411,14 +405,7 @@ public class PlayerListener extends Queue implements Listener {
                            Connection connection = Database.getConnection(false);
                            if (connection != null) {
                               Statement statement = connection.createStatement();
-                              String blockdata = Lookup.chest_transactions(statement, l, player.getName(), 1, 7);
-                              if (blockdata.contains("\n")) {
-                                 for(String b : blockdata.split("\n")) {
-                                    player.sendMessage(b);
-                                 }
-                              } else {
-                                 player.sendMessage(blockdata);
-                              }
+                              ItemLink.send(player, Lookup.chest_transactions(statement, l, player, 1, 7));
 
                               statement.close();
                               connection.close();

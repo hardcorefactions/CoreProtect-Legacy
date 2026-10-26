@@ -17,11 +17,13 @@ import java.util.Map;
 import java.util.TreeMap;
 import net.coreprotect.CoreProtect;
 import net.coreprotect.Functions;
+import net.coreprotect.ItemLink;
 import net.coreprotect.bukkit.BukkitAdapter;
 import net.coreprotect.consumer.Queue;
 import net.coreprotect.model.BlockInfo;
 import net.coreprotect.model.Config;
 import net.coreprotect.model.Language;
+import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Chunk;
 import org.bukkit.Color;
 import org.bukkit.DyeColor;
@@ -262,13 +264,19 @@ public class Lookup extends Queue {
       return result;
    }
 
-   public static String chest_transactions(Statement statement, Location l, String lookup_user, int page, int limit) {
-      String result = "";
+   // Returns chat lines rather than one newline-joined String so the item name in
+   // each row can carry a hover tooltip and a click-to-copy (see ItemLink).
+   public static List<BaseComponent[]> chest_transactions(Statement statement, Location l, CommandSender viewer, int page, int limit) {
+      List<BaseComponent[]> result = new ArrayList<>();
+      String lookup_user = viewer.getName();
 
       try {
          if (l == null) {
             return result;
          }
+
+         boolean build_items = ItemLink.wanted(viewer);
+         boolean copy = ItemLink.canCopy(viewer);
 
          boolean found = false;
          int x = (int)Math.floor(l.getX());
@@ -290,47 +298,43 @@ public class Lookup extends Queue {
 
          rs.close();
          int total_pages = (int)Math.ceil((double)count / ((double)limit + 0.0D));
-         query = "SELECT time,user,action,type,data,amount,rolled_back FROM " + Config.prefix + "container WHERE wid = '" + wid + "' AND (x = '" + x + "' OR x = '" + x2 + "') AND (z = '" + z + "' OR z = '" + z2 + "') AND y = '" + y + "' ORDER BY rowid DESC LIMIT " + page_start + ", " + limit + "";
+         query = "SELECT rowid as id,time,user,action,type,data,amount,metadata,rolled_back FROM " + Config.prefix + "container WHERE wid = '" + wid + "' AND (x = '" + x + "' OR x = '" + x2 + "') AND (z = '" + z + "' OR z = '" + z2 + "') AND y = '" + y + "' ORDER BY rowid DESC LIMIT " + page_start + ", " + limit + "";
 
-         int result_amount;
-         String result_user;
-         String timeago;
-         String a2;
-         String rbd;
-         String dname;
-         for (rs = statement.executeQuery(query); rs.next(); result = result + Language.get("lookup-row-container", timeago, rbd, result_user, a2, result_amount, dname)) {
+         for (rs = statement.executeQuery(query); rs.next(); ) {
+            long result_id = rs.getLong("id");
             int result_userid = rs.getInt("user");
             int result_action = rs.getInt("action");
             int result_type = rs.getInt("type");
             int result_data = rs.getInt("data");
             int result_time = rs.getInt("time");
-            result_amount = rs.getInt("amount");
+            int result_amount = rs.getInt("amount");
+            byte[] result_metadata = rs.getBytes("metadata");
             int result_rolled_back = rs.getInt("rolled_back");
             if (Config.player_id_cache_reversed.get(result_userid) == null) {
                Database.loadUserName(statement.getConnection(), result_userid);
             }
 
-            result_user = Config.player_id_cache_reversed.get(result_userid);
+            String result_user = Config.player_id_cache_reversed.get(result_userid);
             double time_since = (double)time - ((double)result_time + 0.0D);
             time_since /= 60.0D;
             time_since /= 60.0D;
-            timeago = (new DecimalFormat("0.00")).format(time_since);
+            String timeago = (new DecimalFormat("0.00")).format(time_since);
             if (!found) {
-               result = Language.get("lookup-header-container", x, y, z);
+               result.addAll(ItemLink.lines(Language.get("lookup-header-container", x, y, z)));
             }
 
             found = true;
-            a2 = "added";
+            String a2 = "added";
             if (result_action == 0) {
                a2 = "removed";
             }
 
-            rbd = "";
+            String rbd = "";
             if (result_rolled_back == 1) {
                rbd = Language.get("rolled-back-marker");
             }
 
-            dname = Functions.getTypeName(result_type).toLowerCase();
+            String dname = Functions.getTypeName(result_type).toLowerCase();
             dname = Functions.nameFilter(dname, result_data);
             if (!dname.isEmpty()) {
                dname = "minecraft:" + dname.toLowerCase() + "";
@@ -340,6 +344,10 @@ public class Lookup extends Queue {
                String[] block_name_split = dname.split(":");
                dname = block_name_split[1];
             }
+
+            ItemStack item = build_items ? ItemLink.buildItem(result_type, result_data, result_amount, result_metadata) : null;
+            String line = Language.get("lookup-row-container", timeago, rbd, result_user, a2, result_amount, ItemLink.MARKER);
+            result.addAll(ItemLink.lines(line, dname, item, result_id, copy));
          }
 
          rs.close();
@@ -347,13 +355,13 @@ public class Lookup extends Queue {
             if (count > limit) {
                String n = Language.get("lookup-divider");
                n = n + Language.get("lookup-page-footer", page, total_pages);
-               result = result + n;
+               result.addAll(ItemLink.lines(n));
             }
          } else if (!found) {
             if (row_max > count && count > 0) {
-               result = Language.get("no-container-data-for-page");
+               result.addAll(ItemLink.lines(Language.get("no-container-data-for-page")));
             } else {
-               result = Language.get("no-container-data-for-location");
+               result.addAll(ItemLink.lines(Language.get("no-container-data-for-location")));
             }
          }
 
@@ -368,7 +376,7 @@ public class Lookup extends Queue {
       return result;
    }
 
-   private static List<String[]> convertRawLookup(Statement statement, List<Object[]> list) {
+   public static List<String[]> convertRawLookup(Statement statement, List<Object[]> list) {
       List<String[]> new_list = new ArrayList<>();
       if (list == null) {
          return null;
@@ -1879,7 +1887,7 @@ public class Lookup extends Queue {
       return new Object[]{slot, itemstack};
    }
 
-   private static Object[] populateItemStack(ItemStack itemstack, byte[] metadata) {
+   public static Object[] populateItemStack(ItemStack itemstack, byte[] metadata) {
       // Items with no metadata now store NULL rather than a serialised empty
       // list, so this is the ordinary case rather than an error.
       if (metadata == null || metadata.length == 0) {

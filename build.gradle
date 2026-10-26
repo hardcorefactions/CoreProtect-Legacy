@@ -38,6 +38,12 @@ dependencies {
     compileOnly 'commons-lang:commons-lang:2.6'
     compileOnly 'com.google.guava:guava:21.0'
     compileOnly 'org.yaml:snakeyaml:1.18'
+    // The chat component API (hover/click text) the server jar ships alongside
+    // Bukkit. Taken from Maven Central since the 1.12 snapshot cannot resolve;
+    // only classes and constructors already present in 1.8 are used.
+    compileOnly('net.md-5:bungeecord-chat:1.16-R0.4') {
+        transitive = false
+    }
 
     // WorldEdit 6.x -- the last line that exposes com.sk89q.worldedit.Vector and
     // com.sk89q.worldedit.blocks.BaseBlock, which net.coreprotect.worldedit uses.
